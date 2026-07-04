@@ -1201,16 +1201,10 @@
     });
   }
 
+  const TMDB_READ_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4ZDFkZWM5NWYzZjMxZjZlOGNhYzc3NzU1YjU4YzUyZiIsIm5iZiI6MTc4MzEzMTQyMC45OTUwMDAxLCJzdWIiOiI2YTQ4NmQxYzIyNDYzN2YwYTYyZDNhMmQiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.H6hvJutjc5ohX7xntXaZMRRjEbuaoxNgSYz66LBp0yc";
+
   function getApiToken() {
-    let token = localStorage.getItem("tmdbReadAccessToken");
-    if (!token) {
-      token = prompt("Enter your TMDB Read Access Token (v4 auth):");
-      if (token) {
-        token = token.trim();
-        localStorage.setItem("tmdbReadAccessToken", token);
-      }
-    }
-    return token;
+    return TMDB_READ_ACCESS_TOKEN;
   }
 
   async function fetchWindow(startDate, endDate, direction) {
@@ -1226,8 +1220,7 @@
         headers: { Authorization: `Bearer ${token}`, accept: "application/json" }
       });
       if (res.status === 401) {
-        localStorage.removeItem("tmdbReadAccessToken");
-        throw new Error("Invalid token. Refresh the page to re-enter it.");
+        throw new Error("TMDB rejected the API token. Check the hardcoded token in the script.");
       }
       if (!res.ok) throw new Error(`TMDB request failed: ${res.status}`);
       const data = await res.json();
