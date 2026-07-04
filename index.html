@@ -95,16 +95,25 @@
     overflow-y: auto;
   }
   .menu-panel.hidden { display: none; }
-  .menu-header {
+  .menu-app-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .menu-top {
     position: sticky;
     top: -16px;
+    z-index: 2;
     background: #0f1114;
     padding: 16px 0 10px;
     margin: -16px 0 -6px;
+    border-bottom: 1px solid #24272d;
+  }
+  .menu-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #24272d;
   }
   .menu-header span {
     font-size: 13px;
@@ -122,6 +131,19 @@
   }
   .menu-section {
     margin-top: 14px;
+  }
+  .tmdb-attribution {
+    margin-top: 24px;
+    padding-top: 14px;
+    border-top: 1px solid #24272d;
+    font-size: 10.5px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.6;
+  }
+  .tmdb-attribution a {
+    color: var(--accent);
+    text-decoration: none;
   }
   .toggle-label {
     font-size: 10.5px;
@@ -430,6 +452,48 @@
     padding: 0 24px;
   }
 
+  /* ---- Splash / onboarding screen ---- */
+  .splash-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+  }
+  .splash-overlay.hidden { display: none; }
+  .splash-content {
+    max-width: 380px;
+    text-align: center;
+  }
+  .splash-emoji {
+    font-size: 44px;
+    margin-bottom: 12px;
+  }
+  .splash-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 14px;
+  }
+  .splash-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin: 0 0 24px;
+  }
+  .splash-btn {
+    background: var(--accent);
+    color: #14161a;
+    border: none;
+    padding: 13px 28px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
   /* ---- Detail modal ---- */
   .detail-modal {
     position: fixed;
@@ -550,9 +614,12 @@
 </div>
 
 <div class="menu-panel hidden" id="menu-panel">
-  <div class="menu-header">
-    <span>Settings</span>
-    <button class="menu-close" id="menu-close">✕</button>
+  <div class="menu-top">
+    <div class="menu-app-title">Same Age Movies</div>
+    <div class="menu-header">
+      <span>Settings</span>
+      <button class="menu-close" id="menu-close">✕</button>
+    </div>
   </div>
 
   <div class="menu-section">
@@ -607,12 +674,19 @@
       <button data-rating="Unrated">Unrated</button>
     </div>
   </div>
+
+  <div class="tmdb-attribution">
+    This product uses the TMDB API but is not endorsed or certified by TMDB.<br>
+    <a href="https://www.themoviedb.org" target="_blank" rel="noopener">themoviedb.org</a>
+  </div>
 </div>
 
 <div class="menu-panel hidden" id="saved-panel">
-  <div class="menu-header">
-    <span>Saved Movies</span>
-    <button class="menu-close" id="saved-close">✕</button>
+  <div class="menu-top">
+    <div class="menu-header">
+      <span>Saved Movies</span>
+      <button class="menu-close" id="saved-close">✕</button>
+    </div>
   </div>
   <div class="menu-section">
     <div id="saved-list" class="people-list"></div>
@@ -622,6 +696,20 @@
 <div class="container">
   <div id="scroll-hint" class="scroll-hint" style="display:none;">Swipe right to save · swipe left to remove · tap for details</div>
   <div id="feed" class="feed"></div>
+</div>
+
+<div class="splash-overlay hidden" id="splash-overlay">
+  <div class="splash-content">
+    <div class="splash-emoji">🎬</div>
+    <h1 class="splash-title">Same Age Movies</h1>
+    <p class="splash-text">
+      Ever wonder what you were watching at the movies when you were your kid's age?
+      Add your birthday and your kid's birthday, and this app finds the movies released
+      right around the time you were exactly as old as they are now — so you can watch
+      them together and relive a little bit of your own childhood.
+    </p>
+    <button class="splash-btn" id="splash-start-btn">Get Started</button>
+  </div>
 </div>
 
 <div class="detail-modal hidden" id="detail-modal">
@@ -670,6 +758,8 @@
   const sizeTwoBtn = document.getElementById("size-two");
   const sizeOneBtn = document.getElementById("size-one");
   const detailModal = document.getElementById("detail-modal");
+  const splashOverlay = document.getElementById("splash-overlay");
+  const splashStartBtn = document.getElementById("splash-start-btn");
   const detailClose = document.getElementById("detail-close");
   const detailBody = document.getElementById("detail-body");
 
@@ -1070,13 +1160,20 @@
     const kid = getSelectedKid();
 
     if (!adult || !kid) {
+      splashOverlay.classList.remove("hidden");
       comparisonSummary.textContent = "Add an adult and a kid in the menu (☰) to get started.";
       feedEl.innerHTML = `<div class="status">Add an adult and a kid in the menu (☰) to get started.</div>`;
       scrollHintEl.style.display = "none";
       return;
     }
+    splashOverlay.classList.add("hidden");
     startFresh(adult, kid);
   }
+
+  splashStartBtn.addEventListener("click", () => {
+    splashOverlay.classList.add("hidden");
+    menuPanel.classList.remove("hidden");
+  });
 
   function startFresh(adult, kid) {
     const today = new Date();
@@ -1105,7 +1202,15 @@
   }
 
   function getApiToken() {
-    return "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4ZDFkZWM5NWYzZjMxZjZlOGNhYzc3NzU1YjU4YzUyZiIsIm5iZiI6MTc4MzEzMTQyMC45OTUwMDAxLCJzdWIiOiI2YTQ4NmQxYzIyNDYzN2YwYTYyZDNhMmQiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.H6hvJutjc5ohX7xntXaZMRRjEbuaoxNgSYz66LBp0yc";
+    let token = localStorage.getItem("tmdbReadAccessToken");
+    if (!token) {
+      token = prompt("Enter your TMDB Read Access Token (v4 auth):");
+      if (token) {
+        token = token.trim();
+        localStorage.setItem("tmdbReadAccessToken", token);
+      }
+    }
+    return token;
   }
 
   async function fetchWindow(startDate, endDate, direction) {
@@ -1485,9 +1590,6 @@
     renderPeopleUI();
     const savedCardCount = parseInt(localStorage.getItem("cardsPerScreen") || "2", 10);
     setCardsPerScreen(savedCardCount === 1 ? 1 : 2);
-    if (adults.length === 0 || kids.length === 0) {
-      menuPanel.classList.remove("hidden");
-    }
     tryStartFresh();
   });
 </script>
