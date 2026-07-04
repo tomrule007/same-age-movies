@@ -1160,7 +1160,6 @@
     const kid = getSelectedKid();
 
     if (!adult || !kid) {
-      splashOverlay.classList.remove("hidden");
       comparisonSummary.textContent = "Add an adult and a kid in the menu (☰) to get started.";
       feedEl.innerHTML = `<div class="status">Add an adult and a kid in the menu (☰) to get started.</div>`;
       scrollHintEl.style.display = "none";
@@ -1583,6 +1582,9 @@
     renderPeopleUI();
     const savedCardCount = parseInt(localStorage.getItem("cardsPerScreen") || "2", 10);
     setCardsPerScreen(savedCardCount === 1 ? 1 : 2);
+    if (adults.length === 0 && kids.length === 0) {
+      splashOverlay.classList.remove("hidden");
+    }
     tryStartFresh();
   });
 </script>
