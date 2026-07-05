@@ -91,8 +91,8 @@
     inset: 0;
     z-index: 30;
     background: #0f1114;
-    padding: 16px 16px 24px;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
   .menu-panel.hidden { display: none; }
   .menu-app-title {
@@ -102,13 +102,22 @@
     margin-bottom: 2px;
   }
   .menu-top {
-    position: sticky;
-    top: -16px;
-    z-index: 2;
+    flex: 0 0 auto;
     background: #0f1114;
-    padding: 16px 0 10px;
-    margin: -16px 0 -6px;
+    padding: 16px 16px 10px;
     border-bottom: 1px solid #24272d;
+  }
+  .menu-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 14px 16px;
+  }
+  .menu-footer {
+    flex: 0 0 auto;
+    padding: 12px 16px 18px;
+    border-top: 1px solid #24272d;
+    background: #0f1114;
   }
   .menu-header {
     display: flex;
@@ -132,10 +141,73 @@
   .menu-section {
     margin-top: 14px;
   }
-  .tmdb-attribution {
-    margin-top: 24px;
-    padding-top: 14px;
+  .advanced-settings {
+    margin-top: 18px;
     border-top: 1px solid #24272d;
+    padding-top: 4px;
+  }
+  .advanced-settings summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 10px 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .advanced-settings summary::-webkit-details-marker { display: none; }
+  .advanced-settings summary::after {
+    content: "▾";
+    font-size: 13px;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  .advanced-settings[open] summary::after {
+    transform: rotate(180deg);
+  }
+  .advanced-settings .menu-section:first-of-type {
+    margin-top: 10px;
+  }
+  .storage-warning {
+    background: rgba(224, 82, 82, 0.12);
+    border: 1px solid var(--down);
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-top: 14px;
+  }
+  .storage-warning.hidden { display: none; }
+  .menu-error {
+    background: rgba(224, 82, 82, 0.12);
+    border: 1px solid var(--down);
+    color: var(--text);
+    font-size: 12.5px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .menu-error.hidden { display: none; }
+  .menu-save-btn {
+    display: block;
+    width: 100%;
+    background: var(--accent);
+    color: #14161a;
+    border: none;
+    padding: 13px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .tmdb-attribution {
+    margin-top: 12px;
     font-size: 10.5px;
     color: var(--muted);
     text-align: center;
@@ -213,11 +285,11 @@
   }
   .add-person-row {
     display: flex;
-    align-items: flex-end;
-    gap: 6px;
+    flex-direction: column;
+    gap: 8px;
   }
   .add-person-row input[type="text"] {
-    flex: 1.2;
+    width: 100%;
     height: 38px;
     background: #1a1d22;
     border: 1px solid #2a2e35;
@@ -227,10 +299,18 @@
     font-size: 13px;
     min-width: 0;
   }
-  .add-person-row .date-field {
+  .birthday-add-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .birthday-add-row .date-field {
     position: relative;
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 0;
+  }
+  .birthday-add-row button {
+    flex: 0 0 auto;
   }
   .add-person-row input[type="date"] {
     height: 38px;
@@ -622,62 +702,80 @@
     </div>
   </div>
 
-  <div class="menu-section">
-    <div class="toggle-label">Adults</div>
-    <div id="adults-list" class="people-list"></div>
-    <div class="add-person-row">
-      <input type="text" id="new-adult-name" placeholder="Name">
-      <div class="date-field">
-        <input type="date" id="new-adult-birthday" aria-label="Birthday">
-        <span class="date-placeholder" id="new-adult-birthday-placeholder">Birthday</span>
+  <div class="menu-scroll">
+    <div class="storage-warning hidden" id="storage-warning">
+      ⚠️ This browser isn't saving changes between visits. Try opening this file in a full browser app (Chrome, Safari, etc.) instead of a file viewer or downloads preview.
+    </div>
+
+    <div class="menu-section">
+      <div class="toggle-label">Adults</div>
+      <div id="adults-list" class="people-list"></div>
+      <div class="add-person-row">
+        <input type="text" id="new-adult-name" placeholder="Name">
+        <div class="birthday-add-row">
+          <div class="date-field">
+            <input type="date" id="new-adult-birthday" aria-label="Birthday">
+            <span class="date-placeholder" id="new-adult-birthday-placeholder">Birthday</span>
+          </div>
+          <button id="add-adult-btn">Add</button>
+        </div>
       </div>
-      <button id="add-adult-btn">Add</button>
     </div>
-  </div>
 
-  <div class="menu-section">
-    <div class="toggle-label">Kids</div>
-    <div id="kids-list" class="people-list"></div>
-    <div class="add-person-row">
-      <input type="text" id="new-kid-name" placeholder="Name">
-      <div class="date-field">
-        <input type="date" id="new-kid-birthday" aria-label="Birthday">
-        <span class="date-placeholder" id="new-kid-birthday-placeholder">Birthday</span>
+    <div class="menu-section">
+      <div class="toggle-label">Kids</div>
+      <div id="kids-list" class="people-list"></div>
+      <div class="add-person-row">
+        <input type="text" id="new-kid-name" placeholder="Name">
+        <div class="birthday-add-row">
+          <div class="date-field">
+            <input type="date" id="new-kid-birthday" aria-label="Birthday">
+            <span class="date-placeholder" id="new-kid-birthday-placeholder">Birthday</span>
+          </div>
+          <button id="add-kid-btn">Add</button>
+        </div>
       </div>
-      <button id="add-kid-btn">Add</button>
     </div>
+
+    <details class="advanced-settings">
+      <summary>Display &amp; filters</summary>
+
+      <div class="menu-section">
+        <div class="toggle-label">Cards per screen</div>
+        <div class="toggle">
+          <button id="size-two" class="active">2 (compact)</button>
+          <button id="size-one">1 (bigger)</button>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="toggle-label">Release date</div>
+        <div class="toggle">
+          <button id="mode-theatrical" class="active">Theater release</button>
+          <button id="mode-rental">Rental / digital release</button>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="toggle-label">Ratings included</div>
+        <div class="rating-toggle" id="rating-toggle">
+          <button data-rating="G" class="active">G</button>
+          <button data-rating="PG" class="active">PG</button>
+          <button data-rating="PG-13" class="active">PG-13</button>
+          <button data-rating="R">R</button>
+          <button data-rating="Unrated">Unrated</button>
+        </div>
+      </div>
+    </details>
   </div>
 
-  <div class="menu-section">
-    <div class="toggle-label">Cards per screen</div>
-    <div class="toggle">
-      <button id="size-two" class="active">2 (compact)</button>
-      <button id="size-one">1 (bigger)</button>
+  <div class="menu-footer">
+    <div class="menu-error hidden" id="menu-error">Please add at least one adult and one kid to continue.</div>
+    <button class="menu-save-btn" id="menu-save-btn">Save &amp; Close</button>
+    <div class="tmdb-attribution">
+      This product uses the TMDB API but is not endorsed or certified by TMDB.<br>
+      <a href="https://www.themoviedb.org" target="_blank" rel="noopener">themoviedb.org</a>
     </div>
-  </div>
-
-  <div class="menu-section">
-    <div class="toggle-label">Release date</div>
-    <div class="toggle">
-      <button id="mode-theatrical" class="active">Theater release</button>
-      <button id="mode-rental">Rental / digital release</button>
-    </div>
-  </div>
-
-  <div class="menu-section">
-    <div class="toggle-label">Ratings included</div>
-    <div class="rating-toggle" id="rating-toggle">
-      <button data-rating="G" class="active">G</button>
-      <button data-rating="PG" class="active">PG</button>
-      <button data-rating="PG-13" class="active">PG-13</button>
-      <button data-rating="R">R</button>
-      <button data-rating="Unrated">Unrated</button>
-    </div>
-  </div>
-
-  <div class="tmdb-attribution">
-    This product uses the TMDB API but is not endorsed or certified by TMDB.<br>
-    <a href="https://www.themoviedb.org" target="_blank" rel="noopener">themoviedb.org</a>
   </div>
 </div>
 
@@ -688,8 +786,10 @@
       <button class="menu-close" id="saved-close">✕</button>
     </div>
   </div>
-  <div class="menu-section">
-    <div id="saved-list" class="people-list"></div>
+  <div class="menu-scroll">
+    <div class="menu-section">
+      <div id="saved-list" class="people-list"></div>
+    </div>
   </div>
 </div>
 
@@ -723,6 +823,8 @@
   const menuBtn = document.getElementById("menu-btn");
   const menuPanel = document.getElementById("menu-panel");
   const menuClose = document.getElementById("menu-close");
+  const menuSaveBtn = document.getElementById("menu-save-btn");
+  const menuError = document.getElementById("menu-error");
   const savedBtn = document.getElementById("saved-btn");
   const savedPanel = document.getElementById("saved-panel");
   const savedClose = document.getElementById("saved-close");
@@ -780,36 +882,65 @@
   let selectedKidId = null;
   let savedMovies = [];
 
-  // ---- People storage ----
+  // ---- Safe storage (falls back to in-memory if localStorage is blocked) ----
+
+  const memoryStore = {};
+  let storageBroken = false;
+
+  function safeGet(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch (e) {
+      storageBroken = true;
+      return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+    }
+  }
+
+  function safeSet(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch (e) {
+      storageBroken = true;
+      memoryStore[key] = value;
+    }
+  }
+
+  function testStorage() {
+    const testKey = "__storage_test__";
+    safeSet(testKey, "1");
+    if (safeGet(testKey) !== "1") {
+      storageBroken = true;
+    }
+  }
 
   function genId() {
     return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   }
 
   function loadPeopleFromStorage() {
-    try { adults = JSON.parse(localStorage.getItem("people:adults") || "[]"); } catch (e) { adults = []; }
-    try { kids = JSON.parse(localStorage.getItem("people:kids") || "[]"); } catch (e) { kids = []; }
+    try { adults = JSON.parse(safeGet("people:adults") || "[]"); } catch (e) { adults = []; }
+    try { kids = JSON.parse(safeGet("people:kids") || "[]"); } catch (e) { kids = []; }
 
-    if (adults.length === 0 && localStorage.getItem("myBirthday")) {
-      adults.push({ id: genId(), name: "You", birthday: localStorage.getItem("myBirthday") });
+    if (adults.length === 0 && safeGet("myBirthday")) {
+      adults.push({ id: genId(), name: "You", birthday: safeGet("myBirthday") });
     }
-    if (kids.length === 0 && localStorage.getItem("kidBirthday")) {
-      kids.push({ id: genId(), name: "Kid", birthday: localStorage.getItem("kidBirthday") });
+    if (kids.length === 0 && safeGet("kidBirthday")) {
+      kids.push({ id: genId(), name: "Kid", birthday: safeGet("kidBirthday") });
     }
     savePeopleToStorage();
 
-    selectedAdultId = localStorage.getItem("selectedAdultId") || (adults[0] && adults[0].id) || null;
-    selectedKidId = localStorage.getItem("selectedKidId") || (kids[0] && kids[0].id) || null;
+    selectedAdultId = safeGet("selectedAdultId") || (adults[0] && adults[0].id) || null;
+    selectedKidId = safeGet("selectedKidId") || (kids[0] && kids[0].id) || null;
   }
 
   function savePeopleToStorage() {
-    localStorage.setItem("people:adults", JSON.stringify(adults));
-    localStorage.setItem("people:kids", JSON.stringify(kids));
+    safeSet("people:adults", JSON.stringify(adults));
+    safeSet("people:kids", JSON.stringify(kids));
   }
 
   function saveSelection() {
-    if (selectedAdultId) localStorage.setItem("selectedAdultId", selectedAdultId);
-    if (selectedKidId) localStorage.setItem("selectedKidId", selectedKidId);
+    if (selectedAdultId) safeSet("selectedAdultId", selectedAdultId);
+    if (selectedKidId) safeSet("selectedKidId", selectedKidId);
   }
 
   function getSelectedAdult() { return adults.find(a => a.id === selectedAdultId) || null; }
@@ -916,6 +1047,15 @@
   });
   menuClose.addEventListener("click", () => menuPanel.classList.add("hidden"));
 
+  menuSaveBtn.addEventListener("click", () => {
+    if (adults.length === 0 || kids.length === 0) {
+      menuError.classList.remove("hidden");
+      return;
+    }
+    menuError.classList.add("hidden");
+    menuPanel.classList.add("hidden");
+  });
+
   savedBtn.addEventListener("click", () => {
     menuPanel.classList.add("hidden");
     renderSavedList();
@@ -954,18 +1094,18 @@
     feedEl.classList.toggle("single-card", count === 1);
     sizeTwoBtn.classList.toggle("active", count === 2);
     sizeOneBtn.classList.toggle("active", count === 1);
-    localStorage.setItem("cardsPerScreen", String(count));
+    safeSet("cardsPerScreen", String(count));
   }
 
   // ---- Saved movies ----
 
   function loadSavedMoviesFromStorage() {
-    try { savedMovies = JSON.parse(localStorage.getItem("savedMovies") || "[]"); } catch (e) { savedMovies = []; }
+    try { savedMovies = JSON.parse(safeGet("savedMovies") || "[]"); } catch (e) { savedMovies = []; }
     updateSavedCount();
   }
 
   function saveSavedMoviesToStorage() {
-    localStorage.setItem("savedMovies", JSON.stringify(savedMovies));
+    safeSet("savedMovies", JSON.stringify(savedMovies));
     updateSavedCount();
   }
 
@@ -1165,6 +1305,7 @@
       scrollHintEl.style.display = "none";
       return;
     }
+    menuError.classList.add("hidden");
     splashOverlay.classList.add("hidden");
     startFresh(adult, kid);
   }
@@ -1288,8 +1429,13 @@
       if (us) {
         const typesToTry = currentMode === "theatrical" ? [3, 2] : [4, 5];
         for (const t of typesToTry) {
-          const match = us.release_dates.find(rd => rd.type === t);
-          if (match) return match.release_date.slice(0, 10);
+          const matches = us.release_dates.filter(rd => rd.type === t && rd.release_date);
+          if (matches.length) {
+            // TMDB doesn't guarantee array order is chronological — pick the earliest,
+            // not just the first entry, to avoid picking a later re-release/reissue date.
+            const earliest = matches.reduce((min, rd) => (rd.release_date < min.release_date ? rd : min));
+            return earliest.release_date.slice(0, 10);
+          }
         }
       }
     }
@@ -1429,6 +1575,7 @@
 
   const TAP_THRESHOLD = 8;
   const SWIPE_THRESHOLD = 90;
+  const DIRECTION_LOCK_THRESHOLD = 10; // px of movement before we decide horizontal vs vertical
   let dragState = null;
 
   feedEl.addEventListener("pointerdown", (e) => {
@@ -1436,36 +1583,68 @@
     const card = e.target.closest(".movie-card");
     if (!card) return;
     const posterHit = !!e.target.closest("img, .no-poster");
-    dragState = { card, startX: e.clientX, startY: e.clientY, currentX: e.clientX, currentY: e.clientY, posterHit };
+    dragState = {
+      card,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      currentX: e.clientX,
+      currentY: e.clientY,
+      posterHit,
+      direction: null // becomes "horizontal" or "vertical" once movement crosses the lock threshold
+    };
     card.style.transition = "none";
-  });
+    // Keep receiving move/up events for this pointer even if the finger drifts off the card
+    try { card.setPointerCapture(e.pointerId); } catch (err) { /* not supported, ignore */ }
+  }, { passive: true });
 
   feedEl.addEventListener("pointermove", (e) => {
-    if (!dragState) return;
+    if (!dragState || e.pointerId !== dragState.pointerId) return;
     dragState.currentX = e.clientX;
     dragState.currentY = e.clientY;
     const dx = dragState.currentX - dragState.startX;
     const dy = dragState.currentY - dragState.startY;
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 5) {
+
+    if (!dragState.direction) {
+      if (Math.abs(dx) > DIRECTION_LOCK_THRESHOLD || Math.abs(dy) > DIRECTION_LOCK_THRESHOLD) {
+        dragState.direction = Math.abs(dx) > Math.abs(dy) ? "horizontal" : "vertical";
+        if (dragState.direction === "vertical") {
+          // This is a scroll, not a swipe — hand control back to the browser immediately
+          releasePointer(dragState.card, dragState.pointerId);
+          dragState = null;
+          return;
+        }
+      }
+    }
+
+    if (dragState && dragState.direction === "horizontal") {
+      // Stop iOS from also treating this as a scroll/pan gesture
+      e.preventDefault();
       dragState.card.style.transform = `translateX(${dx}px) rotate(${dx / 24}deg)`;
     }
-  });
+  }, { passive: false });
 
-  function endDrag() {
+  function releasePointer(card, pointerId) {
+    try { card.releasePointerCapture(pointerId); } catch (err) { /* ignore */ }
+  }
+
+  function endDrag(e) {
     if (!dragState) return;
-    const { card, startX, startY, currentX, currentY, posterHit } = dragState;
+    if (e && e.pointerId !== undefined && e.pointerId !== dragState.pointerId) return;
+    const { card, startX, startY, currentX, currentY, posterHit, direction, pointerId } = dragState;
+    releasePointer(card, pointerId);
     dragState = null;
     const dx = currentX - startX;
     const dy = currentY - startY;
     card.style.transition = "transform 0.22s ease";
 
-    if (Math.abs(dx) < TAP_THRESHOLD && Math.abs(dy) < TAP_THRESHOLD) {
+    if (!direction || (Math.abs(dx) < TAP_THRESHOLD && Math.abs(dy) < TAP_THRESHOLD)) {
       card.style.transform = "";
       if (posterHit) openMovieDetail(card.dataset.movieId);
       return;
     }
 
-    if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+    if (direction === "horizontal" && Math.abs(dx) > SWIPE_THRESHOLD) {
       const movie = loadedMovies.find(m => String(m.id) === String(card.dataset.movieId));
       const adult = getSelectedAdult();
       const kid = getSelectedKid();
@@ -1577,11 +1756,15 @@
 
   // ---- Init ----
   window.addEventListener("DOMContentLoaded", () => {
+    testStorage();
     loadPeopleFromStorage();
     loadSavedMoviesFromStorage();
     renderPeopleUI();
-    const savedCardCount = parseInt(localStorage.getItem("cardsPerScreen") || "2", 10);
+    const savedCardCount = parseInt(safeGet("cardsPerScreen") || "2", 10);
     setCardsPerScreen(savedCardCount === 1 ? 1 : 2);
+    if (storageBroken) {
+      document.getElementById("storage-warning").classList.remove("hidden");
+    }
     if (adults.length === 0 && kids.length === 0) {
       splashOverlay.classList.remove("hidden");
     }
