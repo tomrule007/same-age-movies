@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Same Age Movies</title>
+<meta name="description" content="Find movies released around the time you were the same age your kid is now, and relive the movies from your own childhood together.">
+<meta property="og:title" content="Same Age Movies">
+<meta property="og:description" content="Find movies released around the time you were the same age your kid is now, and relive the movies from your own childhood together.">
+<meta property="og:type" content="website">
 <style>
   :root {
     --bg: #14161a;
@@ -434,7 +438,8 @@
     height: 100%;
   }
   .movie-card.is-saved {
-    background: rgba(224, 185, 84, 0.06);
+    background: rgba(224, 185, 84, 0.16);
+    box-shadow: inset 0 0 0 2px rgba(224, 185, 84, 0.55);
   }
   .movie-card img {
     max-height: 42%;
@@ -474,6 +479,10 @@
     font-size: 11px;
     color: var(--muted);
     margin-top: 2px;
+  }
+  .date-tag {
+    font-style: italic;
+    opacity: 0.85;
   }
   .movie-card .age-at-release {
     font-size: 12px;
@@ -594,6 +603,14 @@
     border-radius: 16px 16px 0 0;
     padding: 20px;
     position: relative;
+    touch-action: none;
+  }
+  .detail-handle {
+    width: 40px;
+    height: 4px;
+    background: #2a2e35;
+    border-radius: 2px;
+    margin: 0 auto 10px;
   }
   .detail-close {
     position: absolute;
@@ -743,16 +760,16 @@
       <div class="menu-section">
         <div class="toggle-label">Cards per screen</div>
         <div class="toggle">
-          <button id="size-two" class="active">2 (compact)</button>
-          <button id="size-one">1 (bigger)</button>
+          <button id="size-two">2 (compact)</button>
+          <button id="size-one" class="active">1 (bigger)</button>
         </div>
       </div>
 
       <div class="menu-section">
         <div class="toggle-label">Release date</div>
         <div class="toggle">
-          <button id="mode-theatrical" class="active">Theater release</button>
-          <button id="mode-rental">Rental / digital release</button>
+          <button id="mode-theatrical">Theater release</button>
+          <button id="mode-rental" class="active">Rental / digital release</button>
         </div>
       </div>
 
@@ -813,7 +830,8 @@
 </div>
 
 <div class="detail-modal hidden" id="detail-modal">
-  <div class="detail-content">
+  <div class="detail-content" id="detail-content">
+    <div class="detail-handle"></div>
     <button class="detail-close" id="detail-close">✕</button>
     <div id="detail-body"></div>
   </div>
@@ -865,7 +883,7 @@
   const detailClose = document.getElementById("detail-close");
   const detailBody = document.getElementById("detail-body");
 
-  let currentMode = "theatrical";
+  let currentMode = "rental";
   let currentRatings = new Set(["G", "PG", "PG-13"]);
   let windowStart = null;
   let windowEnd = null;
@@ -1122,18 +1140,25 @@
       savedListEl.innerHTML = `<div class="comparison-summary">No saved movies yet. Swipe right or tap the star on a movie to add it here.</div>`;
       return;
     }
-    savedListEl.innerHTML = savedMovies.slice().reverse().map(item => `
+    savedListEl.innerHTML = savedMovies.slice().reverse().map(item => {
+      const ageLine = item.ageLabel
+        ? item.ageLabel.replace(/^You were/i, `${item.adultName} was`)
+        : "";
+      const diffLine = item.diffLabel ? `${item.diffLabel} than ${item.kidName} is now` : "";
+      return `
       <div class="saved-row" data-open-saved="${item.tmdbId}">
         ${item.poster_path
           ? `<img class="saved-thumb" src="https://image.tmdb.org/t/p/w92${item.poster_path}" alt="${escapeHtml(item.title)} poster">`
           : `<div class="saved-thumb"></div>`}
         <div class="person-info">
-          <strong>${escapeHtml(item.title)}</strong> <span>${item.dateStr || ""}</span><br>
-          <span>${escapeHtml(item.adultName)} vs ${escapeHtml(item.kidName)}${item.diffLabel ? " • " + escapeHtml(item.diffLabel) : ""}</span>
+          <strong>${escapeHtml(item.title)}</strong> <span>${item.dateStr || ""}${item.dateTag ? ` (${item.dateTag})` : ""}</span><br>
+          ${ageLine ? `<span>${escapeHtml(ageLine)}</span><br>` : ""}
+          <span>${escapeHtml(diffLine || `${item.adultName} vs ${item.kidName}`)}</span>
         </div>
         <button type="button" data-remove-saved="${item.savedId}">×</button>
       </div>
-    `).join("");
+    `;
+    }).join("");
   }
 
   savedListEl.addEventListener("click", (e) => {
@@ -1161,6 +1186,7 @@
         title: movie.title,
         poster_path: movie.poster_path,
         dateStr: display.dateStr,
+        dateTag: display.dateTag,
         ageLabel: display.ageLabel,
         diffLabel: display.diffLabel,
         adultId: selectedAdultId,
@@ -1206,6 +1232,7 @@
   const SCROLL_THRESHOLD = 300;
 
   feedEl.addEventListener("scroll", () => {
+    cancelPendingTapOpen();
     if (!windowStart || !windowEnd) return;
     if (!isLoadingEarlier && feedEl.scrollTop < SCROLL_THRESHOLD) loadEarlier();
     const distanceFromBottom = feedEl.scrollHeight - feedEl.scrollTop - feedEl.clientHeight;
@@ -1422,28 +1449,60 @@
     return any ? any.certification : null;
   }
 
-  function pickReleaseDate(movie) {
+  function earliestForTypes(us, types) {
+    for (const t of types) {
+      const matches = us.release_dates.filter(rd => rd.type === t && rd.release_date);
+      if (matches.length) {
+        // TMDB doesn't guarantee array order is chronological — pick the earliest,
+        // not just the first entry, to avoid picking a later re-release/reissue date.
+        return matches.reduce((min, rd) => (rd.release_date < min.release_date ? rd : min)).release_date.slice(0, 10);
+      }
+    }
+    return null;
+  }
+
+  function getReleaseDateInfo(movie) {
     const info = movie.releaseDatesData;
+    let theaterDate = null;
+    let rentalDate = null;
+
     if (info && info.results) {
       const us = info.results.find(r => r.iso_3166_1 === "US");
       if (us) {
-        const typesToTry = currentMode === "theatrical" ? [3, 2] : [4, 5];
-        for (const t of typesToTry) {
-          const matches = us.release_dates.filter(rd => rd.type === t && rd.release_date);
-          if (matches.length) {
-            // TMDB doesn't guarantee array order is chronological — pick the earliest,
-            // not just the first entry, to avoid picking a later re-release/reissue date.
-            const earliest = matches.reduce((min, rd) => (rd.release_date < min.release_date ? rd : min));
-            return earliest.release_date.slice(0, 10);
-          }
-        }
+        theaterDate = earliestForTypes(us, [3, 2]);
+        rentalDate = earliestForTypes(us, [4, 5]);
       }
     }
-    return movie.primaryReleaseDate;
+    if (!theaterDate) theaterDate = movie.primaryReleaseDate;
+
+    if (currentMode === "theatrical") {
+      return { date: theaterDate, tag: "Theater" };
+    }
+
+    // rental mode
+    const RENTAL_DISTANCE_LIMIT_DAYS = 730; // ~2 years
+    if (rentalDate) {
+      if (theaterDate) {
+        const daysBetween = Math.abs((new Date(rentalDate) - new Date(theaterDate)) / 86400000);
+        if (daysBetween > RENTAL_DISTANCE_LIMIT_DAYS) {
+          return { date: theaterDate, tag: "Theater — rental date too far out" };
+        }
+        if (rentalDate === theaterDate) {
+          return { date: rentalDate, tag: "Rental — same as theater" };
+        }
+      }
+      return { date: rentalDate, tag: "Rental" };
+    }
+    return { date: theaterDate, tag: "Theater — no rental data" };
+  }
+
+  // Kept for the few call sites that only need the raw date string for sorting
+  function pickReleaseDate(movie) {
+    return getReleaseDateInfo(movie).date;
   }
 
   function computeDisplay(movie, myBirth) {
-    const dateStr = pickReleaseDate(movie);
+    const { date: dateStr, tag: dateTag } = getReleaseDateInfo(movie);
     let ageLabel = "";
     let diffLabel = "";
     let diffDays = null;
@@ -1459,7 +1518,7 @@
         ageLabel = "Before you were born";
       }
     }
-    return { dateStr, ageLabel, diffLabel, diffDays };
+    return { dateStr, dateTag, ageLabel, diffLabel, diffDays };
   }
 
   function passesRatingFilter(movie) {
@@ -1485,7 +1544,7 @@
       <div class="movie-card${saved ? " is-saved" : ""}" data-movie-id="${movie.id}">
         ${poster ? `<img src="${poster}" alt="${escapeHtml(movie.title)} poster">` : `<div class="no-poster"></div>`}
         <div class="title">${escapeHtml(movie.title)}</div>
-        <div class="date">${display.dateStr || "No release date"}</div>
+        <div class="date">${display.dateStr || "No release date"}${display.dateTag ? ` <span class="date-tag">(${escapeHtml(display.dateTag)})</span>` : ""}</div>
         ${display.ageLabel ? `<div class="age-at-release">${display.ageLabel}</div>` : ""}
         ${diffRow ? `<div class="diff-row">${diffRow}</div>` : ""}
         <div class="cert-badge">${cert ? escapeHtml(cert) : "Unrated"}</div>
@@ -1582,6 +1641,7 @@
     if (e.target.closest("button")) return;
     const card = e.target.closest(".movie-card");
     if (!card) return;
+    cancelPendingTapOpen();
     const posterHit = !!e.target.closest("img, .no-poster");
     dragState = {
       card,
@@ -1624,6 +1684,29 @@
     }
   }, { passive: false });
 
+  // ---- Deferred tap-to-open (cancelled if the feed actually scrolls right after) ----
+
+  let pendingTapTimer = null;
+
+  function scheduleTapOpen(movieId) {
+    cancelPendingTapOpen();
+    const scrollTopAtTap = feedEl.scrollTop;
+    pendingTapTimer = setTimeout(() => {
+      pendingTapTimer = null;
+      // Guard again in case a scroll happened without a caught scroll event in between
+      if (Math.abs(feedEl.scrollTop - scrollTopAtTap) < 2) {
+        openMovieDetail(movieId);
+      }
+    }, 150);
+  }
+
+  function cancelPendingTapOpen() {
+    if (pendingTapTimer) {
+      clearTimeout(pendingTapTimer);
+      pendingTapTimer = null;
+    }
+  }
+
   function releasePointer(card, pointerId) {
     try { card.releasePointerCapture(pointerId); } catch (err) { /* ignore */ }
   }
@@ -1640,7 +1723,7 @@
 
     if (!direction || (Math.abs(dx) < TAP_THRESHOLD && Math.abs(dy) < TAP_THRESHOLD)) {
       card.style.transform = "";
-      if (posterHit) openMovieDetail(card.dataset.movieId);
+      if (posterHit) scheduleTapOpen(card.dataset.movieId);
       return;
     }
 
@@ -1685,6 +1768,77 @@
     if (e.target === detailModal) detailModal.classList.add("hidden");
   });
 
+  // Swipe down on the sheet to dismiss it.
+  // Note: touch-action:pan-y tells the browser vertical panning is always native,
+  // which makes preventDefault() ineffective for vertical drags on Android/Chrome.
+  // So instead: when a gesture starts at the very top of the content, we switch
+  // touch-action to "none" for that gesture and drive scrolling manually in JS,
+  // which lets us cleanly distinguish "pull down to close" from "scroll into content".
+  const detailContent = document.getElementById("detail-content");
+  let detailDrag = null;
+  const DETAIL_CLOSE_THRESHOLD = 110;
+
+  detailContent.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("button, a")) return;
+    detailDrag = {
+      startY: e.clientY,
+      lastY: e.clientY,
+      pointerId: e.pointerId,
+      isClosing: false
+    };
+    detailContent.style.transition = "none";
+    try { detailContent.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  });
+
+  detailContent.addEventListener("pointermove", (e) => {
+    if (!detailDrag || e.pointerId !== detailDrag.pointerId) return;
+    const currentY = e.clientY;
+    const stepDy = currentY - detailDrag.lastY;
+    const totalDy = currentY - detailDrag.startY;
+    detailDrag.lastY = currentY;
+    e.preventDefault();
+
+    if (detailContent.scrollTop <= 0 && totalDy > 0) {
+      // Pulling down from the very top — treat as a close gesture
+      detailDrag.isClosing = true;
+      detailContent.style.transform = `translateY(${totalDy}px)`;
+      detailContent.style.opacity = String(Math.max(1 - totalDy / 500, 0.4));
+    } else {
+      // Otherwise, drive scrolling manually since native panning is disabled for this gesture
+      detailDrag.isClosing = false;
+      detailContent.style.transform = "";
+      detailContent.style.opacity = "";
+      detailContent.scrollTop = Math.max(0, detailContent.scrollTop - stepDy);
+    }
+  }, { passive: false });
+
+  function endDetailDrag(e) {
+    if (!detailDrag) return;
+    if (e && e.pointerId !== undefined && e.pointerId !== detailDrag.pointerId) return;
+    const { pointerId, isClosing, startY, lastY } = detailDrag;
+    const totalDy = lastY - startY;
+    try { detailContent.releasePointerCapture(pointerId); } catch (err) { /* ignore */ }
+    detailDrag = null;
+    detailContent.style.transition = "transform 0.2s ease, opacity 0.2s ease";
+
+    if (isClosing && totalDy > DETAIL_CLOSE_THRESHOLD) {
+      detailContent.style.transform = `translateY(100%)`;
+      detailContent.style.opacity = "0";
+      setTimeout(() => {
+        detailModal.classList.add("hidden");
+        detailContent.style.transition = "none";
+        detailContent.style.transform = "";
+        detailContent.style.opacity = "";
+      }, 180);
+    } else {
+      detailContent.style.transform = "";
+      detailContent.style.opacity = "";
+    }
+  }
+
+  detailContent.addEventListener("pointerup", endDetailDrag);
+  detailContent.addEventListener("pointercancel", endDetailDrag);
+
   async function openMovieDetail(movieId) {
     detailModal.classList.remove("hidden");
     detailBody.innerHTML = `<div class="status">Loading...</div>`;
@@ -1717,7 +1871,10 @@
     let subline = "";
     if (adult && movieRecord) {
       const display = computeDisplay(movieRecord, new Date(adult.birthday));
-      subline = [display.dateStr, display.ageLabel, display.diffLabel].filter(Boolean).join(" · ");
+      const dateWithTag = display.dateStr
+        ? `${display.dateStr}${display.dateTag ? ` (${display.dateTag})` : ""}`
+        : "";
+      subline = [dateWithTag, display.ageLabel, display.diffLabel].filter(Boolean).join(" · ");
     }
 
     const poster = details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : "";
@@ -1760,7 +1917,7 @@
     loadPeopleFromStorage();
     loadSavedMoviesFromStorage();
     renderPeopleUI();
-    const savedCardCount = parseInt(safeGet("cardsPerScreen") || "2", 10);
+    const savedCardCount = parseInt(safeGet("cardsPerScreen") || "1", 10);
     setCardsPerScreen(savedCardCount === 1 ? 1 : 2);
     if (storageBroken) {
       document.getElementById("storage-warning").classList.remove("hidden");
