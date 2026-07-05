@@ -421,7 +421,6 @@
   }
   .movie-card {
     scroll-snap-align: start;
-    scroll-snap-stop: always;
     height: 50%;
     display: flex;
     flex-direction: column;
@@ -1631,6 +1630,10 @@
   }
 
   // ---- Swipe / tap interactions ----
+  // Vertical scrolling is 100% native (browser-handled momentum + CSS scroll-snap).
+  // We only ever intercept a gesture once it's clearly horizontal, to run the
+  // swipe-to-save/unsave action. If a gesture turns out to be vertical, we let go
+  // immediately and the browser scrolls normally — no custom physics involved.
 
   const TAP_THRESHOLD = 8;
   const SWIPE_THRESHOLD = 90;
@@ -1654,9 +1657,8 @@
       direction: null // becomes "horizontal" or "vertical" once movement crosses the lock threshold
     };
     card.style.transition = "none";
-    // Keep receiving move/up events for this pointer even if the finger drifts off the card
     try { card.setPointerCapture(e.pointerId); } catch (err) { /* not supported, ignore */ }
-  }, { passive: true });
+  });
 
   feedEl.addEventListener("pointermove", (e) => {
     if (!dragState || e.pointerId !== dragState.pointerId) return;
@@ -1669,7 +1671,7 @@
       if (Math.abs(dx) > DIRECTION_LOCK_THRESHOLD || Math.abs(dy) > DIRECTION_LOCK_THRESHOLD) {
         dragState.direction = Math.abs(dx) > Math.abs(dy) ? "horizontal" : "vertical";
         if (dragState.direction === "vertical") {
-          // This is a scroll, not a swipe — hand control back to the browser immediately
+          // Not a swipe — hand control straight back to the browser's native scrolling
           releasePointer(dragState.card, dragState.pointerId);
           dragState = null;
           return;
@@ -1678,7 +1680,6 @@
     }
 
     if (dragState && dragState.direction === "horizontal") {
-      // Stop iOS from also treating this as a scroll/pan gesture
       e.preventDefault();
       dragState.card.style.transform = `translateX(${dx}px) rotate(${dx / 24}deg)`;
     }
