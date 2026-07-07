@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Same Age Movies</title>
+<meta name="description" content="Find movies released around the time you were the same age your kid is now, and relive the movies from your own childhood together.">
+<meta property="og:title" content="Same Age Movies">
+<meta property="og:description" content="Find movies released around the time you were the same age your kid is now, and relive the movies from your own childhood together.">
+<meta property="og:type" content="website">
+<style>
+  :root {
+    --bg: #14161a;
+    --card: #1e2126;
+    --text: #eef0f2;
+    --muted: #9aa1ac;
+    --accent: #e0b954;
+    --up: #4caf50;
+    --down: #e05252;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---- Fixed header ---- */
+  .navbar {
+    flex: 0 0 auto;
+    background: #0f1114;
+    border-bottom: 1px solid #24272d;
+    padding: 10px 16px;
+  }
+  .navbar-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .navbar h1 {
+    font-size: 15px;
+    margin: 0;
+  }
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .menu-btn {
+    background: transparent;
+    border: 1px solid #2a2e35;
+    color: var(--text);
+    font-size: 14px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .selector-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .selector-row select {
+    flex: 1;
+    background: #1a1d22;
+    color: var(--text);
+    border: 1px solid #2a2e35;
+    padding: 8px 6px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .selector-row .vs {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .comparison-summary {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  .comparison-summary strong { color: var(--text); }
+
+  /* ---- Menu / Saved panel ---- */
+  .menu-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: #0f1114;
+    display: flex;
+    flex-direction: column;
+  }
+  .menu-panel.hidden { display: none; }
+  .menu-app-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .menu-top {
+    flex: 0 0 auto;
+    background: #0f1114;
+    padding: 16px 16px 10px;
+    border-bottom: 1px solid #24272d;
+  }
+  .menu-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 14px 16px;
+  }
+  .menu-footer {
+    flex: 0 0 auto;
+    padding: 12px 16px 18px;
+    border-top: 1px solid #24272d;
+    background: #0f1114;
+  }
+  .menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .menu-header span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .menu-close {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .menu-section {
+    margin-top: 14px;
+  }
+  .advanced-settings {
+    margin-top: 18px;
+    border-top: 1px solid #24272d;
+    padding-top: 4px;
+  }
+  .advanced-settings summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 10px 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .advanced-settings summary::-webkit-details-marker { display: none; }
+  .advanced-settings summary::after {
+    content: "▾";
+    font-size: 13px;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+  }
+  .advanced-settings[open] summary::after {
+    transform: rotate(180deg);
+  }
+  .advanced-settings .menu-section:first-of-type {
+    margin-top: 10px;
+  }
+  .storage-warning {
+    background: rgba(224, 82, 82, 0.12);
+    border: 1px solid var(--down);
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-top: 14px;
+  }
+  .storage-warning.hidden { display: none; }
+  .menu-error {
+    background: rgba(224, 82, 82, 0.12);
+    border: 1px solid var(--down);
+    color: var(--text);
+    font-size: 12.5px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .menu-error.hidden { display: none; }
+  .menu-save-btn {
+    display: block;
+    width: 100%;
+    background: var(--accent);
+    color: #14161a;
+    border: none;
+    padding: 13px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .tmdb-attribution {
+    margin-top: 12px;
+    font-size: 10.5px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.6;
+  }
+  .tmdb-attribution a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .toggle-label {
+    font-size: 10.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .people-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .person-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1a1d22;
+    border: 1px solid #2a2e35;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    gap: 8px;
+  }
+  .person-row .person-info { color: var(--text); line-height: 1.5; }
+  .person-row .person-info span { color: var(--muted); font-size: 11.5px; margin-left: 6px; }
+  .person-row button {
+    background: transparent;
+    border: none;
+    color: var(--down);
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .saved-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1a1d22;
+    border: 1px solid #2a2e35;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .saved-row:hover { background: #22262c; }
+  .saved-row .saved-thumb {
+    width: 36px;
+    height: 54px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: #0f1114;
+    flex-shrink: 0;
+  }
+  .saved-row .person-info { flex: 1; }
+  .saved-row button {
+    background: transparent;
+    border: none;
+    color: var(--down);
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .add-person-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .add-person-row input[type="text"] {
+    width: 100%;
+    height: 38px;
+    background: #1a1d22;
+    border: 1px solid #2a2e35;
+    color: var(--text);
+    padding: 0 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .birthday-add-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .birthday-add-row .date-field {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .birthday-add-row button {
+    flex: 0 0 auto;
+  }
+  .add-person-row input[type="date"] {
+    height: 38px;
+    width: 100%;
+    background: #1a1d22;
+    border: 1px solid #2a2e35;
+    color: var(--text);
+    padding: 0 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .date-placeholder {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7d838d;
+    font-size: 13px;
+    pointer-events: none;
+  }
+  .add-person-row button {
+    background: var(--accent);
+    color: #14161a;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .toggle {
+    display: flex;
+    background: #1a1d22;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+  }
+  .toggle button {
+    flex: 1;
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .toggle button.active {
+    background: var(--accent);
+    color: #14161a;
+  }
+  .rating-toggle {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .rating-toggle button {
+    background: #1a1d22;
+    color: var(--muted);
+    border: 1px solid #2a2e35;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .rating-toggle button.active {
+    background: var(--accent);
+    color: #14161a;
+    border-color: var(--accent);
+  }
+
+  .container {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .scroll-hint {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  /* Movie scroller feed - single scroll region, card count per screen adjustable */
+  .feed {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    scroll-snap-type: y proximity;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+    background: var(--card);
+    scrollbar-width: thin;
+  }
+  .movie-card {
+    scroll-snap-align: start;
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    text-align: center;
+    border-bottom: 1px solid #24272d;
+    touch-action: pan-y;
+    user-select: none;
+    position: relative;
+  }
+  .feed.single-card .movie-card {
+    height: 100%;
+  }
+  .movie-card.is-saved {
+    background: rgba(224, 185, 84, 0.16);
+    box-shadow: inset 0 0 0 2px rgba(224, 185, 84, 0.55);
+  }
+  .movie-card img {
+    max-height: 42%;
+    max-width: 45%;
+    object-fit: contain;
+    border-radius: 6px;
+    background: #0f1114;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    cursor: pointer;
+  }
+  .feed.single-card .movie-card img {
+    max-height: 52%;
+    max-width: 68%;
+  }
+  .movie-card .no-poster {
+    width: 30%;
+    max-width: 130px;
+    aspect-ratio: 2 / 3;
+    background: #0f1114;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .feed.single-card .movie-card .no-poster {
+    width: 45%;
+    max-width: 200px;
+  }
+  .movie-card .title {
+    font-size: 14.5px;
+    font-weight: 700;
+    margin-top: 8px;
+  }
+  .feed.single-card .movie-card .title {
+    font-size: 19px;
+    margin-top: 14px;
+  }
+  .movie-card .date {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .date-tag {
+    font-style: italic;
+    opacity: 0.85;
+  }
+  .movie-card .age-at-release {
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 5px;
+    font-weight: 600;
+  }
+  .movie-card .diff-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .arrow-up { color: var(--up); font-weight: bold; }
+  .arrow-down { color: var(--down); font-weight: bold; }
+  .cert-badge {
+    display: inline-block;
+    font-size: 9.5px;
+    color: var(--muted);
+    border: 1px solid #2a2e35;
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-top: 5px;
+  }
+  .card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .card-actions button {
+    background: #14161a;
+    border: 1px solid #2a2e35;
+    color: var(--muted);
+    font-size: 11px;
+    padding: 5px 11px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .card-actions .save-btn.saved {
+    background: var(--accent);
+    color: #14161a;
+    border-color: var(--accent);
+  }
+  .status {
+    color: var(--muted);
+    font-size: 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 24px;
+  }
+
+  /* ---- Splash / onboarding screen ---- */
+  .splash-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+  }
+  .splash-overlay.hidden { display: none; }
+  .splash-content {
+    max-width: 380px;
+    text-align: center;
+  }
+  .splash-emoji {
+    font-size: 44px;
+    margin-bottom: 12px;
+  }
+  .splash-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 14px;
+  }
+  .splash-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin: 0 0 24px;
+  }
+  .splash-btn {
+    background: var(--accent);
+    color: #14161a;
+    border: none;
+    padding: 13px 28px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* ---- Detail modal ---- */
+  .detail-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.78);
+    z-index: 50;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .detail-modal.hidden { display: none; }
+  .detail-content {
+    background: var(--card);
+    width: 100%;
+    max-width: 480px;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: 16px 16px 0 0;
+    padding: 20px;
+    position: relative;
+    touch-action: none;
+  }
+  .detail-handle {
+    width: 40px;
+    height: 4px;
+    background: #2a2e35;
+    border-radius: 2px;
+    margin: 0 auto 10px;
+  }
+  .detail-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: #1a1d22;
+    border: 1px solid #2a2e35;
+    color: var(--text);
+    font-size: 15px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .detail-poster {
+    display: block;
+    max-height: 30vh;
+    margin: 0 auto 12px;
+    border-radius: 8px;
+  }
+  .detail-title {
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .detail-subline {
+    font-size: 12.5px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 4px;
+  }
+  .detail-meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .detail-meta-row .pill {
+    border: 1px solid #2a2e35;
+    border-radius: 12px;
+    padding: 3px 9px;
+  }
+  .detail-section-label {
+    font-size: 10.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 16px;
+    margin-bottom: 4px;
+  }
+  .detail-overview {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .detail-cast {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .detail-trailer-link {
+    display: inline-block;
+    margin-top: 14px;
+    background: var(--accent);
+    color: #14161a;
+    text-decoration: none;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  @media (max-width: 480px) {
+    .navbar h1 { font-size: 14px; }
+    .movie-card .title { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="navbar-top-row">
+    <h1>Same Age Movies</h1>
+    <div class="header-actions">
+      <button class="menu-btn" id="saved-btn">★ <span id="saved-count">0</span></button>
+      <button class="menu-btn" id="menu-btn">☰</button>
+    </div>
+  </div>
+  <div class="selector-row">
+    <select id="adult-select"></select>
+    <span class="vs">vs</span>
+    <select id="kid-select"></select>
+  </div>
+  <div id="comparison-summary" class="comparison-summary"></div>
+</div>
+
+<div class="menu-panel hidden" id="menu-panel">
+  <div class="menu-top">
+    <div class="menu-app-title">Same Age Movies</div>
+    <div class="menu-header">
+      <span>Settings</span>
+      <button class="menu-close" id="menu-close">✕</button>
+    </div>
+  </div>
+
+  <div class="menu-scroll">
+    <div class="storage-warning hidden" id="storage-warning">
+      ⚠️ This browser isn't saving changes between visits. Try opening this file in a full browser app (Chrome, Safari, etc.) instead of a file viewer or downloads preview.
+    </div>
+
+    <div class="menu-section">
+      <div class="toggle-label">Adults</div>
+      <div id="adults-list" class="people-list"></div>
+      <div class="add-person-row">
+        <input type="text" id="new-adult-name" placeholder="Name">
+        <div class="birthday-add-row">
+          <div class="date-field">
+            <input type="date" id="new-adult-birthday" aria-label="Birthday">
+            <span class="date-placeholder" id="new-adult-birthday-placeholder">Birthday</span>
+          </div>
+          <button id="add-adult-btn">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-section">
+      <div class="toggle-label">Kids</div>
+      <div id="kids-list" class="people-list"></div>
+      <div class="add-person-row">
+        <input type="text" id="new-kid-name" placeholder="Name">
+        <div class="birthday-add-row">
+          <div class="date-field">
+            <input type="date" id="new-kid-birthday" aria-label="Birthday">
+            <span class="date-placeholder" id="new-kid-birthday-placeholder">Birthday</span>
+          </div>
+          <button id="add-kid-btn">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <details class="advanced-settings">
+      <summary>Display &amp; filters</summary>
+
+      <div class="menu-section">
+        <div class="toggle-label">Cards per screen</div>
+        <div class="toggle">
+          <button id="size-two">2 (compact)</button>
+          <button id="size-one" class="active">1 (bigger)</button>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="toggle-label">Release date</div>
+        <div class="toggle">
+          <button id="mode-theatrical">Theater release</button>
+          <button id="mode-rental" class="active">Rental / digital release</button>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="toggle-label">Ratings included</div>
+        <div class="rating-toggle" id="rating-toggle">
+          <button data-rating="G" class="active">G</button>
+          <button data-rating="PG" class="active">PG</button>
+          <button data-rating="PG-13" class="active">PG-13</button>
+          <button data-rating="R">R</button>
+          <button data-rating="Unrated">Unrated</button>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="menu-footer">
+    <div class="menu-error hidden" id="menu-error">Please add at least one adult and one kid to continue.</div>
+    <button class="menu-save-btn" id="menu-save-btn">Save &amp; Close</button>
+    <div class="tmdb-attribution">
+      This product uses the TMDB API but is not endorsed or certified by TMDB.<br>
+      <a href="https://www.themoviedb.org" target="_blank" rel="noopener">themoviedb.org</a>
+    </div>
+  </div>
+</div>
+
+<div class="menu-panel hidden" id="saved-panel">
+  <div class="menu-top">
+    <div class="menu-header">
+      <span>Saved Movies</span>
+      <button class="menu-close" id="saved-close">✕</button>
+    </div>
+  </div>
+  <div class="menu-scroll">
+    <div class="menu-section">
+      <div id="saved-list" class="people-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="scroll-hint" class="scroll-hint" style="display:none;">Swipe right to save · swipe left to remove · tap for details</div>
+  <div id="feed" class="feed"></div>
+</div>
+
+<div class="splash-overlay hidden" id="splash-overlay">
+  <div class="splash-content">
+    <div class="splash-emoji">🎬</div>
+    <h1 class="splash-title">Same Age Movies</h1>
+    <p class="splash-text">
+      Ever wonder what you were watching at the movies when you were your kid's age?
+      Add your birthday and your kid's birthday, and this app finds the movies released
+      right around the time you were exactly as old as they are now — so you can watch
+      them together and relive a little bit of your own childhood.
+    </p>
+    <button class="splash-btn" id="splash-start-btn">Get Started</button>
+  </div>
+</div>
+
+<div class="detail-modal hidden" id="detail-modal">
+  <div class="detail-content" id="detail-content">
+    <div class="detail-handle"></div>
+    <button class="detail-close" id="detail-close">✕</button>
+    <div id="detail-body"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+<script>
+  const menuBtn = document.getElementById("menu-btn");
+  const menuPanel = document.getElementById("menu-panel");
+  const menuClose = document.getElementById("menu-close");
+  const menuSaveBtn = document.getElementById("menu-save-btn");
+  const menuError = document.getElementById("menu-error");
+  const savedBtn = document.getElementById("saved-btn");
+  const savedPanel = document.getElementById("saved-panel");
+  const savedClose = document.getElementById("saved-close");
+  const savedListEl = document.getElementById("saved-list");
+  const savedCountEl = document.getElementById("saved-count");
+  const adultSelect = document.getElementById("adult-select");
+  const kidSelect = document.getElementById("kid-select");
+  const comparisonSummary = document.getElementById("comparison-summary");
+  const adultsListEl = document.getElementById("adults-list");
+  const kidsListEl = document.getElementById("kids-list");
+  const newAdultName = document.getElementById("new-adult-name");
+  const newAdultBirthday = document.getElementById("new-adult-birthday");
+  const addAdultBtn = document.getElementById("add-adult-btn");
+  const newKidName = document.getElementById("new-kid-name");
+  const newKidBirthday = document.getElementById("new-kid-birthday");
+  const addKidBtn = document.getElementById("add-kid-btn");
+
+  function wireDatePlaceholder(input, placeholderId) {
+    const placeholder = document.getElementById(placeholderId);
+    if (!placeholder) return;
+    const sync = () => { placeholder.style.display = input.value ? "none" : "block"; };
+    input.addEventListener("input", sync);
+    input.addEventListener("change", sync);
+    sync();
+  }
+  wireDatePlaceholder(newAdultBirthday, "new-adult-birthday-placeholder");
+  wireDatePlaceholder(newKidBirthday, "new-kid-birthday-placeholder");
+  const feedEl = document.getElementById("feed");
+  const scrollHintEl = document.getElementById("scroll-hint");
+  const modeTheatricalBtn = document.getElementById("mode-theatrical");
+  const modeRentalBtn = document.getElementById("mode-rental");
+  const ratingToggleEl = document.getElementById("rating-toggle");
+  const sizeTwoBtn = document.getElementById("size-two");
+  const sizeOneBtn = document.getElementById("size-one");
+  const detailModal = document.getElementById("detail-modal");
+  const splashOverlay = document.getElementById("splash-overlay");
+  const splashStartBtn = document.getElementById("splash-start-btn");
+  const detailClose = document.getElementById("detail-close");
+  const detailBody = document.getElementById("detail-body");
+
+  let currentMode = "rental";
+  let currentRatings = new Set(["G", "PG", "PG-13"]);
+  let windowStart = null;
+  let windowEnd = null;
+  let loadedMovies = [];
+  let kidAgeDaysNow = null;
+  let pendingScrollToClosest = false;
+  let isLoadingEarlier = false;
+  let isLoadingLater = false;
+  const detailCache = new Map();
+
+  let adults = [];
+  let kids = [];
+  let selectedAdultId = null;
+  let selectedKidId = null;
+  let savedMovies = [];
+
+  // ---- Safe storage (falls back to in-memory if localStorage is blocked) ----
+
+  const memoryStore = {};
+  let storageBroken = false;
+
+  function safeGet(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch (e) {
+      storageBroken = true;
+      return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+    }
+  }
+
+  function safeSet(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch (e) {
+      storageBroken = true;
+      memoryStore[key] = value;
+    }
+  }
+
+  function testStorage() {
+    const testKey = "__storage_test__";
+    safeSet(testKey, "1");
+    if (safeGet(testKey) !== "1") {
+      storageBroken = true;
+    }
+  }
+
+  function genId() {
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  }
+
+  function loadPeopleFromStorage() {
+    try { adults = JSON.parse(safeGet("people:adults") || "[]"); } catch (e) { adults = []; }
+    try { kids = JSON.parse(safeGet("people:kids") || "[]"); } catch (e) { kids = []; }
+
+    if (adults.length === 0 && safeGet("myBirthday")) {
+      adults.push({ id: genId(), name: "You", birthday: safeGet("myBirthday") });
+    }
+    if (kids.length === 0 && safeGet("kidBirthday")) {
+      kids.push({ id: genId(), name: "Kid", birthday: safeGet("kidBirthday") });
+    }
+    savePeopleToStorage();
+
+    selectedAdultId = safeGet("selectedAdultId") || (adults[0] && adults[0].id) || null;
+    selectedKidId = safeGet("selectedKidId") || (kids[0] && kids[0].id) || null;
+  }
+
+  function savePeopleToStorage() {
+    safeSet("people:adults", JSON.stringify(adults));
+    safeSet("people:kids", JSON.stringify(kids));
+  }
+
+  function saveSelection() {
+    if (selectedAdultId) safeSet("selectedAdultId", selectedAdultId);
+    if (selectedKidId) safeSet("selectedKidId", selectedKidId);
+  }
+
+  function getSelectedAdult() { return adults.find(a => a.id === selectedAdultId) || null; }
+  function getSelectedKid() { return kids.find(k => k.id === selectedKidId) || null; }
+
+  function renderPeopleUI() {
+    adultSelect.innerHTML = adults.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
+    kidSelect.innerHTML = kids.map(k => `<option value="${k.id}">${escapeHtml(k.name)}</option>`).join("");
+
+    if (!adults.find(a => a.id === selectedAdultId)) selectedAdultId = adults[0] ? adults[0].id : null;
+    if (!kids.find(k => k.id === selectedKidId)) selectedKidId = kids[0] ? kids[0].id : null;
+
+    if (selectedAdultId) adultSelect.value = selectedAdultId;
+    if (selectedKidId) kidSelect.value = selectedKidId;
+
+    adultsListEl.innerHTML = adults.map(a => `
+      <div class="person-row">
+        <div class="person-info">${escapeHtml(a.name)} <span>${a.birthday}</span></div>
+        <button type="button" data-remove-adult="${a.id}">×</button>
+      </div>
+    `).join("") || `<div class="comparison-summary">No adults added yet.</div>`;
+
+    kidsListEl.innerHTML = kids.map(k => `
+      <div class="person-row">
+        <div class="person-info">${escapeHtml(k.name)} <span>${k.birthday}</span></div>
+        <button type="button" data-remove-kid="${k.id}">×</button>
+      </div>
+    `).join("") || `<div class="comparison-summary">No kids added yet.</div>`;
+  }
+
+  addAdultBtn.addEventListener("click", () => {
+    const name = newAdultName.value.trim() || `Adult ${adults.length + 1}`;
+    const birthday = newAdultBirthday.value;
+    if (!birthday) return;
+    const person = { id: genId(), name, birthday };
+    adults.push(person);
+    selectedAdultId = person.id;
+    savePeopleToStorage();
+    saveSelection();
+    newAdultName.value = "";
+    newAdultBirthday.value = "";
+    document.getElementById("new-adult-birthday-placeholder").style.display = "block";
+    renderPeopleUI();
+    tryStartFresh();
+  });
+
+  addKidBtn.addEventListener("click", () => {
+    const name = newKidName.value.trim() || `Kid ${kids.length + 1}`;
+    const birthday = newKidBirthday.value;
+    if (!birthday) return;
+    const person = { id: genId(), name, birthday };
+    kids.push(person);
+    selectedKidId = person.id;
+    savePeopleToStorage();
+    saveSelection();
+    newKidName.value = "";
+    newKidBirthday.value = "";
+    document.getElementById("new-kid-birthday-placeholder").style.display = "block";
+    renderPeopleUI();
+    tryStartFresh();
+  });
+
+  adultsListEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-remove-adult]");
+    if (!btn) return;
+    const id = btn.dataset.removeAdult;
+    adults = adults.filter(a => a.id !== id);
+    if (selectedAdultId === id) selectedAdultId = adults[0] ? adults[0].id : null;
+    savePeopleToStorage();
+    saveSelection();
+    renderPeopleUI();
+    tryStartFresh();
+  });
+
+  kidsListEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-remove-kid]");
+    if (!btn) return;
+    const id = btn.dataset.removeKid;
+    kids = kids.filter(k => k.id !== id);
+    if (selectedKidId === id) selectedKidId = kids[0] ? kids[0].id : null;
+    savePeopleToStorage();
+    saveSelection();
+    renderPeopleUI();
+    tryStartFresh();
+  });
+
+  adultSelect.addEventListener("change", () => {
+    selectedAdultId = adultSelect.value;
+    saveSelection();
+    tryStartFresh();
+  });
+
+  kidSelect.addEventListener("change", () => {
+    selectedKidId = kidSelect.value;
+    saveSelection();
+    tryStartFresh();
+  });
+
+  // ---- Menu / Saved panel open-close ----
+
+  menuBtn.addEventListener("click", () => {
+    savedPanel.classList.add("hidden");
+    menuPanel.classList.toggle("hidden");
+  });
+  menuClose.addEventListener("click", () => menuPanel.classList.add("hidden"));
+
+  menuSaveBtn.addEventListener("click", () => {
+    if (adults.length === 0 || kids.length === 0) {
+      menuError.classList.remove("hidden");
+      return;
+    }
+    menuError.classList.add("hidden");
+    menuPanel.classList.add("hidden");
+  });
+
+  savedBtn.addEventListener("click", () => {
+    menuPanel.classList.add("hidden");
+    renderSavedList();
+    savedPanel.classList.toggle("hidden");
+  });
+  savedClose.addEventListener("click", () => savedPanel.classList.add("hidden"));
+
+  modeTheatricalBtn.addEventListener("click", () => setMode("theatrical"));
+  modeRentalBtn.addEventListener("click", () => setMode("rental"));
+
+  ratingToggleEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-rating]");
+    if (!btn) return;
+    const rating = btn.dataset.rating;
+    if (currentRatings.has(rating)) {
+      currentRatings.delete(rating);
+      btn.classList.remove("active");
+    } else {
+      currentRatings.add(rating);
+      btn.classList.add("active");
+    }
+    fullRenderFeed();
+  });
+
+  function setMode(mode) {
+    currentMode = mode;
+    modeTheatricalBtn.classList.toggle("active", mode === "theatrical");
+    modeRentalBtn.classList.toggle("active", mode === "rental");
+    fullRenderFeed();
+  }
+
+  sizeTwoBtn.addEventListener("click", () => setCardsPerScreen(2));
+  sizeOneBtn.addEventListener("click", () => setCardsPerScreen(1));
+
+  function setCardsPerScreen(count) {
+    feedEl.classList.toggle("single-card", count === 1);
+    sizeTwoBtn.classList.toggle("active", count === 2);
+    sizeOneBtn.classList.toggle("active", count === 1);
+    safeSet("cardsPerScreen", String(count));
+  }
+
+  // ---- Saved movies ----
+
+  function loadSavedMoviesFromStorage() {
+    try { savedMovies = JSON.parse(safeGet("savedMovies") || "[]"); } catch (e) { savedMovies = []; }
+    updateSavedCount();
+  }
+
+  function saveSavedMoviesToStorage() {
+    safeSet("savedMovies", JSON.stringify(savedMovies));
+    updateSavedCount();
+  }
+
+  function updateSavedCount() {
+    savedCountEl.textContent = savedMovies.length;
+  }
+
+  function isSavedMovie(tmdbId) {
+    return savedMovies.some(m => String(m.tmdbId) === String(tmdbId) && m.adultId === selectedAdultId && m.kidId === selectedKidId);
+  }
+
+  function renderSavedList() {
+    if (!savedMovies.length) {
+      savedListEl.innerHTML = `<div class="comparison-summary">No saved movies yet. Swipe right or tap the star on a movie to add it here.</div>`;
+      return;
+    }
+    savedListEl.innerHTML = savedMovies.slice().reverse().map(item => {
+      const ageLine = item.ageLabel
+        ? item.ageLabel.replace(/^You were/i, `${item.adultName} was`)
+        : "";
+      const diffLine = item.diffLabel ? `${item.diffLabel} than ${item.kidName} is now` : "";
+      return `
+      <div class="saved-row" data-open-saved="${item.tmdbId}">
+        ${item.poster_path
+          ? `<img class="saved-thumb" src="https://image.tmdb.org/t/p/w92${item.poster_path}" alt="${escapeHtml(item.title)} poster">`
+          : `<div class="saved-thumb"></div>`}
+        <div class="person-info">
+          <strong>${escapeHtml(item.title)}</strong> <span>${item.dateStr || ""}${item.dateTag ? ` (${item.dateTag})` : ""}</span><br>
+          ${ageLine ? `<span>${escapeHtml(ageLine)}</span><br>` : ""}
+          <span>${escapeHtml(diffLine || `${item.adultName} vs ${item.kidName}`)}</span>
+        </div>
+        <button type="button" data-remove-saved="${item.savedId}">×</button>
+      </div>
+    `;
+    }).join("");
+  }
+
+  savedListEl.addEventListener("click", (e) => {
+    const removeBtn = e.target.closest("button[data-remove-saved]");
+    if (removeBtn) {
+      const id = removeBtn.dataset.removeSaved;
+      savedMovies = savedMovies.filter(m => m.savedId !== id);
+      saveSavedMoviesToStorage();
+      renderSavedList();
+      updateCardSavedVisualsForAllVisible();
+      return;
+    }
+    const row = e.target.closest("[data-open-saved]");
+    if (row) {
+      openMovieDetail(row.dataset.openSaved);
+    }
+  });
+
+  function setSavedState(movie, display, adult, kid, saved) {
+    const exists = savedMovies.findIndex(m => String(m.tmdbId) === String(movie.id) && m.adultId === selectedAdultId && m.kidId === selectedKidId);
+    if (saved && exists === -1) {
+      savedMovies.push({
+        savedId: genId(),
+        tmdbId: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        dateStr: display.dateStr,
+        dateTag: display.dateTag,
+        ageLabel: display.ageLabel,
+        diffLabel: display.diffLabel,
+        adultId: selectedAdultId,
+        kidId: selectedKidId,
+        adultName: adult.name,
+        kidName: kid.name,
+        savedAt: new Date().toISOString()
+      });
+      saveSavedMoviesToStorage();
+    } else if (!saved && exists !== -1) {
+      savedMovies.splice(exists, 1);
+      saveSavedMoviesToStorage();
+    }
+  }
+
+  function toggleSaveMovie(movie, display) {
+    const adult = getSelectedAdult();
+    const kid = getSelectedKid();
+    if (!adult || !kid) return false;
+    const currentlySaved = isSavedMovie(movie.id);
+    setSavedState(movie, display, adult, kid, !currentlySaved);
+    return !currentlySaved;
+  }
+
+  function updateCardSavedVisualsForAllVisible() {
+    feedEl.querySelectorAll(".movie-card[data-movie-id]").forEach(card => {
+      const saved = isSavedMovie(card.dataset.movieId);
+      applyCardSavedState(card, saved);
+    });
+  }
+
+  function applyCardSavedState(card, saved) {
+    card.classList.toggle("is-saved", saved);
+    const btn = card.querySelector(".save-btn");
+    if (btn) {
+      btn.textContent = saved ? "★ Saved" : "☆ Save";
+      btn.classList.toggle("saved", saved);
+    }
+  }
+
+  // ---- Infinite scroll ----
+
+  const SCROLL_THRESHOLD = 300;
+
+  feedEl.addEventListener("scroll", () => {
+    cancelPendingTapOpen();
+    if (!windowStart || !windowEnd) return;
+    if (!isLoadingEarlier && feedEl.scrollTop < SCROLL_THRESHOLD) loadEarlier();
+    const distanceFromBottom = feedEl.scrollHeight - feedEl.scrollTop - feedEl.clientHeight;
+    if (!isLoadingLater && distanceFromBottom < SCROLL_THRESHOLD) loadLater();
+  });
+
+  function loadEarlier() {
+    isLoadingEarlier = true;
+    const newStart = addMonths(windowStart, -6);
+    fetchWindow(newStart, windowStart, "earlier").then(() => {
+      windowStart = newStart;
+      isLoadingEarlier = false;
+    });
+  }
+
+  function loadLater() {
+    isLoadingLater = true;
+    const newEnd = addMonths(windowEnd, 6);
+    fetchWindow(windowEnd, newEnd, "later").then(() => {
+      windowEnd = newEnd;
+      isLoadingLater = false;
+    });
+  }
+
+  // ---- Date helpers ----
+
+  function diffYMD(fromDate, toDate) {
+    let y = toDate.getFullYear() - fromDate.getFullYear();
+    let m = toDate.getMonth() - fromDate.getMonth();
+    let d = toDate.getDate() - fromDate.getDate();
+    if (d < 0) {
+      m -= 1;
+      const prevMonthLastDay = new Date(toDate.getFullYear(), toDate.getMonth(), 0).getDate();
+      d += prevMonthLastDay;
+    }
+    if (m < 0) { y -= 1; m += 12; }
+    return { years: y, months: m, days: d };
+  }
+
+  function formatYMD({ years, months, days }) {
+    const parts = [];
+    if (years) parts.push(`${years}y`);
+    if (months) parts.push(`${months}m`);
+    parts.push(`${days}d`);
+    return parts.join(" ");
+  }
+
+  function ageInDays(birthDate, onDate) {
+    return Math.round((onDate - birthDate) / (1000 * 60 * 60 * 24));
+  }
+
+  function addMonths(date, months) {
+    const d = new Date(date);
+    d.setMonth(d.getMonth() + months);
+    return d;
+  }
+
+  function fmtDate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function formatDiffDays(diffDays) {
+    const abs = Math.abs(diffDays);
+    if (abs < 10) return "Almost the exact age";
+    let magnitude;
+    if (abs < 45) {
+      magnitude = `${abs} day${abs === 1 ? "" : "s"}`;
+    } else if (abs < 450) {
+      const months = Math.round(abs / 30.44);
+      magnitude = `${months} month${months === 1 ? "" : "s"}`;
+    } else {
+      const years = Math.round((abs / 365.25) * 10) / 10;
+      magnitude = `${years} year${years === 1 ? "" : "s"}`;
+    }
+    return diffDays > 0 ? `${magnitude} older` : `${magnitude} younger`;
+  }
+
+  function diffArrow(diffDays) {
+    const abs = Math.abs(diffDays);
+    if (abs < 10) return `<span style="color:var(--accent)">●</span>`;
+    return diffDays > 0 ? `<span class="arrow-up">▲</span>` : `<span class="arrow-down">▼</span>`;
+  }
+
+  // ---- Core flow ----
+
+  function tryStartFresh() {
+    renderPeopleUI();
+    const adult = getSelectedAdult();
+    const kid = getSelectedKid();
+
+    if (!adult || !kid) {
+      comparisonSummary.textContent = "Add an adult and a kid in the menu (☰) to get started.";
+      feedEl.innerHTML = `<div class="status">Add an adult and a kid in the menu (☰) to get started.</div>`;
+      scrollHintEl.style.display = "none";
+      return;
+    }
+    menuError.classList.add("hidden");
+    splashOverlay.classList.add("hidden");
+    startFresh(adult, kid);
+  }
+
+  splashStartBtn.addEventListener("click", () => {
+    splashOverlay.classList.add("hidden");
+    menuPanel.classList.remove("hidden");
+  });
+
+  function startFresh(adult, kid) {
+    const today = new Date();
+    const myBirth = new Date(adult.birthday);
+    const kidBirth = new Date(kid.birthday);
+
+    const kidExact = diffYMD(kidBirth, today);
+    kidAgeDaysNow = ageInDays(kidBirth, today);
+
+    const targetDate = new Date(myBirth.getTime() + kidAgeDaysNow * 86400000);
+
+    windowStart = addMonths(targetDate, -6);
+    windowEnd = addMonths(targetDate, 6);
+    loadedMovies = [];
+
+    comparisonSummary.innerHTML = `<strong>${escapeHtml(kid.name)}</strong> is ${formatYMD(kidExact)} old. ` +
+      `<strong>${escapeHtml(adult.name)}</strong> was that age around <strong>${fmtDate(targetDate)}</strong>.`;
+
+    feedEl.innerHTML = `<div class="status">Loading movies...</div>`;
+    scrollHintEl.style.display = "none";
+
+    pendingScrollToClosest = true;
+    fetchWindow(windowStart, windowEnd, "initial").then(() => {
+      scrollHintEl.style.display = "block";
+    });
+  }
+
+  const TMDB_READ_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4ZDFkZWM5NWYzZjMxZjZlOGNhYzc3NzU1YjU4YzUyZiIsIm5iZiI6MTc4MzEzMTQyMC45OTUwMDAxLCJzdWIiOiI2YTQ4NmQxYzIyNDYzN2YwYTYyZDNhMmQiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.H6hvJutjc5ohX7xntXaZMRRjEbuaoxNgSYz66LBp0yc";
+
+  function getApiToken() {
+    return TMDB_READ_ACCESS_TOKEN;
+  }
+
+  async function fetchWindow(startDate, endDate, direction) {
+    const token = getApiToken();
+    if (!token) {
+      feedEl.innerHTML = `<div class="status">A TMDB Read Access Token is required to load movies.</div>`;
+      return;
+    }
+    try {
+      const url = `https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&page=1&include_adult=false&vote_count.gte=20` +
+        `&primary_release_date.gte=${fmtDate(startDate)}&primary_release_date.lte=${fmtDate(endDate)}`;
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}`, accept: "application/json" }
+      });
+      if (res.status === 401) {
+        throw new Error("TMDB rejected the API token. Check the hardcoded token in the script.");
+      }
+      if (!res.ok) throw new Error(`TMDB request failed: ${res.status}`);
+      const data = await res.json();
+      const results = data.results || [];
+
+      const existingIds = new Set(loadedMovies.map(m => m.id));
+      const newResults = results.filter(m => !existingIds.has(m.id));
+
+      const withReleaseDates = await Promise.all(
+        newResults.map(async (m) => {
+          let releaseDatesData = null;
+          try {
+            const rdRes = await fetch(`https://api.themoviedb.org/3/movie/${m.id}/release_dates`, {
+              headers: { Authorization: `Bearer ${token}`, accept: "application/json" }
+            });
+            if (rdRes.ok) releaseDatesData = await rdRes.json();
+          } catch (e) { /* ignore, fallback used */ }
+          return {
+            id: m.id,
+            title: m.title,
+            poster_path: m.poster_path,
+            primaryReleaseDate: m.release_date || null,
+            releaseDatesData
+          };
+        })
+      );
+
+      const filtered = withReleaseDates.filter(m => !isAdultRated(m.releaseDatesData));
+
+      if (direction === "earlier") {
+        loadedMovies = filtered.concat(loadedMovies);
+        prependCards(filtered);
+      } else if (direction === "later") {
+        loadedMovies = loadedMovies.concat(filtered);
+        appendCards(filtered);
+      } else {
+        loadedMovies = loadedMovies.concat(filtered);
+        fullRenderFeed();
+      }
+    } catch (err) {
+      if (direction === "initial") {
+        feedEl.innerHTML = `<div class="status">Couldn't load movies: ${err.message}</div>`;
+      }
+    }
+  }
+
+  function isAdultRated(releaseDatesData) {
+    const cert = getCertification(releaseDatesData);
+    return cert === "NC-17" || cert === "X";
+  }
+
+  function getCertification(releaseDatesData) {
+    if (!releaseDatesData || !releaseDatesData.results) return null;
+    const us = releaseDatesData.results.find(r => r.iso_3166_1 === "US");
+    if (!us) return null;
+    const theatrical = us.release_dates.find(rd => (rd.type === 3 || rd.type === 2) && rd.certification);
+    if (theatrical) return theatrical.certification;
+    const any = us.release_dates.find(rd => rd.certification);
+    return any ? any.certification : null;
+  }
+
+  function earliestForTypes(us, types) {
+    for (const t of types) {
+      const matches = us.release_dates.filter(rd => rd.type === t && rd.release_date);
+      if (matches.length) {
+        // TMDB doesn't guarantee array order is chronological — pick the earliest,
+        // not just the first entry, to avoid picking a later re-release/reissue date.
+        return matches.reduce((min, rd) => (rd.release_date < min.release_date ? rd : min)).release_date.slice(0, 10);
+      }
+    }
+    return null;
+  }
+
+  function getReleaseDateInfo(movie) {
+    const info = movie.releaseDatesData;
+    let theaterDate = null;
+    let rentalDate = null;
+
+    if (info && info.results) {
+      const us = info.results.find(r => r.iso_3166_1 === "US");
+      if (us) {
+        theaterDate = earliestForTypes(us, [3, 2]);
+        rentalDate = earliestForTypes(us, [4, 5]);
+      }
+    }
+    if (!theaterDate) theaterDate = movie.primaryReleaseDate;
+
+    if (currentMode === "theatrical") {
+      return { date: theaterDate, tag: "Theater" };
+    }
+
+    // rental mode
+    const RENTAL_DISTANCE_LIMIT_DAYS = 730; // ~2 years
+    if (rentalDate) {
+      if (theaterDate) {
+        const daysBetween = Math.abs((new Date(rentalDate) - new Date(theaterDate)) / 86400000);
+        if (daysBetween > RENTAL_DISTANCE_LIMIT_DAYS) {
+          return { date: theaterDate, tag: "Theater — rental date too far out" };
+        }
+        if (rentalDate === theaterDate) {
+          return { date: rentalDate, tag: "Rental — same as theater" };
+        }
+      }
+      return { date: rentalDate, tag: "Rental" };
+    }
+    return { date: theaterDate, tag: "Theater — no rental data" };
+  }
+
+  // Kept for the few call sites that only need the raw date string for sorting
+  function pickReleaseDate(movie) {
+    return getReleaseDateInfo(movie).date;
+  }
+
+  function computeDisplay(movie, myBirth) {
+    const { date: dateStr, tag: dateTag } = getReleaseDateInfo(movie);
+    let ageLabel = "";
+    let diffLabel = "";
+    let diffDays = null;
+    if (dateStr) {
+      const releaseDate = new Date(dateStr);
+      if (releaseDate >= myBirth) {
+        const age = diffYMD(myBirth, releaseDate);
+        ageLabel = `You were ${formatYMD(age)}`;
+        const myAgeDaysAtRelease = ageInDays(myBirth, releaseDate);
+        diffDays = myAgeDaysAtRelease - kidAgeDaysNow;
+        diffLabel = formatDiffDays(diffDays);
+      } else {
+        ageLabel = "Before you were born";
+      }
+    }
+    return { dateStr, dateTag, ageLabel, diffLabel, diffDays };
+  }
+
+  function passesRatingFilter(movie) {
+    const cert = getCertification(movie.releaseDatesData);
+    if (cert === null) return currentRatings.has("Unrated");
+    return currentRatings.has(cert);
+  }
+
+  function buildCardHtml(movie, myBirth) {
+    const display = computeDisplay(movie, myBirth);
+    const poster = movie.poster_path
+      ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
+      : "";
+    const cert = getCertification(movie.releaseDatesData);
+    const saved = isSavedMovie(movie.id);
+
+    let diffRow = "";
+    if (display.diffDays !== null) {
+      diffRow = `${diffArrow(display.diffDays)} <span>${display.diffLabel}</span>`;
+    }
+
+    return `
+      <div class="movie-card${saved ? " is-saved" : ""}" data-movie-id="${movie.id}">
+        ${poster ? `<img src="${poster}" alt="${escapeHtml(movie.title)} poster">` : `<div class="no-poster"></div>`}
+        <div class="title">${escapeHtml(movie.title)}</div>
+        <div class="date">${display.dateStr || "No release date"}${display.dateTag ? ` <span class="date-tag">(${escapeHtml(display.dateTag)})</span>` : ""}</div>
+        ${display.ageLabel ? `<div class="age-at-release">${display.ageLabel}</div>` : ""}
+        ${diffRow ? `<div class="diff-row">${diffRow}</div>` : ""}
+        <div class="cert-badge">${cert ? escapeHtml(cert) : "Unrated"}</div>
+        <div class="card-actions">
+          <button type="button" class="save-btn${saved ? " saved" : ""}" data-action="toggle-save">${saved ? "★ Saved" : "☆ Save"}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function fullRenderFeed() {
+    if (!loadedMovies.length) return;
+    const adult = getSelectedAdult();
+    if (!adult) return;
+    const myBirth = new Date(adult.birthday);
+
+    const visible = loadedMovies.filter(passesRatingFilter);
+
+    if (!visible.length) {
+      feedEl.innerHTML = `<div class="status">No movies match the current rating filter.</div>`;
+      return;
+    }
+
+    const sorted = [...visible].sort((a, b) => {
+      const da = pickReleaseDate(a) || "9999-99-99";
+      const db = pickReleaseDate(b) || "9999-99-99";
+      return da.localeCompare(db);
+    });
+
+    let closestId = null;
+    let closestDiff = Infinity;
+    sorted.forEach(movie => {
+      const display = computeDisplay(movie, myBirth);
+      if (display.diffDays !== null && Math.abs(display.diffDays) < closestDiff) {
+        closestDiff = Math.abs(display.diffDays);
+        closestId = movie.id;
+      }
+    });
+
+    feedEl.innerHTML = sorted.map(movie => buildCardHtml(movie, myBirth)).join("");
+
+    if (pendingScrollToClosest) {
+      pendingScrollToClosest = false;
+      if (closestId !== null) {
+        const target = feedEl.querySelector(`[data-movie-id="${closestId}"]`);
+        if (target) target.scrollIntoView({ block: "start" });
+      }
+    }
+  }
+
+  function appendCards(newMovies) {
+    const adult = getSelectedAdult();
+    if (!adult) return;
+    const myBirth = new Date(adult.birthday);
+    const visible = newMovies.filter(passesRatingFilter);
+    if (!visible.length) return;
+    const sorted = [...visible].sort((a, b) => {
+      const da = pickReleaseDate(a) || "9999-99-99";
+      const db = pickReleaseDate(b) || "9999-99-99";
+      return da.localeCompare(db);
+    });
+    const html = sorted.map(movie => buildCardHtml(movie, myBirth)).join("");
+    feedEl.insertAdjacentHTML("beforeend", html);
+  }
+
+  function prependCards(newMovies) {
+    const adult = getSelectedAdult();
+    if (!adult) return;
+    const myBirth = new Date(adult.birthday);
+    const visible = newMovies.filter(passesRatingFilter);
+    if (!visible.length) return;
+    const sorted = [...visible].sort((a, b) => {
+      const da = pickReleaseDate(a) || "9999-99-99";
+      const db = pickReleaseDate(b) || "9999-99-99";
+      return da.localeCompare(db);
+    });
+    const html = sorted.map(movie => buildCardHtml(movie, myBirth)).join("");
+
+    const prevScrollHeight = feedEl.scrollHeight;
+    const prevScrollTop = feedEl.scrollTop;
+    feedEl.insertAdjacentHTML("afterbegin", html);
+    // keep the visual position stable after inserting content above the viewport
+    feedEl.scrollTop = prevScrollTop + (feedEl.scrollHeight - prevScrollHeight);
+  }
+
+  // ---- Swipe / tap interactions (Hammer.js) ----
+  // Hammer.js handles the scroll-vs-swipe disambiguation for us — it computes the
+  // right touch-action based on the recognizers we enable, so vertical scrolling
+  // stays fully native while horizontal drags are reliably intercepted for the
+  // save/unsave gesture, on both iOS and Android.
+
+  const SWIPE_THRESHOLD = 90;
+
+  const hammer = new Hammer(feedEl, { touchAction: "pan-y" });
+  hammer.get("pan").set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10 });
+  hammer.get("swipe").set({ enable: false });
+  hammer.get("press").set({ enable: false });
+  hammer.get("pinch").set({ enable: false });
+  hammer.get("rotate").set({ enable: false });
+
+  let activeCard = null;
+
+  hammer.on("panstart", (ev) => {
+    if (ev.target.closest("button")) return;
+    const card = ev.target.closest(".movie-card");
+    if (!card) return;
+    cancelPendingTapOpen();
+    activeCard = card;
+    activeCard.style.transition = "none";
+  });
+
+  hammer.on("panmove", (ev) => {
+    if (!activeCard) return;
+    activeCard.style.transform = `translateX(${ev.deltaX}px) rotate(${ev.deltaX / 24}deg)`;
+  });
+
+  hammer.on("panend pancancel", (ev) => {
+    if (!activeCard) return;
+    const card = activeCard;
+    activeCard = null;
+    card.style.transition = "transform 0.22s ease";
+
+    if (Math.abs(ev.deltaX) > SWIPE_THRESHOLD) {
+      const movie = loadedMovies.find(m => String(m.id) === String(card.dataset.movieId));
+      const adult = getSelectedAdult();
+      const kid = getSelectedKid();
+      if (movie && adult && kid) {
+        const display = computeDisplay(movie, new Date(adult.birthday));
+        if (ev.deltaX > 0) {
+          setSavedState(movie, display, adult, kid, true);
+          applyCardSavedState(card, true);
+        } else {
+          setSavedState(movie, display, adult, kid, false);
+          applyCardSavedState(card, false);
+        }
+      }
+    }
+    card.style.transform = "";
+  });
+
+  hammer.on("tap", (ev) => {
+    if (ev.target.closest("button")) return;
+    const card = ev.target.closest(".movie-card");
+    if (!card) return;
+    const posterHit = !!ev.target.closest("img, .no-poster");
+    if (posterHit) scheduleTapOpen(card.dataset.movieId);
+  });
+
+  // ---- Deferred tap-to-open (cancelled if the feed actually scrolls right after) ----
+
+  let pendingTapTimer = null;
+
+  function scheduleTapOpen(movieId) {
+    cancelPendingTapOpen();
+    const scrollTopAtTap = feedEl.scrollTop;
+    pendingTapTimer = setTimeout(() => {
+      pendingTapTimer = null;
+      // Guard again in case a scroll happened without a caught scroll event in between
+      if (Math.abs(feedEl.scrollTop - scrollTopAtTap) < 2) {
+        openMovieDetail(movieId);
+      }
+    }, 150);
+  }
+
+  function cancelPendingTapOpen() {
+    if (pendingTapTimer) {
+      clearTimeout(pendingTapTimer);
+      pendingTapTimer = null;
+    }
+  }
+
+  feedEl.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-action='toggle-save']");
+    if (!btn) return;
+    const card = btn.closest(".movie-card");
+    if (!card) return;
+    const movie = loadedMovies.find(m => String(m.id) === String(card.dataset.movieId));
+    const adult = getSelectedAdult();
+    if (!movie || !adult) return;
+    const display = computeDisplay(movie, new Date(adult.birthday));
+    const nowSaved = toggleSaveMovie(movie, display);
+    applyCardSavedState(card, nowSaved);
+  });
+
+  // ---- Movie detail modal ----
+
+  detailClose.addEventListener("click", () => detailModal.classList.add("hidden"));
+  detailModal.addEventListener("click", (e) => {
+    if (e.target === detailModal) detailModal.classList.add("hidden");
+  });
+
+  // Swipe down on the sheet to dismiss it.
+  // Note: touch-action:pan-y tells the browser vertical panning is always native,
+  // which makes preventDefault() ineffective for vertical drags on Android/Chrome.
+  // So instead: when a gesture starts at the very top of the content, we switch
+  // touch-action to "none" for that gesture and drive scrolling manually in JS,
+  // which lets us cleanly distinguish "pull down to close" from "scroll into content".
+  const detailContent = document.getElementById("detail-content");
+  let detailDrag = null;
+  const DETAIL_CLOSE_THRESHOLD = 110;
+
+  detailContent.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("button, a")) return;
+    detailDrag = {
+      startY: e.clientY,
+      lastY: e.clientY,
+      pointerId: e.pointerId,
+      isClosing: false
+    };
+    detailContent.style.transition = "none";
+    try { detailContent.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  });
+
+  detailContent.addEventListener("pointermove", (e) => {
+    if (!detailDrag || e.pointerId !== detailDrag.pointerId) return;
+    const currentY = e.clientY;
+    const stepDy = currentY - detailDrag.lastY;
+    const totalDy = currentY - detailDrag.startY;
+    detailDrag.lastY = currentY;
+    e.preventDefault();
+
+    if (detailContent.scrollTop <= 0 && totalDy > 0) {
+      // Pulling down from the very top — treat as a close gesture
+      detailDrag.isClosing = true;
+      detailContent.style.transform = `translateY(${totalDy}px)`;
+      detailContent.style.opacity = String(Math.max(1 - totalDy / 500, 0.4));
+    } else {
+      // Otherwise, drive scrolling manually since native panning is disabled for this gesture
+      detailDrag.isClosing = false;
+      detailContent.style.transform = "";
+      detailContent.style.opacity = "";
+      detailContent.scrollTop = Math.max(0, detailContent.scrollTop - stepDy);
+    }
+  }, { passive: false });
+
+  function endDetailDrag(e) {
+    if (!detailDrag) return;
+    if (e && e.pointerId !== undefined && e.pointerId !== detailDrag.pointerId) return;
+    const { pointerId, isClosing, startY, lastY } = detailDrag;
+    const totalDy = lastY - startY;
+    try { detailContent.releasePointerCapture(pointerId); } catch (err) { /* ignore */ }
+    detailDrag = null;
+    detailContent.style.transition = "transform 0.2s ease, opacity 0.2s ease";
+
+    if (isClosing && totalDy > DETAIL_CLOSE_THRESHOLD) {
+      detailContent.style.transform = `translateY(100%)`;
+      detailContent.style.opacity = "0";
+      setTimeout(() => {
+        detailModal.classList.add("hidden");
+        detailContent.style.transition = "none";
+        detailContent.style.transform = "";
+        detailContent.style.opacity = "";
+      }, 180);
+    } else {
+      detailContent.style.transform = "";
+      detailContent.style.opacity = "";
+    }
+  }
+
+  detailContent.addEventListener("pointerup", endDetailDrag);
+  detailContent.addEventListener("pointercancel", endDetailDrag);
+
+  async function openMovieDetail(movieId) {
+    detailModal.classList.remove("hidden");
+    detailBody.innerHTML = `<div class="status">Loading...</div>`;
+
+    const token = getApiToken();
+    if (!token) {
+      detailBody.innerHTML = `<div class="status">A TMDB Read Access Token is required.</div>`;
+      return;
+    }
+
+    try {
+      let details = detailCache.get(movieId);
+      if (!details) {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?append_to_response=credits,videos`, {
+          headers: { Authorization: `Bearer ${token}`, accept: "application/json" }
+        });
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+        details = await res.json();
+        detailCache.set(movieId, details);
+      }
+      renderMovieDetail(details, movieId);
+    } catch (err) {
+      detailBody.innerHTML = `<div class="status">Couldn't load details: ${err.message}</div>`;
+    }
+  }
+
+  function renderMovieDetail(details, movieId) {
+    const adult = getSelectedAdult();
+    const movieRecord = loadedMovies.find(m => String(m.id) === String(movieId));
+    let subline = "";
+    if (adult && movieRecord) {
+      const display = computeDisplay(movieRecord, new Date(adult.birthday));
+      const dateWithTag = display.dateStr
+        ? `${display.dateStr}${display.dateTag ? ` (${display.dateTag})` : ""}`
+        : "";
+      subline = [dateWithTag, display.ageLabel, display.diffLabel].filter(Boolean).join(" · ");
+    }
+
+    const poster = details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : "";
+    const cert = movieRecord ? getCertification(movieRecord.releaseDatesData) : null;
+    const rating = details.vote_average ? `${details.vote_average.toFixed(1)}/10 (${details.vote_count || 0} votes)` : null;
+    const cast = (details.credits && details.credits.cast || []).slice(0, 6).map(c => c.name).join(", ");
+    const trailer = (details.videos && details.videos.results || []).find(v => v.site === "YouTube" && v.type === "Trailer")
+      || (details.videos && details.videos.results || []).find(v => v.site === "YouTube");
+
+    detailBody.innerHTML = `
+      ${poster ? `<img class="detail-poster" src="${poster}" alt="${escapeHtml(details.title)} poster">` : ""}
+      <div class="detail-title">${escapeHtml(details.title)}</div>
+      ${subline ? `<div class="detail-subline">${escapeHtml(subline)}</div>` : ""}
+      <div class="detail-meta-row">
+        ${rating ? `<span class="pill">⭐ ${escapeHtml(rating)}</span>` : ""}
+        ${cert ? `<span class="pill">${escapeHtml(cert)}</span>` : ""}
+        ${details.runtime ? `<span class="pill">${details.runtime} min</span>` : ""}
+      </div>
+      ${details.overview ? `
+        <div class="detail-section-label">Overview</div>
+        <div class="detail-overview">${escapeHtml(details.overview)}</div>
+      ` : ""}
+      ${cast ? `
+        <div class="detail-section-label">Cast</div>
+        <div class="detail-cast">${escapeHtml(cast)}</div>
+      ` : ""}
+      ${trailer ? `<a class="detail-trailer-link" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener">▶ Watch Trailer</a>` : ""}
+    `;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = String(str);
+    return div.innerHTML;
+  }
+
+  // ---- Init ----
+  window.addEventListener("DOMContentLoaded", () => {
+    testStorage();
+    loadPeopleFromStorage();
+    loadSavedMoviesFromStorage();
+    renderPeopleUI();
+    const savedCardCount = parseInt(safeGet("cardsPerScreen") || "1", 10);
+    setCardsPerScreen(savedCardCount === 1 ? 1 : 2);
+    if (storageBroken) {
+      document.getElementById("storage-warning").classList.remove("hidden");
+    }
+    if (adults.length === 0 && kids.length === 0) {
+      splashOverlay.classList.remove("hidden");
+    }
+    tryStartFresh();
+  });
+</script>
+
+</body>
+</html>
