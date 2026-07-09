@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-EQRQZL5V5T"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-EQRQZL5V5T');
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Same Age Movies</title>
@@ -247,15 +256,28 @@
   }
   .person-row .person-info { color: var(--text); line-height: 1.5; }
   .person-row .person-info span { color: var(--muted); font-size: 11.5px; margin-left: 6px; }
-  .person-row button {
+  .person-row .delete-btn {
     background: transparent;
     border: none;
-    color: var(--down);
+    color: var(--muted);
     font-size: 15px;
     cursor: pointer;
-    padding: 0 4px;
+    padding: 4px 6px;
+    border-radius: 5px;
     flex-shrink: 0;
+    line-height: 1;
+    transition: color .15s ease, background .15s ease;
   }
+  .person-row .delete-btn:hover,
+  .person-row .delete-btn:active {
+    color: var(--down);
+    background: rgba(255, 90, 90, 0.12);
+  }
+  @keyframes rowAdded {
+    0% { background: rgba(110, 200, 140, 0.22); border-color: rgba(110, 200, 140, 0.5); }
+    100% { background: #1a1d22; border-color: #2a2e35; }
+  }
+  .person-row.just-added { animation: rowAdded 1.4s ease; }
   .saved-row {
     display: flex;
     align-items: center;
@@ -289,62 +311,50 @@
   }
   .add-person-row {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .add-person-row input[type="text"] {
-    width: 100%;
-    height: 38px;
-    background: #1a1d22;
-    border: 1px solid #2a2e35;
-    color: var(--text);
-    padding: 0 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    min-width: 0;
-  }
-  .birthday-add-row {
-    display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 14px;
   }
-  .birthday-add-row .date-field {
+  .add-person-row .name-input {
+    flex: 1 1 40%;
+    min-width: 0;
+  }
+  .add-person-row .date-field {
     position: relative;
-    flex: 1 1 auto;
+    flex: 1 1 55%;
     min-width: 0;
   }
-  .birthday-add-row button {
-    flex: 0 0 auto;
-  }
-  .add-person-row input[type="date"] {
-    height: 38px;
+  .light-input {
     width: 100%;
-    background: #1a1d22;
-    border: 1px solid #2a2e35;
+    height: 34px;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid #2f333b;
     color: var(--text);
-    padding: 0 8px;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 0 2px;
+    border-radius: 0;
+    font-size: 14px;
     min-width: 0;
+    transition: border-color .15s ease;
+  }
+  .light-input::placeholder { color: #6d7280; }
+  .light-input:focus {
+    outline: none;
+    border-bottom-color: var(--accent);
   }
   .date-placeholder {
     position: absolute;
-    left: 10px;
+    left: 2px;
     top: 50%;
     transform: translateY(-50%);
-    color: #7d838d;
-    font-size: 13px;
+    color: #6d7280;
+    font-size: 14px;
     pointer-events: none;
   }
-  .add-person-row button {
-    background: var(--accent);
-    color: #14161a;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
+  .add-hint {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 5px;
+    margin-bottom: 4px;
   }
   .toggle {
     display: flex;
@@ -727,30 +737,26 @@
       <div class="toggle-label">Adults</div>
       <div id="adults-list" class="people-list"></div>
       <div class="add-person-row">
-        <input type="text" id="new-adult-name" placeholder="Name">
-        <div class="birthday-add-row">
-          <div class="date-field">
-            <input type="date" id="new-adult-birthday" aria-label="Birthday">
-            <span class="date-placeholder" id="new-adult-birthday-placeholder">Birthday</span>
-          </div>
-          <button id="add-adult-btn">Add</button>
+        <input type="text" id="new-adult-name" class="light-input name-input" placeholder="Name" autocomplete="off">
+        <div class="date-field">
+          <input type="date" id="new-adult-birthday" class="light-input" aria-label="Birthday">
+          <span class="date-placeholder" id="new-adult-birthday-placeholder">Birthday</span>
         </div>
       </div>
+      <div class="add-hint">Pick a birthday to add automatically</div>
     </div>
 
     <div class="menu-section">
       <div class="toggle-label">Kids</div>
       <div id="kids-list" class="people-list"></div>
       <div class="add-person-row">
-        <input type="text" id="new-kid-name" placeholder="Name">
-        <div class="birthday-add-row">
-          <div class="date-field">
-            <input type="date" id="new-kid-birthday" aria-label="Birthday">
-            <span class="date-placeholder" id="new-kid-birthday-placeholder">Birthday</span>
-          </div>
-          <button id="add-kid-btn">Add</button>
+        <input type="text" id="new-kid-name" class="light-input name-input" placeholder="Name" autocomplete="off">
+        <div class="date-field">
+          <input type="date" id="new-kid-birthday" class="light-input" aria-label="Birthday">
+          <span class="date-placeholder" id="new-kid-birthday-placeholder">Birthday</span>
         </div>
       </div>
+      <div class="add-hint">Pick a birthday to add automatically</div>
     </div>
 
     <details class="advanced-settings">
@@ -854,21 +860,8 @@
   const kidsListEl = document.getElementById("kids-list");
   const newAdultName = document.getElementById("new-adult-name");
   const newAdultBirthday = document.getElementById("new-adult-birthday");
-  const addAdultBtn = document.getElementById("add-adult-btn");
   const newKidName = document.getElementById("new-kid-name");
   const newKidBirthday = document.getElementById("new-kid-birthday");
-  const addKidBtn = document.getElementById("add-kid-btn");
-
-  function wireDatePlaceholder(input, placeholderId) {
-    const placeholder = document.getElementById(placeholderId);
-    if (!placeholder) return;
-    const sync = () => { placeholder.style.display = input.value ? "none" : "block"; };
-    input.addEventListener("input", sync);
-    input.addEventListener("change", sync);
-    sync();
-  }
-  wireDatePlaceholder(newAdultBirthday, "new-adult-birthday-placeholder");
-  wireDatePlaceholder(newKidBirthday, "new-kid-birthday-placeholder");
   const feedEl = document.getElementById("feed");
   const scrollHintEl = document.getElementById("scroll-hint");
   const modeTheatricalBtn = document.getElementById("mode-theatrical");
@@ -963,7 +956,7 @@
   function getSelectedAdult() { return adults.find(a => a.id === selectedAdultId) || null; }
   function getSelectedKid() { return kids.find(k => k.id === selectedKidId) || null; }
 
-  function renderPeopleUI() {
+  function renderPeopleUI(justAddedId) {
     adultSelect.innerHTML = adults.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
     kidSelect.innerHTML = kids.map(k => `<option value="${k.id}">${escapeHtml(k.name)}</option>`).join("");
 
@@ -974,56 +967,87 @@
     if (selectedKidId) kidSelect.value = selectedKidId;
 
     adultsListEl.innerHTML = adults.map(a => `
-      <div class="person-row">
+      <div class="person-row${a.id === justAddedId ? " just-added" : ""}">
         <div class="person-info">${escapeHtml(a.name)} <span>${a.birthday}</span></div>
-        <button type="button" data-remove-adult="${a.id}">×</button>
+        <button type="button" class="delete-btn" data-remove-adult="${a.id}" aria-label="Delete ${escapeHtml(a.name)}">🗑</button>
       </div>
     `).join("") || `<div class="comparison-summary">No adults added yet.</div>`;
 
     kidsListEl.innerHTML = kids.map(k => `
-      <div class="person-row">
+      <div class="person-row${k.id === justAddedId ? " just-added" : ""}">
         <div class="person-info">${escapeHtml(k.name)} <span>${k.birthday}</span></div>
-        <button type="button" data-remove-kid="${k.id}">×</button>
+        <button type="button" class="delete-btn" data-remove-kid="${k.id}" aria-label="Delete ${escapeHtml(k.name)}">🗑</button>
       </div>
     `).join("") || `<div class="comparison-summary">No kids added yet.</div>`;
   }
 
-  addAdultBtn.addEventListener("click", () => {
-    const name = newAdultName.value.trim() || `Adult ${adults.length + 1}`;
-    const birthday = newAdultBirthday.value;
-    if (!birthday) return;
-    const person = { id: genId(), name, birthday };
-    adults.push(person);
-    selectedAdultId = person.id;
-    savePeopleToStorage();
-    saveSelection();
-    newAdultName.value = "";
-    newAdultBirthday.value = "";
-    document.getElementById("new-adult-birthday-placeholder").style.display = "block";
-    renderPeopleUI();
-    tryStartFresh();
+  // ---- Auto-add: entering a birthday (the required field) saves the person
+  // immediately, no "Add" button needed. Name is optional and can be typed
+  // before or after picking the birthday. ----
+
+  function wireAutoAdd({ nameInput, birthdayInput, placeholderId, getList, setList, defaultNamePrefix, onAdded }) {
+    const placeholder = document.getElementById(placeholderId);
+    const syncPlaceholder = () => { placeholder.style.display = birthdayInput.value ? "none" : "block"; };
+    birthdayInput.addEventListener("input", syncPlaceholder);
+
+    birthdayInput.addEventListener("change", () => {
+      syncPlaceholder();
+      const birthday = birthdayInput.value;
+      if (!birthday) return;
+      const list = getList();
+      const name = nameInput.value.trim() || `${defaultNamePrefix} ${list.length + 1}`;
+      const person = { id: genId(), name, birthday };
+      list.push(person);
+      setList(list);
+      nameInput.value = "";
+      birthdayInput.value = "";
+      syncPlaceholder();
+      onAdded(person);
+    });
+
+    syncPlaceholder();
+  }
+
+  wireAutoAdd({
+    nameInput: newAdultName,
+    birthdayInput: newAdultBirthday,
+    placeholderId: "new-adult-birthday-placeholder",
+    getList: () => adults,
+    setList: (list) => { adults = list; },
+    defaultNamePrefix: "Adult",
+    onAdded: (person) => {
+      selectedAdultId = person.id;
+      savePeopleToStorage();
+      saveSelection();
+      renderPeopleUI(person.id);
+      tryStartFresh();
+    }
   });
 
-  addKidBtn.addEventListener("click", () => {
-    const name = newKidName.value.trim() || `Kid ${kids.length + 1}`;
-    const birthday = newKidBirthday.value;
-    if (!birthday) return;
-    const person = { id: genId(), name, birthday };
-    kids.push(person);
-    selectedKidId = person.id;
-    savePeopleToStorage();
-    saveSelection();
-    newKidName.value = "";
-    newKidBirthday.value = "";
-    document.getElementById("new-kid-birthday-placeholder").style.display = "block";
-    renderPeopleUI();
-    tryStartFresh();
+  wireAutoAdd({
+    nameInput: newKidName,
+    birthdayInput: newKidBirthday,
+    placeholderId: "new-kid-birthday-placeholder",
+    getList: () => kids,
+    setList: (list) => { kids = list; },
+    defaultNamePrefix: "Kid",
+    onAdded: (person) => {
+      selectedKidId = person.id;
+      savePeopleToStorage();
+      saveSelection();
+      renderPeopleUI(person.id);
+      tryStartFresh();
+    }
   });
+
+  // ---- Delete (with confirm, so a stray tap can't wipe someone out) ----
 
   adultsListEl.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-remove-adult]");
     if (!btn) return;
     const id = btn.dataset.removeAdult;
+    const person = adults.find(a => a.id === id);
+    if (!window.confirm(`Delete ${person ? person.name : "this adult"}? This can't be undone.`)) return;
     adults = adults.filter(a => a.id !== id);
     if (selectedAdultId === id) selectedAdultId = adults[0] ? adults[0].id : null;
     savePeopleToStorage();
@@ -1036,6 +1060,8 @@
     const btn = e.target.closest("button[data-remove-kid]");
     if (!btn) return;
     const id = btn.dataset.removeKid;
+    const person = kids.find(k => k.id === id);
+    if (!window.confirm(`Delete ${person ? person.name : "this kid"}? This can't be undone.`)) return;
     kids = kids.filter(k => k.id !== id);
     if (selectedKidId === id) selectedKidId = kids[0] ? kids[0].id : null;
     savePeopleToStorage();
@@ -1472,7 +1498,14 @@
         rentalDate = earliestForTypes(us, [4, 5]);
       }
     }
-    if (!theaterDate) theaterDate = movie.primaryReleaseDate;
+    // The US release_dates entry (e.g. a later English-dub re-release) can be
+    // newer than TMDB's own primary release date, which usually reflects the
+    // original (often foreign) theatrical release. Always take whichever is
+    // earliest instead of only falling back to primaryReleaseDate when the
+    // US entry is missing entirely.
+    if (movie.primaryReleaseDate && (!theaterDate || movie.primaryReleaseDate < theaterDate)) {
+      theaterDate = movie.primaryReleaseDate;
+    }
 
     if (currentMode === "theatrical") {
       return { date: theaterDate, tag: "Theater" };
