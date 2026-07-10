@@ -71,6 +71,37 @@
     cursor: pointer;
     line-height: 1;
   }
+  .share-badge {
+    position: fixed;
+    right: 16px;
+    bottom: 20px;
+    left: auto;
+    top: auto;
+    transform: translateY(16px);
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--accent, #e63946);
+    color: #fff;
+    border: none;
+    padding: 11px 16px;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(.2,1.4,.4,1), opacity 0.5s ease;
+  }
+  .share-badge.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .share-badge.hidden { display: none; }
+  .share-badge-icon { width: 16px; height: 16px; flex: 0 0 auto; }
+  .share-badge-icon svg { display: block; width: 100%; height: 100%; }
   .selector-row {
     display: flex;
     align-items: center;
@@ -442,6 +473,7 @@
     touch-action: pan-y;
     user-select: none;
     position: relative;
+    overflow: hidden;
   }
   .feed.single-card .movie-card {
     height: 100%;
@@ -451,8 +483,10 @@
     box-shadow: inset 0 0 0 2px rgba(224, 185, 84, 0.55);
   }
   .movie-card img {
-    max-height: 42%;
-    max-width: 45%;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: auto;
+    max-width: clamp(45%, 40vw, 60%);
     object-fit: contain;
     border-radius: 6px;
     background: #0f1114;
@@ -460,64 +494,81 @@
     cursor: pointer;
   }
   .feed.single-card .movie-card img {
-    max-height: 52%;
-    max-width: 68%;
+    max-width: clamp(75%, max(60vw, 45vh), 92%);
   }
   .movie-card .no-poster {
-    width: 30%;
-    max-width: 130px;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: auto;
+    max-width: clamp(130px, 18vw, 220px);
     aspect-ratio: 2 / 3;
     background: #0f1114;
     border-radius: 6px;
     cursor: pointer;
   }
   .feed.single-card .movie-card .no-poster {
-    width: 45%;
-    max-width: 200px;
+    max-width: clamp(220px, max(30vw, 24vh), 380px);
   }
   .movie-card .title {
-    font-size: 14.5px;
+    font-size: clamp(14.5px, 3.2vw, 22px);
     font-weight: 700;
     margin-top: 8px;
   }
   .feed.single-card .movie-card .title {
-    font-size: 19px;
-    margin-top: 14px;
+    font-size: clamp(20px, max(4.2vw, 3.8vh), 36px);
+    margin-top: 18px;
   }
   .movie-card .date {
-    font-size: 11px;
+    font-size: clamp(11px, 2.3vw, 16px);
     color: var(--muted);
     margin-top: 2px;
+  }
+  .feed.single-card .movie-card .date {
+    font-size: clamp(13px, max(2.6vw, 2.3vh), 21px);
+    margin-top: 5px;
   }
   .date-tag {
     font-style: italic;
     opacity: 0.85;
   }
   .movie-card .age-at-release {
-    font-size: 12px;
+    font-size: clamp(12px, 2.5vw, 17px);
     color: var(--accent);
     margin-top: 5px;
     font-weight: 600;
+  }
+  .feed.single-card .movie-card .age-at-release {
+    font-size: clamp(15px, max(3vw, 2.6vh), 24px);
+    margin-top: 10px;
   }
   .movie-card .diff-row {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    font-size: 11.5px;
+    font-size: clamp(11.5px, 2.3vw, 16px);
     color: var(--muted);
     margin-top: 3px;
+  }
+  .feed.single-card .movie-card .diff-row {
+    font-size: clamp(13px, max(2.6vw, 2.3vh), 21px);
+    margin-top: 8px;
   }
   .arrow-up { color: var(--up); font-weight: bold; }
   .arrow-down { color: var(--down); font-weight: bold; }
   .cert-badge {
     display: inline-block;
-    font-size: 9.5px;
+    font-size: clamp(9.5px, 2vw, 13px);
     color: var(--muted);
     border: 1px solid #2a2e35;
     border-radius: 4px;
     padding: 1px 5px;
     margin-top: 5px;
+  }
+  .feed.single-card .movie-card .cert-badge {
+    font-size: clamp(11.5px, max(2.4vw, 2vh), 17px);
+    padding: 2px 8px;
+    margin-top: 10px;
   }
   .card-actions {
     display: flex;
@@ -533,6 +584,13 @@
     border-radius: 14px;
     cursor: pointer;
     font-weight: 600;
+  }
+  .feed.single-card .card-actions {
+    margin-top: 14px;
+  }
+  .feed.single-card .card-actions button {
+    font-size: clamp(13px, max(2.6vw, 2.2vh), 18px);
+    padding: 8px 18px;
   }
   .card-actions .save-btn.saved {
     background: var(--accent);
@@ -695,9 +753,84 @@
     font-weight: 700;
   }
 
+  /* ---- Where to watch (TMDB / JustWatch) ---- */
+  .detail-providers-row {
+    display: flex;
+    justify-content: center;
+    gap: 26px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .provider-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .provider-group-label {
+    font-size: 10.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .detail-providers {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .provider-logo-link {
+    display: inline-block;
+    line-height: 0;
+  }
+  .provider-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .justwatch-attribution {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .justwatch-attribution a { color: var(--muted); }
+
+  /* ---- Skeleton loading placeholders ---- */
+  @keyframes skeleton-shimmer {
+    0% { background-position: -135% 0; }
+    100% { background-position: 135% 0; }
+  }
+  .skel-poster, .skel-line, .skel-pill {
+    background: linear-gradient(90deg, #1a1d22 25%, #262a31 37%, #1a1d22 63%);
+    background-size: 400% 100%;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+    border-radius: 8px;
+  }
+  .skel-poster {
+    height: 30vh;
+    width: 60%;
+    margin: 0 auto 14px;
+  }
+  .skel-line {
+    height: 13px;
+    margin: 0 auto 10px;
+    border-radius: 4px;
+  }
+  .skel-title { height: 20px; width: 65%; }
+  .skel-subline { width: 45%; }
+  .skel-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .skel-pill { height: 22px; width: 58px; border-radius: 12px; }
+
   @media (max-width: 480px) {
     .navbar h1 { font-size: 14px; }
-    .movie-card .title { font-size: 13px; }
+    .movie-card .title { font-size: clamp(13px, 3.2vw, 22px); }
   }
 </style>
 </head>
@@ -820,6 +953,19 @@
   <div id="feed" class="feed"></div>
 </div>
 
+<button class="share-badge hidden" id="share-btn" title="Share with a friend">
+  <span class="share-badge-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="18" cy="5" r="3"></circle>
+      <circle cx="6" cy="12" r="3"></circle>
+      <circle cx="18" cy="19" r="3"></circle>
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+    </svg>
+  </span>
+  <span class="share-badge-label">Share with a friend</span>
+</button>
+
 <div class="splash-overlay hidden" id="splash-overlay">
   <div class="splash-content">
     <div class="splash-emoji">🎬</div>
@@ -849,6 +995,19 @@
   const menuSaveBtn = document.getElementById("menu-save-btn");
   const menuError = document.getElementById("menu-error");
   const savedBtn = document.getElementById("saved-btn");
+  const shareBtn = document.getElementById("share-btn");
+
+  // ---- Analytics (Google tag / gtag.js) ----
+  // Only structural, non-identifying data is ever sent: which control was
+  // clicked (a fixed label, never user-entered text) and, for adult/kid
+  // additions, the resulting count. No names, birthdays, or other
+  // user-entered text are ever sent.
+  function trackClick(label) {
+    if (typeof gtag === "function") gtag('event', 'click', { element: label });
+  }
+  function trackEvent(name, params) {
+    if (typeof gtag === "function") gtag('event', name, params || {});
+  }
   const savedPanel = document.getElementById("saved-panel");
   const savedClose = document.getElementById("saved-close");
   const savedListEl = document.getElementById("saved-list");
@@ -1021,6 +1180,7 @@
       saveSelection();
       renderPeopleUI(person.id);
       tryStartFresh();
+      trackEvent('adult_added', { count: adults.length });
     }
   });
 
@@ -1037,6 +1197,7 @@
       saveSelection();
       renderPeopleUI(person.id);
       tryStartFresh();
+      trackEvent('kid_added', { count: kids.length });
     }
   });
 
@@ -1045,6 +1206,7 @@
   adultsListEl.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-remove-adult]");
     if (!btn) return;
+    trackClick('remove_adult_button');
     const id = btn.dataset.removeAdult;
     const person = adults.find(a => a.id === id);
     if (!window.confirm(`Delete ${person ? person.name : "this adult"}? This can't be undone.`)) return;
@@ -1059,6 +1221,7 @@
   kidsListEl.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-remove-kid]");
     if (!btn) return;
+    trackClick('remove_kid_button');
     const id = btn.dataset.removeKid;
     const person = kids.find(k => k.id === id);
     if (!window.confirm(`Delete ${person ? person.name : "this kid"}? This can't be undone.`)) return;
@@ -1085,12 +1248,17 @@
   // ---- Menu / Saved panel open-close ----
 
   menuBtn.addEventListener("click", () => {
+    trackClick('menu_open');
     savedPanel.classList.add("hidden");
     menuPanel.classList.toggle("hidden");
   });
-  menuClose.addEventListener("click", () => menuPanel.classList.add("hidden"));
+  menuClose.addEventListener("click", () => {
+    trackClick('menu_close');
+    menuPanel.classList.add("hidden");
+  });
 
   menuSaveBtn.addEventListener("click", () => {
+    trackClick('menu_save');
     if (adults.length === 0 || kids.length === 0) {
       menuError.classList.remove("hidden");
       return;
@@ -1100,19 +1268,24 @@
   });
 
   savedBtn.addEventListener("click", () => {
+    trackClick('saved_open');
     menuPanel.classList.add("hidden");
     renderSavedList();
     savedPanel.classList.toggle("hidden");
   });
-  savedClose.addEventListener("click", () => savedPanel.classList.add("hidden"));
+  savedClose.addEventListener("click", () => {
+    trackClick('saved_close');
+    savedPanel.classList.add("hidden");
+  });
 
-  modeTheatricalBtn.addEventListener("click", () => setMode("theatrical"));
-  modeRentalBtn.addEventListener("click", () => setMode("rental"));
+  modeTheatricalBtn.addEventListener("click", () => { trackClick('mode_theatrical'); setMode("theatrical"); });
+  modeRentalBtn.addEventListener("click", () => { trackClick('mode_rental'); setMode("rental"); });
 
   ratingToggleEl.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-rating]");
     if (!btn) return;
     const rating = btn.dataset.rating;
+    trackClick('rating_toggle_' + rating);
     if (currentRatings.has(rating)) {
       currentRatings.delete(rating);
       btn.classList.remove("active");
@@ -1130,8 +1303,8 @@
     fullRenderFeed();
   }
 
-  sizeTwoBtn.addEventListener("click", () => setCardsPerScreen(2));
-  sizeOneBtn.addEventListener("click", () => setCardsPerScreen(1));
+  sizeTwoBtn.addEventListener("click", () => { trackClick('size_two'); setCardsPerScreen(2); });
+  sizeOneBtn.addEventListener("click", () => { trackClick('size_one'); setCardsPerScreen(1); });
 
   function setCardsPerScreen(count) {
     feedEl.classList.toggle("single-card", count === 1);
@@ -1189,6 +1362,7 @@
   savedListEl.addEventListener("click", (e) => {
     const removeBtn = e.target.closest("button[data-remove-saved]");
     if (removeBtn) {
+      trackClick('remove_saved_movie');
       const id = removeBtn.dataset.removeSaved;
       savedMovies = savedMovies.filter(m => m.savedId !== id);
       saveSavedMoviesToStorage();
@@ -1198,6 +1372,7 @@
     }
     const row = e.target.closest("[data-open-saved]");
     if (row) {
+      trackClick('open_saved_movie');
       openMovieDetail(row.dataset.openSaved);
     }
   });
@@ -1355,6 +1530,7 @@
       comparisonSummary.textContent = "Add an adult and a kid in the menu (☰) to get started.";
       feedEl.innerHTML = `<div class="status">Add an adult and a kid in the menu (☰) to get started.</div>`;
       scrollHintEl.style.display = "none";
+      hideShareButton();
       return;
     }
     menuError.classList.add("hidden");
@@ -1363,6 +1539,7 @@
   }
 
   splashStartBtn.addEventListener("click", () => {
+    trackClick('splash_start');
     splashOverlay.classList.add("hidden");
     menuPanel.classList.remove("hidden");
   });
@@ -1390,6 +1567,53 @@
     pendingScrollToClosest = true;
     fetchWindow(windowStart, windowEnd, "initial").then(() => {
       scrollHintEl.style.display = "block";
+      maybeShowShareButton();
+    });
+  }
+
+  // ---- Share / spread the word ----
+  // Only ever shown once the user has actually reached the movie feed
+  // (i.e. an adult + kid are picked and movies have loaded), and only in
+  // browsers that support the native Web Share API. It then pops out from
+  // the middle of the left edge after 10 seconds of being on the feed.
+  const SHARE_URL = "https://same-age.com";
+  const SHARE_TITLE = "Share with a friend";
+  const SHARE_TEXT = "same-age.com: share your childhood memories with your kid, grandkid, niece, or nephew.";
+  // TODO: if this reads as too long in practice, fall back to something
+  // shorter like "same-age.com: share your childhood memories with them."
+  const SHARE_REVEAL_DELAY_MS = 3 * 60 * 1000; // 3 minutes
+  let shareBtnTimer = null;
+
+  function maybeShowShareButton() {
+    if (!navigator.share) return;
+    // TODO: later, consider only doing this reveal once per user (e.g. via
+    // localStorage), or swapping the delayed pop-in for an always-present
+    // badge with a one-time tutorial-style pointer nudging them to share.
+    clearTimeout(shareBtnTimer);
+    shareBtn.classList.remove("hidden");
+    shareBtnTimer = setTimeout(() => {
+      shareBtn.classList.add("visible");
+    }, SHARE_REVEAL_DELAY_MS);
+  }
+
+  function hideShareButton() {
+    clearTimeout(shareBtnTimer);
+    shareBtn.classList.remove("visible");
+    shareBtn.classList.add("hidden");
+  }
+
+  if (shareBtn) {
+    shareBtn.addEventListener("click", async () => {
+      trackClick('share_button');
+      try {
+        await navigator.share({
+          title: SHARE_TITLE,
+          text: SHARE_TEXT,
+          url: SHARE_URL
+        });
+      } catch (err) {
+        // User cancelled the share sheet or it failed silently — nothing to do.
+      }
     });
   }
 
@@ -1729,6 +1953,7 @@
       pendingTapTimer = null;
       // Guard again in case a scroll happened without a caught scroll event in between
       if (Math.abs(feedEl.scrollTop - scrollTopAtTap) < 2) {
+        trackClick('movie_card_open');
         openMovieDetail(movieId);
       }
     }, 150);
@@ -1785,6 +2010,7 @@
   feedEl.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-action='toggle-save']");
     if (!btn) return;
+    trackClick('toggle_save_movie');
     const card = btn.closest(".movie-card");
     if (!card) return;
     const movie = loadedMovies.find(m => String(m.id) === String(card.dataset.movieId));
@@ -1797,9 +2023,15 @@
 
   // ---- Movie detail modal ----
 
-  detailClose.addEventListener("click", () => detailModal.classList.add("hidden"));
+  detailClose.addEventListener("click", () => {
+    trackClick('detail_close');
+    detailModal.classList.add("hidden");
+  });
   detailModal.addEventListener("click", (e) => {
-    if (e.target === detailModal) detailModal.classList.add("hidden");
+    if (e.target === detailModal) {
+      trackClick('detail_backdrop_close');
+      detailModal.classList.add("hidden");
+    }
   });
 
   // Swipe down on the sheet to dismiss it.
@@ -1875,7 +2107,7 @@
 
   async function openMovieDetail(movieId) {
     detailModal.classList.remove("hidden");
-    detailBody.innerHTML = `<div class="status">Loading...</div>`;
+    detailBody.innerHTML = DETAIL_SKELETON_HTML;
 
     const token = getApiToken();
     if (!token) {
@@ -1886,7 +2118,7 @@
     try {
       let details = detailCache.get(movieId);
       if (!details) {
-        const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?append_to_response=credits,videos`, {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?append_to_response=credits,videos,watch/providers`, {
           headers: { Authorization: `Bearer ${token}`, accept: "application/json" }
         });
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
@@ -1897,6 +2129,96 @@
     } catch (err) {
       detailBody.innerHTML = `<div class="status">Couldn't load details: ${err.message}</div>`;
     }
+  }
+
+  // ---- Skeleton loading placeholder (shown while movie details load) ----
+  const DETAIL_SKELETON_HTML = `
+    <div class="skel-poster"></div>
+    <div class="skel-line skel-title"></div>
+    <div class="skel-line skel-subline"></div>
+    <div class="skel-row">
+      <div class="skel-pill"></div>
+      <div class="skel-pill"></div>
+      <div class="skel-pill"></div>
+    </div>
+    <div class="skel-line" style="width:90%"></div>
+    <div class="skel-line" style="width:95%"></div>
+    <div class="skel-line" style="width:70%"></div>
+  `;
+
+  // ---- Streaming availability (TMDB watch/providers, sourced from JustWatch) ----
+  function getUserRegion() {
+    try {
+      const locale = (navigator.languages && navigator.languages[0]) || navigator.language || "en-US";
+      const parts = locale.split("-");
+      if (parts.length > 1) return parts[1].toUpperCase();
+    } catch (err) { /* ignore, fall through to default */ }
+    return "US";
+  }
+
+  // Direct in-app/site search URLs for the most common providers. Anything
+  // not listed here falls back to a general web search for that provider.
+  const PROVIDER_SEARCH_URLS = {
+    "netflix": (q) => `https://www.netflix.com/search?q=${q}`,
+    "amazon prime video": (q) => `https://www.amazon.com/s?k=${q}&i=instant-video`,
+    "amazon video": (q) => `https://www.amazon.com/s?k=${q}&i=instant-video`,
+    "apple tv": (q) => `https://tv.apple.com/search?term=${q}`,
+    "apple tv+": (q) => `https://tv.apple.com/search?term=${q}`,
+    "disney plus": (q) => `https://www.disneyplus.com/search?q=${q}`,
+    "disney+": (q) => `https://www.disneyplus.com/search?q=${q}`,
+    "hulu": (q) => `https://www.hulu.com/search?q=${q}`,
+    "max": (q) => `https://www.max.com/search?q=${q}`,
+    "hbo max": (q) => `https://www.max.com/search?q=${q}`,
+    "peacock": (q) => `https://www.peacocktv.com/search?q=${q}`,
+    "peacock premium": (q) => `https://www.peacocktv.com/search?q=${q}`,
+    "paramount plus": (q) => `https://www.paramountplus.com/search?q=${q}`,
+    "paramount+": (q) => `https://www.paramountplus.com/search?q=${q}`,
+    "youtube": (q) => `https://www.youtube.com/results?search_query=${q}`,
+    "google play movies": (q) => `https://play.google.com/store/search?q=${q}&c=movies`,
+    "fandango at home": (q) => `https://www.fandangoathome.com/search/${q}`,
+    "vudu": (q) => `https://www.fandangoathome.com/search/${q}`,
+    "microsoft store": (q) => `https://www.microsoft.com/en-us/search?q=${q}`
+  };
+
+  function getProviderSearchUrl(providerName, movieTitle) {
+    const q = encodeURIComponent(movieTitle);
+    const builder = PROVIDER_SEARCH_URLS[providerName.trim().toLowerCase()];
+    if (builder) return builder(q);
+    return `https://www.google.com/search?q=${encodeURIComponent(`watch ${movieTitle} on ${providerName}`)}`;
+  }
+
+  function buildProviderGroup(label, list, movieTitle) {
+    if (!list || !list.length) return "";
+    const logos = list.map(p => {
+      const url = getProviderSearchUrl(p.provider_name, movieTitle);
+      return `<a class="provider-logo-link" href="${url}" target="_blank" rel="noopener" title="Find ${escapeHtml(p.provider_name)}"><img class="provider-logo" src="https://image.tmdb.org/t/p/w92${p.logo_path}" alt="${escapeHtml(p.provider_name)}" loading="lazy"></a>`;
+    }).join("");
+    return `<div class="provider-group"><div class="provider-group-label">${label}</div><div class="detail-providers">${logos}</div></div>`;
+  }
+
+  function buildWatchProvidersHtml(details) {
+    const allRegions = details["watch/providers"] && details["watch/providers"].results;
+    if (!allRegions) return "";
+    const region = getUserRegion();
+    const data = allRegions[region] || allRegions.US;
+    if (!data) return "";
+
+    // Rent and buy overlap heavily (same provider offers both); merge into
+    // one de-duplicated list rather than showing the same logo twice.
+    const rentBuyMap = new Map();
+    (data.rent || []).forEach(p => rentBuyMap.set(p.provider_id, p));
+    (data.buy || []).forEach(p => rentBuyMap.set(p.provider_id, p));
+    const rentBuy = Array.from(rentBuyMap.values());
+
+    const groups = buildProviderGroup("Stream", data.flatrate, details.title) +
+      buildProviderGroup("Rent / Buy", rentBuy, details.title);
+    if (!groups) return "";
+    const attributionLink = data.link || "https://www.justwatch.com/";
+    return `
+      <div class="detail-section-label">Where to Watch</div>
+      <div class="detail-providers-row">${groups}</div>
+      <div class="justwatch-attribution">Streaming data by <a href="${attributionLink}" target="_blank" rel="noopener">JustWatch</a></div>
+    `;
   }
 
   function renderMovieDetail(details, movieId) {
@@ -1917,6 +2239,7 @@
     const cast = (details.credits && details.credits.cast || []).slice(0, 6).map(c => c.name).join(", ");
     const trailer = (details.videos && details.videos.results || []).find(v => v.site === "YouTube" && v.type === "Trailer")
       || (details.videos && details.videos.results || []).find(v => v.site === "YouTube");
+    const watchProvidersHtml = buildWatchProvidersHtml(details);
 
     detailBody.innerHTML = `
       ${poster ? `<img class="detail-poster" src="${poster}" alt="${escapeHtml(details.title)} poster">` : ""}
@@ -1927,6 +2250,7 @@
         ${cert ? `<span class="pill">${escapeHtml(cert)}</span>` : ""}
         ${details.runtime ? `<span class="pill">${details.runtime} min</span>` : ""}
       </div>
+      ${watchProvidersHtml}
       ${details.overview ? `
         <div class="detail-section-label">Overview</div>
         <div class="detail-overview">${escapeHtml(details.overview)}</div>
