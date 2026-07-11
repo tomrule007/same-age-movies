@@ -494,7 +494,7 @@
     cursor: pointer;
   }
   .feed.single-card .movie-card img {
-    max-width: clamp(75%, max(60vw, 45vh), 92%);
+    max-width: clamp(61%, max(48vw, 36vh), 76%);
   }
   .movie-card .no-poster {
     flex: 1 1 auto;
@@ -507,7 +507,7 @@
     cursor: pointer;
   }
   .feed.single-card .movie-card .no-poster {
-    max-width: clamp(220px, max(30vw, 24vh), 380px);
+    max-width: clamp(180px, max(24vw, 19vh), 306px);
   }
   .movie-card .title {
     font-size: clamp(14.5px, 3.2vw, 22px);
@@ -515,8 +515,8 @@
     margin-top: 8px;
   }
   .feed.single-card .movie-card .title {
-    font-size: clamp(20px, max(4.2vw, 3.8vh), 36px);
-    margin-top: 18px;
+    font-size: clamp(16px, max(3.4vw, 3vh), 29px);
+    margin-top: 12px;
   }
   .movie-card .date {
     font-size: clamp(11px, 2.3vw, 16px);
@@ -524,8 +524,8 @@
     margin-top: 2px;
   }
   .feed.single-card .movie-card .date {
-    font-size: clamp(13px, max(2.6vw, 2.3vh), 21px);
-    margin-top: 5px;
+    font-size: clamp(11px, max(2.1vw, 1.9vh), 17px);
+    margin-top: 4px;
   }
   .date-tag {
     font-style: italic;
@@ -538,8 +538,8 @@
     font-weight: 600;
   }
   .feed.single-card .movie-card .age-at-release {
-    font-size: clamp(15px, max(3vw, 2.6vh), 24px);
-    margin-top: 10px;
+    font-size: clamp(13px, max(2.4vw, 2.2vh), 20px);
+    margin-top: 7px;
   }
   .movie-card .diff-row {
     display: flex;
@@ -551,8 +551,8 @@
     margin-top: 3px;
   }
   .feed.single-card .movie-card .diff-row {
-    font-size: clamp(13px, max(2.6vw, 2.3vh), 21px);
-    margin-top: 8px;
+    font-size: clamp(11px, max(2.1vw, 1.9vh), 17px);
+    margin-top: 5px;
   }
   .arrow-up { color: var(--up); font-weight: bold; }
   .arrow-down { color: var(--down); font-weight: bold; }
@@ -566,9 +566,9 @@
     margin-top: 5px;
   }
   .feed.single-card .movie-card .cert-badge {
-    font-size: clamp(11.5px, max(2.4vw, 2vh), 17px);
-    padding: 2px 8px;
-    margin-top: 10px;
+    font-size: clamp(9.5px, max(1.9vw, 1.6vh), 14px);
+    padding: 2px 6px;
+    margin-top: 7px;
   }
   .card-actions {
     display: flex;
@@ -586,11 +586,11 @@
     font-weight: 600;
   }
   .feed.single-card .card-actions {
-    margin-top: 14px;
+    margin-top: 10px;
   }
   .feed.single-card .card-actions button {
-    font-size: clamp(13px, max(2.6vw, 2.2vh), 18px);
-    padding: 8px 18px;
+    font-size: clamp(11px, max(2.1vw, 1.8vh), 15px);
+    padding: 6px 14px;
   }
   .card-actions .save-btn.saved {
     background: var(--accent);
@@ -608,45 +608,318 @@
     padding: 0 24px;
   }
 
-  /* ---- Splash / onboarding screen ---- */
+  /* ---- Splash / onboarding screen (hero) ---- */
   .splash-overlay {
     position: fixed;
     inset: 0;
     z-index: 60;
-    background: var(--bg);
+    background:
+      radial-gradient(circle at 50% 0%, #23262e 0%, var(--bg) 65%);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .splash-overlay.hidden { display: none; }
+  /* Hero (above the fold) */
+  .splash-hero {
+    min-height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 32px 24px;
+    padding: 48px 24px 32px;
   }
-  .splash-overlay.hidden { display: none; }
   .splash-content {
-    max-width: 380px;
+    max-width: 420px;
     text-align: center;
   }
-  .splash-emoji {
-    font-size: 44px;
-    margin-bottom: 12px;
+  .splash-badge {
+    display: inline-block;
+    background: rgba(224, 185, 84, 0.1);
+    border: 1px solid rgba(224, 185, 84, 0.28);
+    color: var(--accent);
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 18px;
   }
   .splash-title {
-    font-size: 22px;
+    font-size: clamp(26px, 7vw, 34px);
+    line-height: 1.15;
     font-weight: 800;
-    margin: 0 0 14px;
+    margin: 0 0 16px;
+  }
+  .splash-title .highlight {
+    color: var(--accent);
   }
   .splash-text {
-    font-size: 14px;
+    font-size: 14.5px;
     line-height: 1.7;
     color: var(--muted);
-    margin: 0 0 24px;
+    margin: 0 0 26px;
   }
   .splash-btn {
     background: var(--accent);
     color: #14161a;
     border: none;
-    padding: 13px 28px;
-    border-radius: 8px;
-    font-size: 14.5px;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 15px;
     font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .splash-btn:active {
+    transform: translateY(1px);
+  }
+  .splash-note {
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+  .splash-scroll-hint {
+    margin-top: 34px;
+    color: var(--muted);
+    font-size: 18px;
+    opacity: 0.6;
+    animation: splash-bounce 1.8s ease-in-out infinite;
+  }
+  @keyframes splash-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+
+  /* Below-the-fold SEO content */
+  .splash-more {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 0 24px 56px;
+  }
+  .splash-more h2 {
+    font-size: clamp(21px, 5vw, 26px);
+    font-weight: 800;
+    text-align: center;
+    margin: 0 0 14px;
+  }
+  .splash-more-intro {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14.5px;
+    line-height: 1.7;
+    max-width: 460px;
+    margin: 0 auto 42px;
+  }
+  .splash-steps {
+    display: grid;
+    gap: 26px;
+  }
+  .splash-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .splash-step-number {
+    width: 38px;
+    height: 38px;
+    background: var(--accent);
+    color: #14161a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .splash-step h3 {
+    font-size: 15px;
+    margin: 4px 0 4px;
+  }
+  .splash-step p {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--muted);
+    margin: 0;
+  }
+  .splash-story {
+    margin-top: 48px;
+    background: var(--card);
+    border: 1px solid #24272d;
+    padding: 26px;
+    border-radius: 14px;
+    text-align: left;
+  }
+  .splash-story h3 {
+    font-size: 15px;
+    margin: 0 0 12px;
+  }
+  .splash-story p {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .splash-story p:last-child { margin-bottom: 0; }
+  .splash-story strong,
+  .splash-story em {
+    color: var(--text);
+  }
+  .splash-bottom-cta {
+    text-align: center;
+    margin-top: 44px;
+  }
+
+  /* ---- Guided setup wizard ---- */
+  .wizard-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .wizard-overlay.hidden { display: none; }
+  .wizard-card {
+    width: 100%;
+    max-width: 340px;
+  }
+  .wizard-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .wizard-step-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #1a1d22;
+    border: 1.5px solid #2a2e35;
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background .2s ease, border-color .2s ease, color .2s ease;
+  }
+  .wizard-step-dot.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #14161a;
+  }
+  .wizard-step-dot.done {
+    background: transparent;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .wizard-step-line {
+    width: 30px;
+    height: 2px;
+    background: #2a2e35;
+    flex-shrink: 0;
+    transition: background .2s ease;
+  }
+  .wizard-step-line.done { background: var(--accent); }
+  .wizard-step-labels {
+    display: flex;
+    justify-content: center;
+    gap: 34px;
+    font-size: 10.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 34px;
+    text-align: center;
+  }
+  .wizard-step-labels span { width: 70px; }
+  .wizard-panel { text-align: center; }
+  .wizard-panel.hidden { display: none; }
+  .wizard-emoji {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+  .wizard-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    line-height: 1.25;
+  }
+  .wizard-sub {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0 0 30px;
+  }
+  .wizard-date-input {
+    width: 100%;
+    max-width: 260px;
+    margin: 0 auto;
+    display: block;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #2f333b;
+    color: var(--text);
+    padding: 8px 4px 10px;
+    text-align: center;
+    font-size: 19px;
+    border-radius: 0;
+    color-scheme: dark;
+    transition: border-color .15s ease;
+  }
+  .wizard-date-input:focus {
+    outline: none;
+    border-bottom-color: var(--accent);
+  }
+  .wizard-error {
+    color: #f87171;
+    font-size: 12.5px;
+    margin-top: 14px;
+  }
+  .wizard-error.hidden { display: none; }
+  .wizard-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 36px;
+  }
+  .wizard-back-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 13.5px;
+    cursor: pointer;
+    padding: 14px 6px;
+    flex-shrink: 0;
+  }
+  .wizard-back-btn.hidden { display: none; }
+  .wizard-next-btn {
+    flex: 1;
+    background: var(--accent);
+    color: #14161a;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .15s ease;
+  }
+  .wizard-next-btn:active { transform: translateY(1px); }
+  .wizard-skip {
+    text-align: center;
+    margin-top: 20px;
+  }
+  .wizard-skip button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 12px;
+    text-decoration: underline;
     cursor: pointer;
   }
 
@@ -950,7 +1223,7 @@
 
 <div class="container">
   <div id="scroll-hint" class="scroll-hint" style="display:none;">Swipe right to save · swipe left to remove · tap for details</div>
-  <div id="feed" class="feed"></div>
+  <div id="feed" class="feed single-card"></div>
 </div>
 
 <button class="share-badge hidden" id="share-btn" title="Share with a friend">
@@ -967,16 +1240,102 @@
 </button>
 
 <div class="splash-overlay hidden" id="splash-overlay">
-  <div class="splash-content">
-    <div class="splash-emoji">🎬</div>
-    <h1 class="splash-title">Same Age Movies</h1>
-    <p class="splash-text">
-      Ever wonder what you were watching at the movies when you were your kid's age?
-      Add your birthday and your kid's birthday, and this app finds the movies released
-      right around the time you were exactly as old as they are now — so you can watch
-      them together and relive a little bit of your own childhood.
+  <div class="splash-hero">
+    <div class="splash-content">
+      <div class="splash-badge">🎬 A personalized family movie experience</div>
+      <h1 class="splash-title">Relive Your Childhood <span class="highlight">Through Their Eyes.</span></h1>
+      <p class="splash-text">
+        Discover the movies that came out when <strong>you were your kid's age</strong>.
+        Add your birthday and your kid's birthday, and this app finds the movies released
+        right around the time you were exactly as old as they are now — so you can share
+        the films you grew up with and relive a little bit of your own childhood together.
+      </p>
+      <button class="splash-btn" id="splash-start-btn">Get Started →</button>
+      <div class="splash-note">Just enter your birthday and your child's birthday.</div>
+      <div class="splash-scroll-hint">︾</div>
+    </div>
+  </div>
+
+  <div class="splash-more">
+    <h2>Why Parents Love Same Age Movies</h2>
+    <p class="splash-more-intro">
+      Movies are more than entertainment — they're memories. Same Age Movies helps you
+      rediscover the films that shaped your childhood and experience them again with your kids.
     </p>
-    <button class="splash-btn" id="splash-start-btn">Get Started</button>
+
+    <div class="splash-steps">
+      <div class="splash-step">
+        <div class="splash-step-number">1</div>
+        <div>
+          <h3>Enter two birthdays</h3>
+          <p>Your birthday and your kid's birthday are used to build a personalized movie timeline.</p>
+        </div>
+      </div>
+      <div class="splash-step">
+        <div class="splash-step-number">2</div>
+        <div>
+          <h3>Travel back in time</h3>
+          <p>We'll surface the movies that were in theaters when you were exactly the age your kid is today.</p>
+        </div>
+      </div>
+      <div class="splash-step">
+        <div class="splash-step-number">3</div>
+        <div>
+          <h3>Share the experience</h3>
+          <p>Watch together and pass along the stories only you can tell about your favorite childhood movies.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="splash-story">
+      <h3>Imagine This...</h3>
+      <p>Your kid just turned <strong>8</strong>.</p>
+      <p>
+        When <strong>you</strong> were 8 years old, <em>The Lion King</em> had just hit theaters.
+        Instead of endlessly scrolling for something to watch, you share one of the movies that
+        made your own childhood unforgettable — and tell them what it was like the first time you saw it.
+      </p>
+      <p>That's the idea behind Same Age Movies.</p>
+    </div>
+
+    <div class="splash-bottom-cta">
+      <button class="splash-btn" id="splash-start-btn-bottom">Start Your Movie Timeline →</button>
+    </div>
+  </div>
+</div>
+
+<div class="wizard-overlay hidden" id="wizard-overlay">
+  <div class="wizard-card">
+    <div class="wizard-progress">
+      <div class="wizard-step-dot" data-step-dot="0">1</div>
+      <div class="wizard-step-line" data-step-line="0"></div>
+      <div class="wizard-step-dot" data-step-dot="1">2</div>
+    </div>
+    <div class="wizard-step-labels">
+      <span>Your birthday</span>
+      <span>Their birthday</span>
+    </div>
+
+    <div class="wizard-panel" data-panel="0">
+      <div class="wizard-emoji">🎂</div>
+      <h2 class="wizard-title">When were you born?</h2>
+      <p class="wizard-sub">We'll use this to find movies from your childhood.</p>
+      <input type="date" id="wizard-adult-birthday" class="wizard-date-input" aria-label="Your birthday">
+      <div class="wizard-error hidden" id="wizard-adult-error">Please pick a birthday to continue.</div>
+    </div>
+
+    <div class="wizard-panel hidden" data-panel="1">
+      <div class="wizard-emoji">🧒</div>
+      <h2 class="wizard-title">When was your kid born?</h2>
+      <p class="wizard-sub">We'll find movies from when you were exactly their age.</p>
+      <input type="date" id="wizard-kid-birthday" class="wizard-date-input" aria-label="Kid's birthday">
+      <div class="wizard-error hidden" id="wizard-kid-error">Please pick a birthday to continue.</div>
+    </div>
+
+    <div class="wizard-actions">
+      <button class="wizard-back-btn hidden" id="wizard-back-btn">← Back</button>
+      <button class="wizard-next-btn" id="wizard-next-btn">Next →</button>
+    </div>
   </div>
 </div>
 
@@ -1538,11 +1897,105 @@
     startFresh(adult, kid);
   }
 
-  splashStartBtn.addEventListener("click", () => {
+  const splashStartBtnBottom = document.getElementById("splash-start-btn-bottom");
+
+  function handleSplashStart() {
     trackClick('splash_start');
     splashOverlay.classList.add("hidden");
-    menuPanel.classList.remove("hidden");
+    openWizard();
+  }
+
+  splashStartBtn.addEventListener("click", handleSplashStart);
+  if (splashStartBtnBottom) splashStartBtnBottom.addEventListener("click", handleSplashStart);
+
+  // ---- Guided setup wizard (adult birthday -> kid birthday) ----
+  // Names default to "You" / "Kid" so first-time setup is just two taps.
+  // Steps are data-driven so a future "region" step can be appended here.
+
+  const WIZARD_STEPS = [
+    { key: "adult", input: "wizard-adult-birthday", error: "wizard-adult-error", defaultName: "You" },
+    { key: "kid", input: "wizard-kid-birthday", error: "wizard-kid-error", defaultName: "Kid" }
+  ];
+  let wizardStepIndex = 0;
+
+  const wizardOverlay = document.getElementById("wizard-overlay");
+  const wizardNextBtn = document.getElementById("wizard-next-btn");
+  const wizardBackBtn = document.getElementById("wizard-back-btn");
+  const wizardPanels = Array.from(document.querySelectorAll(".wizard-panel"));
+  const wizardDots = Array.from(document.querySelectorAll(".wizard-step-dot"));
+  const wizardLines = Array.from(document.querySelectorAll(".wizard-step-line"));
+
+  function openWizard() {
+    wizardStepIndex = 0;
+    WIZARD_STEPS.forEach(step => {
+      document.getElementById(step.input).value = "";
+      document.getElementById(step.error).classList.add("hidden");
+    });
+    renderWizardStep();
+    wizardOverlay.classList.remove("hidden");
+  }
+
+  function renderWizardStep() {
+    wizardPanels.forEach((panel, i) => {
+      panel.classList.toggle("hidden", i !== wizardStepIndex);
+    });
+    wizardDots.forEach((dot, i) => {
+      dot.classList.toggle("active", i === wizardStepIndex);
+      dot.classList.toggle("done", i < wizardStepIndex);
+    });
+    wizardLines.forEach((line, i) => {
+      line.classList.toggle("done", i < wizardStepIndex);
+    });
+    wizardBackBtn.classList.toggle("hidden", wizardStepIndex === 0);
+    wizardNextBtn.textContent = wizardStepIndex === WIZARD_STEPS.length - 1 ? "Let's go →" : "Next →";
+  }
+
+  wizardNextBtn.addEventListener("click", () => {
+    const step = WIZARD_STEPS[wizardStepIndex];
+    const input = document.getElementById(step.input);
+    const errorEl = document.getElementById(step.error);
+
+    if (!input.value) {
+      errorEl.classList.remove("hidden");
+      return;
+    }
+    errorEl.classList.add("hidden");
+    trackClick('wizard_next_' + step.key);
+
+    if (wizardStepIndex < WIZARD_STEPS.length - 1) {
+      wizardStepIndex++;
+      renderWizardStep();
+    } else {
+      finishWizard();
+    }
   });
+
+  wizardBackBtn.addEventListener("click", () => {
+    trackClick('wizard_back');
+    if (wizardStepIndex > 0) {
+      wizardStepIndex--;
+      renderWizardStep();
+    }
+  });
+
+  function finishWizard() {
+    const adultBirthday = document.getElementById("wizard-adult-birthday").value;
+    const kidBirthday = document.getElementById("wizard-kid-birthday").value;
+
+    const adultPerson = { id: genId(), name: "You", birthday: adultBirthday };
+    const kidPerson = { id: genId(), name: "Kid", birthday: kidBirthday };
+    adults.push(adultPerson);
+    kids.push(kidPerson);
+    selectedAdultId = adultPerson.id;
+    selectedKidId = kidPerson.id;
+    savePeopleToStorage();
+    saveSelection();
+    renderPeopleUI();
+    trackEvent('wizard_complete', { adults: adults.length, kids: kids.length });
+
+    wizardOverlay.classList.add("hidden");
+    tryStartFresh();
+  }
 
   function startFresh(adult, kid) {
     const today = new Date();
