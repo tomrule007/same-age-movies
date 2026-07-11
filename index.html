@@ -430,6 +430,74 @@
     border-color: var(--accent);
   }
 
+  /* ---- Region selector (settings row + shared chip picker) ---- */
+  .region-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1a1d22;
+    border: 1px solid #2a2e35;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+  }
+  .region-row-current {
+    font-size: 13.5px;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .region-row-change {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .region-search-input {
+    margin-bottom: 12px;
+  }
+  .region-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .region-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #1a1d22;
+    color: var(--muted);
+    border: 1px solid #2a2e35;
+    padding: 9px 13px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .region-chip.active {
+    background: var(--accent);
+    color: #14161a;
+    border-color: var(--accent);
+  }
+  .region-chip-empty {
+    font-size: 12.5px;
+    color: var(--muted);
+    padding: 8px 2px;
+  }
+  .region-panel .menu-scroll {
+    display: flex;
+    flex-direction: column;
+  }
+  .wizard-region-scroll {
+    max-height: 34vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 14px;
+    padding-right: 2px;
+  }
+  .wizard-panel .region-chip-list {
+    justify-content: center;
+  }
+
   .container {
     flex: 1 1 auto;
     min-height: 0;
@@ -566,6 +634,21 @@
     margin-top: 5px;
   }
   .feed.single-card .movie-card .cert-badge {
+    font-size: clamp(9.5px, max(1.9vw, 1.6vh), 14px);
+    padding: 2px 6px;
+    margin-top: 7px;
+  }
+  .local-badge {
+    display: inline-block;
+    font-size: clamp(9.5px, 2vw, 13px);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-top: 5px;
+    margin-left: 6px;
+  }
+  .feed.single-card .movie-card .local-badge {
     font-size: clamp(9.5px, max(1.9vw, 1.6vh), 14px);
     padding: 2px 6px;
     margin-top: 7px;
@@ -1185,14 +1268,16 @@
       </div>
 
       <div class="menu-section">
-        <div class="toggle-label">Ratings included</div>
-        <div class="rating-toggle" id="rating-toggle">
-          <button data-rating="G" class="active">G</button>
-          <button data-rating="PG" class="active">PG</button>
-          <button data-rating="PG-13" class="active">PG-13</button>
-          <button data-rating="R">R</button>
-          <button data-rating="Unrated">Unrated</button>
+        <div class="toggle-label">Region</div>
+        <div class="region-row" id="region-row" role="button" tabindex="0">
+          <span class="region-row-current" id="region-row-current">🇺🇸 United States</span>
+          <span class="region-row-change">Change ›</span>
         </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="toggle-label">Ratings included</div>
+        <div class="rating-toggle" id="rating-toggle"></div>
       </div>
     </details>
   </div>
@@ -1218,6 +1303,19 @@
     <div class="menu-section">
       <div id="saved-list" class="people-list"></div>
     </div>
+  </div>
+</div>
+
+<div class="menu-panel hidden region-panel" id="region-panel">
+  <div class="menu-top">
+    <div class="menu-header">
+      <span>Choose Region</span>
+      <button class="menu-close" id="region-panel-close">✕</button>
+    </div>
+  </div>
+  <div class="menu-scroll">
+    <input id="region-modal-search" class="light-input region-search-input" placeholder="Search countries...">
+    <div id="region-modal-list" class="region-chip-list"></div>
   </div>
 </div>
 
@@ -1310,10 +1408,13 @@
       <div class="wizard-step-dot" data-step-dot="0">1</div>
       <div class="wizard-step-line" data-step-line="0"></div>
       <div class="wizard-step-dot" data-step-dot="1">2</div>
+      <div class="wizard-step-line" data-step-line="1"></div>
+      <div class="wizard-step-dot" data-step-dot="2">3</div>
     </div>
     <div class="wizard-step-labels">
       <span>Your birthday</span>
       <span>Their birthday</span>
+      <span>Region</span>
     </div>
 
     <div class="wizard-panel" data-panel="0">
@@ -1330,6 +1431,16 @@
       <p class="wizard-sub">We'll find movies from when you were exactly their age.</p>
       <input type="date" id="wizard-kid-birthday" class="wizard-date-input" aria-label="Kid's birthday">
       <div class="wizard-error hidden" id="wizard-kid-error">Please pick a birthday to continue.</div>
+    </div>
+
+    <div class="wizard-panel hidden" data-panel="2">
+      <div class="wizard-emoji">🌍</div>
+      <h2 class="wizard-title">Which region?</h2>
+      <p class="wizard-sub">We'll match movie ratings and release dates to your country.</p>
+      <input id="wizard-region-search" class="light-input region-search-input" placeholder="Search countries...">
+      <div class="wizard-region-scroll">
+        <div id="wizard-region-list" class="region-chip-list"></div>
+      </div>
     </div>
 
     <div class="wizard-actions">
@@ -1392,6 +1503,190 @@
   const splashStartBtn = document.getElementById("splash-start-btn");
   const detailClose = document.getElementById("detail-close");
   const detailBody = document.getElementById("detail-body");
+
+  // ---- Regions ----
+  // Countries the region picker supports. Certification systems for each are
+  // fetched live from TMDB (see loadCertifications) rather than hardcoded,
+  // since TMDB maintains the authoritative, up-to-date list per country.
+  // TMDB locale used for translated titles/overviews/certification meanings.
+  // Countries with multiple official languages use the most common one on
+  // TMDB; this can be swapped per-region if a different one is preferred.
+  const REGION_LOCALE = {
+    US: "en-US", GB: "en-GB", CA: "en-CA", AU: "en-AU", NZ: "en-NZ", IE: "en-IE", IN: "en-IN",
+    BR: "pt-BR", KR: "ko-KR", CN: "zh-CN", JP: "ja-JP", FR: "fr-FR", DE: "de-DE",
+    MX: "es-MX", IT: "it-IT", ES: "es-ES", SE: "sv-SE", NO: "no-NO", DK: "da-DK",
+    FI: "fi-FI", NL: "nl-NL", BE: "nl-BE", AR: "es-AR", CL: "es-CL"
+  };
+  function getLanguage() {
+    return REGION_LOCALE[selectedRegion] || "en-US";
+  }
+
+  const REGIONS = [
+    { code: "US", flag: "🇺🇸", name: "United States" },
+    { code: "BR", flag: "🇧🇷", name: "Brazil" },
+    { code: "KR", flag: "🇰🇷", name: "South Korea" },
+    { code: "CN", flag: "🇨🇳", name: "China" },
+    { code: "JP", flag: "🇯🇵", name: "Japan" },
+    { code: "GB", flag: "🇬🇧", name: "United Kingdom" },
+    { code: "FR", flag: "🇫🇷", name: "France" },
+    { code: "DE", flag: "🇩🇪", name: "Germany" },
+    { code: "CA", flag: "🇨🇦", name: "Canada" },
+    { code: "AU", flag: "🇦🇺", name: "Australia" },
+    { code: "IN", flag: "🇮🇳", name: "India" },
+    { code: "MX", flag: "🇲🇽", name: "Mexico" },
+    { code: "IT", flag: "🇮🇹", name: "Italy" },
+    { code: "ES", flag: "🇪🇸", name: "Spain" },
+    { code: "SE", flag: "🇸🇪", name: "Sweden" },
+    { code: "NO", flag: "🇳🇴", name: "Norway" },
+    { code: "DK", flag: "🇩🇰", name: "Denmark" },
+    { code: "FI", flag: "🇫🇮", name: "Finland" },
+    { code: "NL", flag: "🇳🇱", name: "Netherlands" },
+    { code: "BE", flag: "🇧🇪", name: "Belgium" },
+    { code: "AR", flag: "🇦🇷", name: "Argentina" },
+    { code: "CL", flag: "🇨🇱", name: "Chile" },
+    { code: "NZ", flag: "🇳🇿", name: "New Zealand" },
+    { code: "IE", flag: "🇮🇪", name: "Ireland" }
+  ];
+
+  // Certification tiers that are reserved for adult-only content in a given
+  // country's ratings system (e.g. US NC-17, UK R18). Content in these tiers
+  // is ALWAYS excluded and this is intentionally not exposed as a user
+  // setting anywhere in the UI. This is in addition to — not instead of —
+  // the hardcoded include_adult=false on every TMDB request below.
+  const ADULT_ONLY_CERTS = {
+    US: ["NC-17"],
+    GB: ["R18"],
+    AU: ["R18+", "X18+"],
+    NZ: ["R18"],
+    IE: ["18"]
+  };
+
+  // Used before the live TMDB certification list has loaded, and as a
+  // fallback for any region TMDB has no certification data for.
+  const FALLBACK_CERTS_US = [
+    { certification: "G", meaning: "General Audiences", order: 1 },
+    { certification: "PG", meaning: "Parental Guidance Suggested", order: 2 },
+    { certification: "PG-13", meaning: "Parents Strongly Cautioned", order: 3 },
+    { certification: "R", meaning: "Restricted", order: 4 },
+    { certification: "NC-17", meaning: "Adults Only", order: 5 }
+  ];
+
+  let selectedRegion = "US";
+  let certificationsByCountry = null; // populated by loadCertifications()
+
+  function isAdultOnlyCert(region, cert) {
+    if (!cert) return false;
+    return (ADULT_ONLY_CERTS[region] || []).includes(cert) || (ADULT_ONLY_CERTS.US || []).includes(cert);
+  }
+
+  function getCertificationsForRegion(region) {
+    const all = certificationsByCountry || {};
+    const list = all[region] || all.US || FALLBACK_CERTS_US;
+    return list.filter(c => !isAdultOnlyCert(region, c.certification));
+  }
+
+  async function loadCertifications() {
+    const cached = safeGet("tmdbCertifications");
+    if (cached) {
+      try { certificationsByCountry = JSON.parse(cached); } catch (e) { certificationsByCountry = null; }
+    }
+    try {
+      const token = getApiToken();
+      const res = await fetch(`https://api.themoviedb.org/3/certification/movie/list?language=${getLanguage()}`, {
+        headers: { Authorization: `Bearer ${token}`, accept: "application/json" }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.certifications) {
+          certificationsByCountry = data.certifications;
+          safeSet("tmdbCertifications", JSON.stringify(data.certifications));
+        }
+      }
+    } catch (e) { /* offline or blocked — fall back to cached/default certs */ }
+    // The fallback cert list used before this resolved may not match the
+    // real system for non-US regions — recompute so defaults/labels are
+    // accurate now that real data (or a same-shaped cache) is in.
+    currentRatings = loadRatingsForRegion(selectedRegion);
+    renderRatingToggle();
+    fullRenderFeed();
+  }
+
+  function loadRegion() {
+    const stored = safeGet("region");
+    if (stored && REGIONS.find(r => r.code === stored)) {
+      selectedRegion = stored;
+    } else {
+      const detected = getUserRegion();
+      selectedRegion = REGIONS.find(r => r.code === detected) ? detected : "US";
+    }
+  }
+
+  function setRegion(code) {
+    if (code === selectedRegion) return;
+    selectedRegion = code;
+    safeSet("region", code);
+    updateRegionDisplay();
+    currentRatings = loadRatingsForRegion(selectedRegion);
+    renderRatingToggle();
+    // A region change affects language (titles/overviews) and which movies
+    // are pulled in as local picks, so re-fetch rather than just re-render.
+    if (getSelectedAdult() && getSelectedKid()) {
+      tryStartFresh();
+    }
+  }
+
+  function regionInfo(code) {
+    return REGIONS.find(r => r.code === code) || REGIONS[0];
+  }
+
+  function updateRegionDisplay() {
+    const info = regionInfo(selectedRegion);
+    const label = `${info.flag} ${info.name}`;
+    const rowEl = document.getElementById("region-row-current");
+    if (rowEl) rowEl.textContent = label;
+  }
+
+  function renderRegionChipList(listEl, query) {
+    const t = (query || "").toLowerCase();
+    const filtered = REGIONS.filter(c => c.name.toLowerCase().includes(t) || c.code.toLowerCase().includes(t));
+    listEl.innerHTML = filtered.map(c => `
+      <button type="button" class="region-chip${c.code === selectedRegion ? " active" : ""}" data-region="${c.code}">${c.flag} ${escapeHtml(c.name)}</button>
+    `).join("") || `<div class="region-chip-empty">No countries match.</div>`;
+  }
+
+  function refreshAllRegionChipLists() {
+    const wizardList = document.getElementById("wizard-region-list");
+    const modalList = document.getElementById("region-modal-list");
+    if (wizardList) renderRegionChipList(wizardList, document.getElementById("wizard-region-search").value);
+    if (modalList) renderRegionChipList(modalList, document.getElementById("region-modal-search").value);
+  }
+
+  function defaultRatingsForRegion(region) {
+    const certs = getCertificationsForRegion(region).slice().sort((a, b) => a.order - b.order);
+    // Mirrors the original US default (everything but the most restrictive
+    // tier, e.g. R, is on by default). Unrated stays off by default.
+    const defaults = certs.slice(0, Math.max(certs.length - 1, 0)).map(c => c.certification);
+    return new Set(defaults);
+  }
+
+  function loadRatingsForRegion(region) {
+    const stored = safeGet(`ratings:${region}`);
+    if (stored) {
+      try { return new Set(JSON.parse(stored)); } catch (e) { /* fall through to default */ }
+    }
+    return defaultRatingsForRegion(region);
+  }
+
+  function saveRatingsForRegion(region) {
+    safeSet(`ratings:${region}`, JSON.stringify(Array.from(currentRatings)));
+  }
+
+  function renderRatingToggle() {
+    const certs = getCertificationsForRegion(selectedRegion).slice().sort((a, b) => a.order - b.order);
+    const chips = certs.map(c => `<button data-rating="${escapeHtml(c.certification)}"${currentRatings.has(c.certification) ? ' class="active"' : ""} title="${escapeHtml(c.meaning || "")}">${escapeHtml(c.certification)}</button>`);
+    chips.push(`<button data-rating="Unrated"${currentRatings.has("Unrated") ? ' class="active"' : ""}>Unrated</button>`);
+    ratingToggleEl.innerHTML = chips.join("");
+  }
 
   let currentMode = "rental";
   let currentRatings = new Set(["G", "PG", "PG-13"]);
@@ -1637,6 +1932,33 @@
     savedPanel.classList.add("hidden");
   });
 
+  const regionRow = document.getElementById("region-row");
+  const regionPanel = document.getElementById("region-panel");
+  const regionPanelClose = document.getElementById("region-panel-close");
+  const regionModalSearch = document.getElementById("region-modal-search");
+  const regionModalList = document.getElementById("region-modal-list");
+
+  function openRegionPanel() {
+    trackClick('region_panel_open');
+    regionModalSearch.value = "";
+    renderRegionChipList(regionModalList, "");
+    regionPanel.classList.remove("hidden");
+  }
+  regionRow.addEventListener("click", openRegionPanel);
+  regionRow.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openRegionPanel(); }
+  });
+  regionPanelClose.addEventListener("click", () => {
+    trackClick('region_panel_close');
+    regionPanel.classList.add("hidden");
+  });
+  regionModalSearch.addEventListener("input", () => renderRegionChipList(regionModalList, regionModalSearch.value));
+  regionModalList.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-region]");
+    if (!btn) return;
+    selectRegionChip(btn.dataset.region);
+  });
+
   modeTheatricalBtn.addEventListener("click", () => { trackClick('mode_theatrical'); setMode("theatrical"); });
   modeRentalBtn.addEventListener("click", () => { trackClick('mode_rental'); setMode("rental"); });
 
@@ -1652,6 +1974,7 @@
       currentRatings.add(rating);
       btn.classList.add("active");
     }
+    saveRatingsForRegion(selectedRegion);
     fullRenderFeed();
   });
 
@@ -1913,8 +2236,9 @@
   // Steps are data-driven so a future "region" step can be appended here.
 
   const WIZARD_STEPS = [
-    { key: "adult", input: "wizard-adult-birthday", error: "wizard-adult-error", defaultName: "You" },
-    { key: "kid", input: "wizard-kid-birthday", error: "wizard-kid-error", defaultName: "Kid" }
+    { key: "adult", type: "date", input: "wizard-adult-birthday", error: "wizard-adult-error", defaultName: "You" },
+    { key: "kid", type: "date", input: "wizard-kid-birthday", error: "wizard-kid-error", defaultName: "Kid" },
+    { key: "region", type: "region" }
   ];
   let wizardStepIndex = 0;
 
@@ -1924,13 +2248,22 @@
   const wizardPanels = Array.from(document.querySelectorAll(".wizard-panel"));
   const wizardDots = Array.from(document.querySelectorAll(".wizard-step-dot"));
   const wizardLines = Array.from(document.querySelectorAll(".wizard-step-line"));
+  const wizardRegionSearch = document.getElementById("wizard-region-search");
+  const wizardRegionList = document.getElementById("wizard-region-list");
 
   function openWizard() {
     wizardStepIndex = 0;
     WIZARD_STEPS.forEach(step => {
+      if (step.type !== "date") return;
       document.getElementById(step.input).value = "";
       document.getElementById(step.error).classList.add("hidden");
     });
+    // First-run default: auto-detect from the browser locale rather than
+    // whatever may already be stored, since this is a fresh setup.
+    loadRegion();
+    wizardRegionSearch.value = "";
+    renderRegionChipList(wizardRegionList, "");
+    updateRegionDisplay();
     renderWizardStep();
     wizardOverlay.classList.remove("hidden");
   }
@@ -1952,14 +2285,18 @@
 
   wizardNextBtn.addEventListener("click", () => {
     const step = WIZARD_STEPS[wizardStepIndex];
-    const input = document.getElementById(step.input);
-    const errorEl = document.getElementById(step.error);
 
-    if (!input.value) {
-      errorEl.classList.remove("hidden");
-      return;
+    if (step.type === "date") {
+      const input = document.getElementById(step.input);
+      const errorEl = document.getElementById(step.error);
+      if (!input.value) {
+        errorEl.classList.remove("hidden");
+        return;
+      }
+      errorEl.classList.add("hidden");
     }
-    errorEl.classList.add("hidden");
+    // Region always has a value (auto-detected or user-picked default), so
+    // no validation is needed for that step.
     trackClick('wizard_next_' + step.key);
 
     if (wizardStepIndex < WIZARD_STEPS.length - 1) {
@@ -1968,6 +2305,19 @@
     } else {
       finishWizard();
     }
+  });
+
+  function selectRegionChip(code) {
+    trackClick('region_select_' + code);
+    setRegion(code);
+    refreshAllRegionChipLists();
+  }
+
+  wizardRegionSearch.addEventListener("input", () => renderRegionChipList(wizardRegionList, wizardRegionSearch.value));
+  wizardRegionList.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-region]");
+    if (!btn) return;
+    selectRegionChip(btn.dataset.region);
   });
 
   wizardBackBtn.addEventListener("click", () => {
@@ -2083,20 +2433,43 @@
       return;
     }
     try {
-      const url = `https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&page=1&include_adult=false&vote_count.gte=20` +
-        `&primary_release_date.gte=${fmtDate(startDate)}&primary_release_date.lte=${fmtDate(endDate)}`;
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}`, accept: "application/json" }
-      });
-      if (res.status === 401) {
+      // include_adult=false is intentionally always hardcoded here — adult
+      // content exclusion is not a user-configurable setting.
+      const dateParams = `&primary_release_date.gte=${fmtDate(startDate)}&primary_release_date.lte=${fmtDate(endDate)}`;
+      const lang = getLanguage();
+      const baseParams = `sort_by=popularity.desc&page=1&include_adult=false&region=${selectedRegion}&language=${lang}` + dateParams;
+
+      // Two queries, merged: one for movies that were globally popular, and
+      // one for movies made in the selected region — since TMDB's global
+      // popularity score won't surface a movie that was only a hit locally
+      // (e.g. a French film in France) even when region/language are set.
+      const globalUrl = `https://api.themoviedb.org/3/discover/movie?${baseParams}&vote_count.gte=20`;
+      const localUrl = `https://api.themoviedb.org/3/discover/movie?${baseParams}&vote_count.gte=5&with_origin_country=${selectedRegion}`;
+
+      const [globalSettled, localSettled] = await Promise.allSettled([
+        fetch(globalUrl, { headers: { Authorization: `Bearer ${token}`, accept: "application/json" } }),
+        fetch(localUrl, { headers: { Authorization: `Bearer ${token}`, accept: "application/json" } })
+      ]);
+
+      const globalRes = globalSettled.status === "fulfilled" ? globalSettled.value : null;
+      const localRes = localSettled.status === "fulfilled" ? localSettled.value : null;
+
+      if (globalRes && globalRes.status === 401) {
         throw new Error("TMDB rejected the API token. Check the hardcoded token in the script.");
       }
-      if (!res.ok) throw new Error(`TMDB request failed: ${res.status}`);
-      const data = await res.json();
-      const results = data.results || [];
+      if (!globalRes || !globalRes.ok) throw new Error(`TMDB request failed: ${globalRes ? globalRes.status : "network error"}`);
+
+      const globalData = await globalRes.json();
+      const globalResults = globalData.results || [];
+      const localResults = (localRes && localRes.ok) ? ((await localRes.json()).results || []) : [];
+
+      const globalIds = new Set(globalResults.map(m => m.id));
+      const mergedResults = globalResults.concat(
+        localResults.filter(m => !globalIds.has(m.id)).map(m => ({ ...m, isLocalPick: true }))
+      );
 
       const existingIds = new Set(loadedMovies.map(m => m.id));
-      const newResults = results.filter(m => !existingIds.has(m.id));
+      const newResults = mergedResults.filter(m => !existingIds.has(m.id));
 
       const withReleaseDates = await Promise.all(
         newResults.map(async (m) => {
@@ -2112,6 +2485,7 @@
             title: m.title,
             poster_path: m.poster_path,
             primaryReleaseDate: m.release_date || null,
+            isLocalPick: !!m.isLocalPick,
             releaseDatesData
           };
         })
@@ -2137,17 +2511,25 @@
   }
 
   function isAdultRated(releaseDatesData) {
+    // Hardcoded safety net on top of include_adult=false — always applied,
+    // never exposed as a toggle, regardless of which region is selected.
     const cert = getCertification(releaseDatesData);
-    return cert === "NC-17" || cert === "X";
+    return isAdultOnlyCert(selectedRegion, cert);
+  }
+
+  function findRegionReleaseEntry(releaseDatesData) {
+    if (!releaseDatesData || !releaseDatesData.results) return null;
+    return releaseDatesData.results.find(r => r.iso_3166_1 === selectedRegion) ||
+      releaseDatesData.results.find(r => r.iso_3166_1 === "US") ||
+      null;
   }
 
   function getCertification(releaseDatesData) {
-    if (!releaseDatesData || !releaseDatesData.results) return null;
-    const us = releaseDatesData.results.find(r => r.iso_3166_1 === "US");
-    if (!us) return null;
-    const theatrical = us.release_dates.find(rd => (rd.type === 3 || rd.type === 2) && rd.certification);
+    const entry = findRegionReleaseEntry(releaseDatesData);
+    if (!entry) return null;
+    const theatrical = entry.release_dates.find(rd => (rd.type === 3 || rd.type === 2) && rd.certification);
     if (theatrical) return theatrical.certification;
-    const any = us.release_dates.find(rd => rd.certification);
+    const any = entry.release_dates.find(rd => rd.certification);
     return any ? any.certification : null;
   }
 
@@ -2168,12 +2550,10 @@
     let theaterDate = null;
     let rentalDate = null;
 
-    if (info && info.results) {
-      const us = info.results.find(r => r.iso_3166_1 === "US");
-      if (us) {
-        theaterDate = earliestForTypes(us, [3, 2]);
-        rentalDate = earliestForTypes(us, [4, 5]);
-      }
+    const regionEntry = findRegionReleaseEntry(info);
+    if (regionEntry) {
+      theaterDate = earliestForTypes(regionEntry, [3, 2]);
+      rentalDate = earliestForTypes(regionEntry, [4, 5]);
     }
     // The US release_dates entry (e.g. a later English-dub re-release) can be
     // newer than TMDB's own primary release date, which usually reflects the
@@ -2257,6 +2637,7 @@
         ${display.ageLabel ? `<div class="age-at-release">${display.ageLabel}</div>` : ""}
         ${diffRow ? `<div class="diff-row">${diffRow}</div>` : ""}
         <div class="cert-badge">${cert ? escapeHtml(cert) : "Unrated"}</div>
+        ${movie.isLocalPick ? `<div class="local-badge">🌍 Local pick</div>` : ""}
         <div class="card-actions">
           <button type="button" class="save-btn${saved ? " saved" : ""}" data-action="toggle-save">${saved ? "★ Saved" : "☆ Save"}</button>
         </div>
@@ -2571,7 +2952,7 @@
     try {
       let details = detailCache.get(movieId);
       if (!details) {
-        const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?append_to_response=credits,videos,watch/providers`, {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?append_to_response=credits,videos,watch/providers&language=${getLanguage()}`, {
           headers: { Authorization: `Bearer ${token}`, accept: "application/json" }
         });
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
@@ -2652,7 +3033,7 @@
   function buildWatchProvidersHtml(details) {
     const allRegions = details["watch/providers"] && details["watch/providers"].results;
     if (!allRegions) return "";
-    const region = getUserRegion();
+    const region = selectedRegion || getUserRegion();
     const data = allRegions[region] || allRegions.US;
     if (!data) return "";
 
@@ -2728,6 +3109,11 @@
     loadPeopleFromStorage();
     loadSavedMoviesFromStorage();
     renderPeopleUI();
+    loadRegion();
+    updateRegionDisplay();
+    currentRatings = loadRatingsForRegion(selectedRegion);
+    renderRatingToggle(); // re-rendered again once live TMDB certs arrive
+    loadCertifications();
     const savedCardCount = parseInt(safeGet("cardsPerScreen") || "1", 10);
     setCardsPerScreen(savedCardCount === 1 ? 1 : 2);
     if (storageBroken) {
