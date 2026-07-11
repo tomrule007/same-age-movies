@@ -1579,10 +1579,22 @@
     return (ADULT_ONLY_CERTS[region] || []).includes(cert) || (ADULT_ONLY_CERTS.US || []).includes(cert);
   }
 
+  function isUnratedCert(certification) {
+    // "NR" (and equivalents like "Not Rated"/"UR") aren't a real ratings-board
+    // tier — TMDB just uses them to mean "no rating info," same as no
+    // certification at all. That case is already represented by the separate
+    // "Unrated" toggle, so we fold it in here rather than showing it as its
+    // own chip. This also sidesteps an ordering bug: TMDB's `order` field is
+    // alphabetical, not severity-based, so "NR" doesn't reliably sort last
+    // and was getting defaulted on alongside genuinely mild ratings.
+    const normalized = (certification || "").trim().toUpperCase();
+    return normalized === "NR" || normalized === "UR" || normalized === "NOT RATED" || normalized === "UNRATED";
+  }
+
   function getCertificationsForRegion(region) {
     const all = certificationsByCountry || {};
     const list = all[region] || all.US || FALLBACK_CERTS_US;
-    return list.filter(c => !isAdultOnlyCert(region, c.certification));
+    return list.filter(c => !isAdultOnlyCert(region, c.certification) && !isUnratedCert(c.certification));
   }
 
   async function loadCertifications() {
@@ -2281,6 +2293,9 @@
     });
     wizardBackBtn.classList.toggle("hidden", wizardStepIndex === 0);
     wizardNextBtn.textContent = wizardStepIndex === WIZARD_STEPS.length - 1 ? "Let's go →" : "Next →";
+    // Fires whenever a step becomes visible (open, next, or back) so funnel
+    // drop-off can be seen even when a user never taps a button on a step.
+    trackEvent('wizard_step_view', { step: WIZARD_STEPS[wizardStepIndex].key, step_index: wizardStepIndex });
   }
 
   wizardNextBtn.addEventListener("click", () => {
@@ -2345,6 +2360,9 @@
 
     wizardOverlay.classList.add("hidden");
     tryStartFresh();
+    // Confirms the funnel actually reached the feed, not just that the
+    // wizard's last step was submitted.
+    trackEvent('feed_view', { source: 'wizard' });
   }
 
   function startFresh(adult, kid) {
@@ -2437,7 +2455,15 @@
       // content exclusion is not a user-configurable setting.
       const dateParams = `&primary_release_date.gte=${fmtDate(startDate)}&primary_release_date.lte=${fmtDate(endDate)}`;
       const lang = getLanguage();
-      const baseParams = `sort_by=popularity.desc&page=1&include_adult=false&region=${selectedRegion}&language=${lang}` + dateParams;
+      // Deliberately no `region=` param here: when present, TMDB's discover
+      // endpoint returns each movie's release_date adjusted to that region
+      // (e.g. a 2022 US reissue date for a 1993 foreign film) instead of the
+      // movie's true primary release date. That corrupted date then broke
+      // both feed ordering and the theatrical-date fallback in
+      // getReleaseDateInfo. Region-specific certification/release info is
+      // fetched separately per movie below via /release_dates, so it's not
+      // needed here.
+      const baseParams = `sort_by=popularity.desc&page=1&include_adult=false&language=${lang}` + dateParams;
 
       // Two queries, merged: one for movies that were globally popular, and
       // one for movies made in the selected region — since TMDB's global
@@ -2528,9 +2554,10 @@
     const entry = findRegionReleaseEntry(releaseDatesData);
     if (!entry) return null;
     const theatrical = entry.release_dates.find(rd => (rd.type === 3 || rd.type === 2) && rd.certification);
-    if (theatrical) return theatrical.certification;
-    const any = entry.release_dates.find(rd => rd.certification);
-    return any ? any.certification : null;
+    const raw = theatrical ? theatrical.certification : (entry.release_dates.find(rd => rd.certification) || {}).certification;
+    if (!raw) return null;
+    // Treat "NR" the same as no certification at all — see isUnratedCert.
+    return isUnratedCert(raw) ? null : raw;
   }
 
   function earliestForTypes(us, types) {
@@ -2867,6 +2894,11 @@
       detailModal.classList.add("hidden");
     }
   });
+  // Delegated so it still fires after renderMovieDetail() replaces detailBody's innerHTML.
+  detailBody.addEventListener("click", (e) => {
+    const tracked = e.target.closest("[data-track]");
+    if (tracked) trackClick(tracked.dataset.track);
+  });
 
   // Swipe down on the sheet to dismiss it.
   // Note: touch-action:pan-y tells the browser vertical panning is always native,
@@ -3023,9 +3055,10 @@
 
   function buildProviderGroup(label, list, movieTitle) {
     if (!list || !list.length) return "";
+    const groupType = label === "Stream" ? "stream" : "rentbuy";
     const logos = list.map(p => {
       const url = getProviderSearchUrl(p.provider_name, movieTitle);
-      return `<a class="provider-logo-link" href="${url}" target="_blank" rel="noopener" title="Find ${escapeHtml(p.provider_name)}"><img class="provider-logo" src="https://image.tmdb.org/t/p/w92${p.logo_path}" alt="${escapeHtml(p.provider_name)}" loading="lazy"></a>`;
+      return `<a class="provider-logo-link" href="${url}" target="_blank" rel="noopener" title="Find ${escapeHtml(p.provider_name)}" data-track="provider_click_${groupType}_${escapeHtml(p.provider_name)}"><img class="provider-logo" src="https://image.tmdb.org/t/p/w92${p.logo_path}" alt="${escapeHtml(p.provider_name)}" loading="lazy"></a>`;
     }).join("");
     return `<div class="provider-group"><div class="provider-group-label">${label}</div><div class="detail-providers">${logos}</div></div>`;
   }
@@ -3085,6 +3118,7 @@
         ${details.runtime ? `<span class="pill">${details.runtime} min</span>` : ""}
       </div>
       ${watchProvidersHtml}
+      ${trailer ? `<a class="detail-trailer-link" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener" data-track="detail_trailer_link">▶ Watch Trailer</a>` : ""}
       ${details.overview ? `
         <div class="detail-section-label">Overview</div>
         <div class="detail-overview">${escapeHtml(details.overview)}</div>
@@ -3093,7 +3127,6 @@
         <div class="detail-section-label">Cast</div>
         <div class="detail-cast">${escapeHtml(cast)}</div>
       ` : ""}
-      ${trailer ? `<a class="detail-trailer-link" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener">▶ Watch Trailer</a>` : ""}
     `;
   }
 
