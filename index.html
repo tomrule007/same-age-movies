@@ -378,8 +378,28 @@
     font-size: 13px;
     gap: 8px;
   }
-  .person-row .person-info { color: var(--text); line-height: 1.5; }
-  .person-row .person-info span { color: var(--muted); font-size: 11.5px; margin-left: 6px; }
+  .person-row .person-info { color: var(--text); line-height: 1.5; display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+  .person-row .person-info span { color: var(--muted); font-size: 11.5px; flex-shrink: 0; }
+  .person-row .person-name-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    padding: 2px 1px;
+    min-width: 0;
+    flex: 1 1 auto;
+    border-radius: 0;
+    transition: border-color .15s ease;
+  }
+  .person-row .person-name-input:hover {
+    border-bottom-color: var(--border-input);
+  }
+  .person-row .person-name-input:focus {
+    outline: none;
+    border-bottom-color: var(--accent);
+  }
   .person-row .delete-btn {
     background: transparent;
     border: none;
@@ -1050,6 +1070,34 @@
     outline: none;
     border-bottom-color: var(--accent);
   }
+  .wizard-name-field {
+    max-width: 260px;
+    margin: 0 auto 16px;
+  }
+  .wizard-name-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--border-input);
+    color: var(--text);
+    padding: 8px 4px 10px;
+    text-align: center;
+    font-size: 15px;
+    border-radius: 0;
+    transition: border-color .15s ease;
+  }
+  .wizard-name-input:focus {
+    outline: none;
+    border-bottom-color: var(--accent);
+  }
+  .wizard-name-optional-tag {
+    display: block;
+    font-size: 10.5px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 5px;
+  }
   .wizard-error {
     color: var(--down-strong);
     font-size: 12.5px;
@@ -1517,6 +1565,10 @@
       <div class="wizard-emoji">🎂</div>
       <h2 class="wizard-title">When were you born?</h2>
       <p class="wizard-sub">We'll use this to find movies from your childhood.</p>
+      <div class="wizard-name-field">
+        <input type="text" id="wizard-adult-name" class="wizard-name-input" placeholder="Your name" aria-label="Your name" autocomplete="off">
+        <span class="wizard-name-optional-tag">Optional — we'll use "You" if left blank</span>
+      </div>
       <input type="date" id="wizard-adult-birthday" class="wizard-date-input" aria-label="Your birthday">
       <div class="wizard-error hidden" id="wizard-adult-error">Please pick a birthday to continue.</div>
     </div>
@@ -1525,6 +1577,10 @@
       <div class="wizard-emoji">🧒</div>
       <h2 class="wizard-title">When was your kid born?</h2>
       <p class="wizard-sub">We'll find movies from when you were exactly their age.</p>
+      <div class="wizard-name-field">
+        <input type="text" id="wizard-kid-name" class="wizard-name-input" placeholder="Kid's name" aria-label="Kid's name" autocomplete="off">
+        <span class="wizard-name-optional-tag">Optional — we'll use "Kid" if left blank</span>
+      </div>
       <input type="date" id="wizard-kid-birthday" class="wizard-date-input" aria-label="Kid's birthday">
       <div class="wizard-error hidden" id="wizard-kid-error">Please pick a birthday to continue.</div>
     </div>
@@ -1923,8 +1979,10 @@
   function getSelectedKid() { return kids.find(k => k.id === selectedKidId) || null; }
 
   function renderPeopleUI(justAddedId) {
-    adultSelect.innerHTML = adults.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
-    kidSelect.innerHTML = kids.map(k => `<option value="${k.id}">${escapeHtml(k.name)}</option>`).join("");
+    adultSelect.innerHTML = adults.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("") +
+      `<option value="__add_adult__">+ Add adult…</option>`;
+    kidSelect.innerHTML = kids.map(k => `<option value="${k.id}">${escapeHtml(k.name)}</option>`).join("") +
+      `<option value="__add_kid__">+ Add kid…</option>`;
 
     if (!adults.find(a => a.id === selectedAdultId)) selectedAdultId = adults[0] ? adults[0].id : null;
     if (!kids.find(k => k.id === selectedKidId)) selectedKidId = kids[0] ? kids[0].id : null;
@@ -1934,14 +1992,20 @@
 
     adultsListEl.innerHTML = adults.map(a => `
       <div class="person-row${a.id === justAddedId ? " just-added" : ""}">
-        <div class="person-info">${escapeHtml(a.name)} <span>${a.birthday}</span></div>
+        <div class="person-info">
+          <input type="text" class="person-name-input" value="${escapeAttr(a.name)}" data-rename-adult="${a.id}" aria-label="Rename ${escapeHtml(a.name)}" autocomplete="off">
+          <span>${a.birthday}</span>
+        </div>
         <button type="button" class="delete-btn" data-remove-adult="${a.id}" aria-label="Delete ${escapeHtml(a.name)}">🗑</button>
       </div>
     `).join("") || `<div class="comparison-summary">No adults added yet.</div>`;
 
     kidsListEl.innerHTML = kids.map(k => `
       <div class="person-row${k.id === justAddedId ? " just-added" : ""}">
-        <div class="person-info">${escapeHtml(k.name)} <span>${k.birthday}</span></div>
+        <div class="person-info">
+          <input type="text" class="person-name-input" value="${escapeAttr(k.name)}" data-rename-kid="${k.id}" aria-label="Rename ${escapeHtml(k.name)}" autocomplete="off">
+          <span>${k.birthday}</span>
+        </div>
         <button type="button" class="delete-btn" data-remove-kid="${k.id}" aria-label="Delete ${escapeHtml(k.name)}">🗑</button>
       </div>
     `).join("") || `<div class="comparison-summary">No kids added yet.</div>`;
@@ -2010,6 +2074,38 @@
 
   // ---- Delete (with confirm, so a stray tap can't wipe someone out) ----
 
+  // ---- Rename (saves on blur / Enter; empty name reverts to what it was) ----
+
+  function wireRename(listEl, list, attr) {
+    listEl.addEventListener("focusin", (e) => {
+      const input = e.target.closest("input[" + attr + "]");
+      if (input) input.dataset.prevValue = input.value;
+    });
+    listEl.addEventListener("keydown", (e) => {
+      const input = e.target.closest("input[" + attr + "]");
+      if (!input) return;
+      if (e.key === "Enter") input.blur();
+      if (e.key === "Escape") { input.value = input.dataset.prevValue || input.value; input.blur(); }
+    });
+    listEl.addEventListener("focusout", (e) => {
+      const input = e.target.closest("input[" + attr + "]");
+      if (!input) return;
+      const id = input.dataset[attr === "data-rename-adult" ? "renameAdult" : "renameKid"];
+      const person = list().find(p => p.id === id);
+      if (!person) return;
+      const newName = input.value.trim();
+      if (!newName) { input.value = person.name; return; }
+      if (newName === person.name) return;
+      person.name = newName;
+      savePeopleToStorage();
+      renderPeopleUI();
+      trackClick(attr === "data-rename-adult" ? "rename_adult" : "rename_kid");
+    });
+  }
+
+  wireRename(adultsListEl, () => adults, "data-rename-adult");
+  wireRename(kidsListEl, () => kids, "data-rename-kid");
+
   adultsListEl.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-remove-adult]");
     if (!btn) return;
@@ -2040,13 +2136,35 @@
     tryStartFresh();
   });
 
+  function openMenuFocusAdd(nameInput) {
+    savedPanel.classList.add("hidden");
+    menuPanel.classList.remove("hidden");
+    trackClick('add_person_via_selector');
+    // Wait a beat for the panel's open transition before scrolling/focusing,
+    // otherwise scrollIntoView can measure the pre-transition layout.
+    setTimeout(() => {
+      nameInput.scrollIntoView({ behavior: "smooth", block: "center" });
+      nameInput.focus();
+    }, 150);
+  }
+
   adultSelect.addEventListener("change", () => {
+    if (adultSelect.value === "__add_adult__") {
+      adultSelect.value = selectedAdultId || "";
+      openMenuFocusAdd(newAdultName);
+      return;
+    }
     selectedAdultId = adultSelect.value;
     saveSelection();
     tryStartFresh();
   });
 
   kidSelect.addEventListener("change", () => {
+    if (kidSelect.value === "__add_kid__") {
+      kidSelect.value = selectedKidId || "";
+      openMenuFocusAdd(newKidName);
+      return;
+    }
     selectedKidId = kidSelect.value;
     saveSelection();
     tryStartFresh();
@@ -2389,8 +2507,8 @@
   // Steps are data-driven so a future "region" step can be appended here.
 
   const WIZARD_STEPS = [
-    { key: "adult", type: "date", input: "wizard-adult-birthday", error: "wizard-adult-error", defaultName: "You" },
-    { key: "kid", type: "date", input: "wizard-kid-birthday", error: "wizard-kid-error", defaultName: "Kid" },
+    { key: "adult", type: "date", input: "wizard-adult-birthday", error: "wizard-adult-error", nameInput: "wizard-adult-name", defaultName: "You" },
+    { key: "kid", type: "date", input: "wizard-kid-birthday", error: "wizard-kid-error", nameInput: "wizard-kid-name", defaultName: "Kid" },
     { key: "region", type: "region" }
   ];
   let wizardStepIndex = 0;
@@ -2410,6 +2528,7 @@
       if (step.type !== "date") return;
       document.getElementById(step.input).value = "";
       document.getElementById(step.error).classList.add("hidden");
+      if (step.nameInput) document.getElementById(step.nameInput).value = "";
     });
     // First-run default: auto-detect from the browser locale rather than
     // whatever may already be stored, since this is a fresh setup.
@@ -2487,9 +2606,11 @@
   function finishWizard() {
     const adultBirthday = document.getElementById("wizard-adult-birthday").value;
     const kidBirthday = document.getElementById("wizard-kid-birthday").value;
+    const adultName = document.getElementById("wizard-adult-name").value.trim() || "You";
+    const kidName = document.getElementById("wizard-kid-name").value.trim() || "Kid";
 
-    const adultPerson = { id: genId(), name: "You", birthday: adultBirthday };
-    const kidPerson = { id: genId(), name: "Kid", birthday: kidBirthday };
+    const adultPerson = { id: genId(), name: adultName, birthday: adultBirthday };
+    const kidPerson = { id: genId(), name: kidName, birthday: kidBirthday };
     adults.push(adultPerson);
     kids.push(kidPerson);
     selectedAdultId = adultPerson.id;
@@ -2497,7 +2618,7 @@
     savePeopleToStorage();
     saveSelection();
     renderPeopleUI();
-    trackEvent('wizard_complete', { adults: adults.length, kids: kids.length });
+    trackEvent('wizard_complete', { adults: adults.length, kids: kids.length, adult_named: adultName !== "You", kid_named: kidName !== "Kid" });
 
     wizardOverlay.classList.add("hidden");
     tryStartFresh();
@@ -3275,6 +3396,13 @@
     const div = document.createElement("div");
     div.textContent = String(str);
     return div.innerHTML;
+  }
+
+  // Like escapeHtml but also safe to drop inside a double-quoted HTML
+  // attribute (e.g. value="..."), since escapeHtml alone leaves literal
+  // quote characters untouched.
+  function escapeAttr(str) {
+    return escapeHtml(str).replace(/"/g, "&quot;");
   }
 
   // ---- Init ----
