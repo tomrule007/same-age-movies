@@ -228,6 +228,40 @@
   .share-badge.hidden { display: none; }
   .share-badge-icon { width: 16px; height: 16px; flex: 0 0 auto; }
   .share-badge-icon svg { display: block; width: 100%; height: 100%; }
+  .scroll-return-btn {
+    position: fixed;
+    left: 16px;
+    bottom: 20px;
+    z-index: 40;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text);
+    box-shadow: 0 4px 14px var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: transform 0.3s cubic-bezier(.2,1.4,.4,1), opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .scroll-return-btn.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .scroll-return-btn.hidden { display: none; }
+  .scroll-return-btn svg {
+    width: 19px;
+    height: 19px;
+    display: block;
+    transition: transform 0.2s ease;
+  }
+  .scroll-return-btn.direction-up svg { transform: rotate(180deg); }
   .selector-row {
     display: flex;
     align-items: center;
@@ -1579,6 +1613,13 @@
   <span class="share-badge-label">Share with a friend</span>
 </button>
 
+<button class="scroll-return-btn hidden" id="scroll-return-btn" title="Back to where you started" aria-label="Back to where you started">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <polyline points="18 13 12 19 6 13"></polyline>
+  </svg>
+</button>
+
 <div class="splash-overlay hidden" id="splash-overlay">
   <div class="splash-hero">
     <div class="splash-content">
@@ -2551,6 +2592,64 @@
     if (!isLoadingEarlier && feedEl.scrollTop < SCROLL_THRESHOLD) loadEarlier();
     const distanceFromBottom = feedEl.scrollHeight - feedEl.scrollTop - feedEl.clientHeight;
     if (!isLoadingLater && distanceFromBottom < SCROLL_THRESHOLD) loadLater();
+    updateScrollReturnBtnVisibility();
+  });
+
+  // ---- Back-to-origin scroll button ----
+  // A small floating button that returns the user to the card the feed
+  // originally opened on (today's closest match). It only appears once
+  // they've scrolled a few cards away, points up or down depending on
+  // which direction gets them back, and stays out of the way of the movie
+  // detail drawer.
+  const scrollReturnBtn = document.getElementById("scroll-return-btn");
+  const SCROLL_RETURN_CARD_COUNT = 3; // "a few movies" before the button appears
+  let feedOriginScrollTop = 0;
+  let feedOriginSet = false;
+
+  function getCardHeight() {
+    const perScreen = feedEl.classList.contains("single-card") ? 1 : 2;
+    return (feedEl.clientHeight / perScreen) || 1;
+  }
+
+  // Called once, right after the feed scrolls to the closest-match card on
+  // load (or reload after a filter/settings change) — that card is the
+  // "original" position this button returns to.
+  function setFeedOrigin(scrollTop) {
+    feedOriginScrollTop = scrollTop;
+    feedOriginSet = true;
+    updateScrollReturnBtnVisibility();
+  }
+
+  // Keeps the stored origin correct when older cards are prepended above
+  // the viewport and the feed shifts scrollTop to hold the visual position.
+  function shiftFeedOrigin(delta) {
+    if (feedOriginSet) feedOriginScrollTop += delta;
+  }
+
+  function updateScrollReturnBtnVisibility() {
+    const modalOpen = !detailModal.classList.contains("hidden");
+    if (!feedOriginSet || modalOpen) {
+      scrollReturnBtn.classList.remove("visible");
+      scrollReturnBtn.classList.add("hidden");
+      return;
+    }
+    const threshold = getCardHeight() * SCROLL_RETURN_CARD_COUNT;
+    const delta = feedEl.scrollTop - feedOriginScrollTop;
+    if (Math.abs(delta) < threshold) {
+      scrollReturnBtn.classList.remove("visible");
+      scrollReturnBtn.classList.add("hidden");
+      return;
+    }
+    scrollReturnBtn.classList.toggle("direction-up", delta > 0);
+    scrollReturnBtn.classList.remove("hidden");
+    requestAnimationFrame(() => scrollReturnBtn.classList.add("visible"));
+  }
+
+  scrollReturnBtn.addEventListener("click", () => {
+    trackClick('scroll_return');
+    feedEl.scrollTo({ top: feedOriginScrollTop, behavior: "smooth" });
+    scrollReturnBtn.classList.remove("visible");
+    scrollReturnBtn.classList.add("hidden");
   });
 
   function loadEarlier() {
@@ -3130,7 +3229,13 @@
       pendingScrollToClosest = false;
       if (closestId !== null) {
         const target = feedEl.querySelector(`[data-movie-id="${closestId}"]`);
-        if (target) target.scrollIntoView({ block: "start" });
+        if (target) {
+          target.scrollIntoView({ block: "start" });
+          // Use offsetTop rather than feedEl.scrollTop here — the feed has
+          // scroll-behavior:smooth, so scrollTop hasn't settled yet at this
+          // point in the animation.
+          setFeedOrigin(target.offsetTop);
+        }
       }
     }
   }
@@ -3167,7 +3272,9 @@
     const prevScrollTop = feedEl.scrollTop;
     feedEl.insertAdjacentHTML("afterbegin", html);
     // keep the visual position stable after inserting content above the viewport
-    feedEl.scrollTop = prevScrollTop + (feedEl.scrollHeight - prevScrollHeight);
+    const heightDelta = feedEl.scrollHeight - prevScrollHeight;
+    feedEl.scrollTop = prevScrollTop + heightDelta;
+    shiftFeedOrigin(heightDelta);
   }
 
   // ---- Swipe / tap interactions ----
@@ -3310,11 +3417,13 @@
   detailClose.addEventListener("click", () => {
     trackClick('detail_close');
     detailModal.classList.add("hidden");
+    updateScrollReturnBtnVisibility();
   });
   detailModal.addEventListener("click", (e) => {
     if (e.target === detailModal) {
       trackClick('detail_backdrop_close');
       detailModal.classList.add("hidden");
+      updateScrollReturnBtnVisibility();
     }
   });
   // Delegated so it still fires after renderMovieDetail() replaces detailBody's innerHTML.
@@ -3384,6 +3493,7 @@
         detailContent.style.transition = "none";
         detailContent.style.transform = "";
         detailContent.style.opacity = "";
+        updateScrollReturnBtnVisibility();
       }, 180);
     } else {
       detailContent.style.transform = "";
@@ -3396,6 +3506,7 @@
 
   async function openMovieDetail(movieId) {
     detailModal.classList.remove("hidden");
+    updateScrollReturnBtnVisibility();
     detailBody.innerHTML = DETAIL_SKELETON_HTML;
 
     const token = getApiToken();
