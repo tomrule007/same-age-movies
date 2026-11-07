@@ -15,39 +15,6 @@
     }
   })();
 </script>
-<!-- Google tag (gtag.js) -->
-<script>
-  // ---- Consent Mode v2 ----
-  // Ad-related signals are hardcoded to "denied" permanently: this app never
-  // requests to sell or share data for ads, so ad_storage, ad_user_data, and
-  // ad_personalization are never updated anywhere else in the code.
-  //
-  // analytics_storage also defaults to "denied" so no analytics cookies are
-  // set until a user explicitly consents. It's only ever flipped to
-  // "granted" by the consent banner (see the analytics-consent script near
-  // the end of the page), which itself only appears for returning users who
-  // already completed setup on a prior visit.
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('consent', 'default', {
-    'ad_storage': 'denied',
-    'ad_user_data': 'denied',
-    'ad_personalization': 'denied',
-    'analytics_storage': 'denied'
-  });
-  gtag('js', new Date());
-  gtag('config', 'G-EQRQZL5V5T');
-
-  // Restore a previously granted analytics choice on this page load, before
-  // gtag.js finishes loading, so tracking can start in the right state
-  // without waiting on the consent-banner script later in the page.
-  try {
-    if (window.localStorage.getItem('analyticsConsent') === 'granted') {
-      gtag('consent', 'update', { 'analytics_storage': 'granted' });
-    }
-  } catch (e) { /* storage unavailable */ }
-</script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-EQRQZL5V5T"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Same Age Movies</title>
@@ -387,51 +354,6 @@
     margin-top: 14px;
   }
   .storage-warning.hidden { display: none; }
-  .consent-banner {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 500;
-    background: var(--bg-elevated);
-    border-top: 1px solid var(--border);
-    box-shadow: 0 -2px 12px rgba(0,0,0,0.2);
-    padding: 14px 16px;
-    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  }
-  .consent-banner.hidden { display: none; }
-  .consent-banner-inner {
-    max-width: 520px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .consent-banner-text {
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--text);
-  }
-  .consent-banner-actions {
-    display: flex;
-    gap: 10px;
-  }
-  .consent-banner-actions button {
-    flex: 1;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 13.5px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text);
-  }
-  .consent-banner-actions button.consent-accept {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--accent-contrast);
-  }
   .menu-error {
     background: var(--down-bg);
     border: 1px solid var(--down);
@@ -568,7 +490,7 @@
   .add-person-row {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
   }
   .add-person-row .name-input {
     flex: 1 1 40%;
@@ -596,6 +518,38 @@
     opacity: .4;
     cursor: default;
   }
+  .my-picker {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+  }
+  .my-picker select {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 34px;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--border-input);
+    color: var(--text);
+    font-size: 14px;
+    padding: 0 2px;
+    border-radius: 0;
+    cursor: pointer;
+    transition: border-color .15s ease;
+  }
+  .my-picker select.is-empty { color: var(--placeholder); }
+  .my-picker select:focus { outline: none; border-bottom-color: var(--accent); }
+  .my-picker select option { background: var(--card); color: var(--text); }
+  .my-picker.wizard-picker {
+    max-width: 280px;
+    margin: 0 auto;
+  }
+  .my-picker.wizard-picker select {
+    height: 44px;
+    font-size: 17px;
+    border-bottom-width: 2px;
+  }
   .light-input {
     width: 100%;
     height: 34px;
@@ -613,15 +567,6 @@
   .light-input:focus {
     outline: none;
     border-bottom-color: var(--accent);
-  }
-  .date-placeholder {
-    position: absolute;
-    left: 2px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--placeholder);
-    font-size: 14px;
-    pointer-events: none;
   }
   .add-hint {
     color: var(--muted);
@@ -1181,25 +1126,6 @@
     line-height: 1.6;
     margin: 0 0 30px;
   }
-  .wizard-date-input {
-    width: 100%;
-    max-width: 260px;
-    margin: 0 auto;
-    display: block;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid var(--border-input);
-    color: var(--text);
-    padding: 8px 4px 10px;
-    text-align: center;
-    font-size: 19px;
-    border-radius: 0;
-    transition: border-color .15s ease;
-  }
-  .wizard-date-input:focus {
-    outline: none;
-    border-bottom-color: var(--accent);
-  }
   .wizard-name-field {
     max-width: 260px;
     margin: 0 auto 16px;
@@ -1501,13 +1427,10 @@
       <div id="adults-list" class="people-list"></div>
       <div class="add-person-row">
         <input type="text" id="new-adult-name" class="light-input name-input" placeholder="Name" autocomplete="off">
-        <div class="date-field">
-          <input type="date" id="new-adult-birthday" class="light-input" aria-label="Birthday">
-          <span class="date-placeholder" id="new-adult-birthday-placeholder">Birthday</span>
-        </div>
+        <div class="date-field"><div class="my-picker" id="new-adult-birthday"></div></div>
         <button type="button" class="add-person-btn" id="new-adult-add" aria-label="Add adult" disabled>Add</button>
       </div>
-      <div class="add-hint">Pick a birthday, then tap Add</div>
+      <div class="add-hint">Pick a month and year, then tap Add</div>
     </div>
 
     <div class="menu-section">
@@ -1515,13 +1438,10 @@
       <div id="kids-list" class="people-list"></div>
       <div class="add-person-row">
         <input type="text" id="new-kid-name" class="light-input name-input" placeholder="Name" autocomplete="off">
-        <div class="date-field">
-          <input type="date" id="new-kid-birthday" class="light-input" aria-label="Birthday">
-          <span class="date-placeholder" id="new-kid-birthday-placeholder">Birthday</span>
-        </div>
+        <div class="date-field"><div class="my-picker" id="new-kid-birthday"></div></div>
         <button type="button" class="add-person-btn" id="new-kid-add" aria-label="Add kid" disabled>Add</button>
       </div>
-      <div class="add-hint">Pick a birthday, then tap Add</div>
+      <div class="add-hint">Pick a month and year, then tap Add</div>
     </div>
 
     <details class="advanced-settings">
@@ -1627,12 +1547,12 @@
       <h1 class="splash-title">Relive Your Childhood <span class="highlight">Through Their Eyes.</span></h1>
       <p class="splash-text">
         Discover the movies that came out when <strong>you were your kid's age</strong>.
-        Add your birthday and your kid's birthday, and this app finds the movies released
+        Add the month and year you and your kid were born, and this app finds the movies released
         right around the time you were exactly as old as they are now — so you can share
         the films you grew up with and relive a little bit of your own childhood together.
       </p>
       <button class="splash-btn" id="splash-start-btn">Get Started →</button>
-      <div class="splash-note">Just enter your birthday and your child's birthday.</div>
+      <div class="splash-note">Just pick the month and year you and your child were born.</div>
       <div class="splash-scroll-hint">︾</div>
     </div>
   </div>
@@ -1648,8 +1568,8 @@
       <div class="splash-step">
         <div class="splash-step-number">1</div>
         <div>
-          <h3>Enter two birthdays</h3>
-          <p>Your birthday and your kid's birthday are used to build a personalized movie timeline.</p>
+          <h3>Enter two birth months</h3>
+          <p>A month and year for each of you is all it takes — no exact dates needed.</p>
         </div>
       </div>
       <div class="splash-step">
@@ -1695,33 +1615,33 @@
       <div class="wizard-step-dot" data-step-dot="2">3</div>
     </div>
     <div class="wizard-step-labels">
-      <span>Your birthday</span>
-      <span>Their birthday</span>
+      <span>You</span>
+      <span>Your kid</span>
       <span>Region</span>
     </div>
 
     <div class="wizard-panel" data-panel="0">
       <div class="wizard-emoji">🎂</div>
       <h2 class="wizard-title">When were you born?</h2>
-      <p class="wizard-sub">We'll use this to find movies from your childhood.</p>
+      <p class="wizard-sub">Just the month and year — no exact date needed.</p>
       <div class="wizard-name-field">
         <input type="text" id="wizard-adult-name" class="wizard-name-input" placeholder="Your name" aria-label="Your name" autocomplete="off">
         <span class="wizard-name-optional-tag">Optional — we'll use "You" if left blank</span>
       </div>
-      <input type="date" id="wizard-adult-birthday" class="wizard-date-input" aria-label="Your birthday">
-      <div class="wizard-error hidden" id="wizard-adult-error">Please pick a birthday to continue.</div>
+      <div class="my-picker wizard-picker" id="wizard-adult-birthday"></div>
+      <div class="wizard-error hidden" id="wizard-adult-error">Please pick a month and year to continue.</div>
     </div>
 
     <div class="wizard-panel hidden" data-panel="1">
       <div class="wizard-emoji">🧒</div>
       <h2 class="wizard-title">When was your kid born?</h2>
-      <p class="wizard-sub">We'll find movies from when you were exactly their age.</p>
+      <p class="wizard-sub">Month and year is plenty — we'll find movies from when you were their age.</p>
       <div class="wizard-name-field">
         <input type="text" id="wizard-kid-name" class="wizard-name-input" placeholder="Kid's name" aria-label="Kid's name" autocomplete="off">
         <span class="wizard-name-optional-tag">Optional — we'll use "Kid" if left blank</span>
       </div>
-      <input type="date" id="wizard-kid-birthday" class="wizard-date-input" aria-label="Kid's birthday">
-      <div class="wizard-error hidden" id="wizard-kid-error">Please pick a birthday to continue.</div>
+      <div class="my-picker wizard-picker" id="wizard-kid-birthday"></div>
+      <div class="wizard-error hidden" id="wizard-kid-error">Please pick a month and year to continue.</div>
     </div>
 
     <div class="wizard-panel hidden" data-panel="2">
@@ -1737,18 +1657,6 @@
     <div class="wizard-actions">
       <button class="wizard-back-btn hidden" id="wizard-back-btn">← Back</button>
       <button class="wizard-next-btn" id="wizard-next-btn">Next →</button>
-    </div>
-  </div>
-</div>
-
-<div class="consent-banner hidden" id="consent-banner">
-  <div class="consent-banner-inner">
-    <div class="consent-banner-text">
-      Can we use anonymous analytics to help improve Same Age Movies? No names, birthdays, or personal info are ever included.
-    </div>
-    <div class="consent-banner-actions">
-      <button id="consent-decline-btn">No thanks</button>
-      <button class="consent-accept" id="consent-accept-btn">Allow</button>
     </div>
   </div>
 </div>
@@ -1792,7 +1700,6 @@
     themeToggleBtn.addEventListener("click", () => {
       const next = getCurrentTheme() === "light" ? "dark" : "light";
       setTheme(next, true);
-      trackClick("theme_toggle_" + next);
     });
   }
 
@@ -1815,51 +1722,75 @@
   const savedBtn = document.getElementById("saved-btn");
   const shareBtn = document.getElementById("share-btn");
 
-  // ---- Analytics (Google tag / gtag.js) ----
-  // Only structural, non-identifying data is ever sent: which control was
-  // clicked (a fixed label, never user-entered text) and, for adult/kid
-  // additions, the resulting count. No names, birthdays, or other
-  // user-entered text are ever sent.
-  function trackClick(label) {
-    if (typeof gtag === "function") gtag('event', 'click', { element: label });
+
+  // ---- Month + year entry ----
+  // Birthdays are only ever stored and used at month granularity ("YYYY-MM"),
+  // so nobody has to enter an exact date.
+  const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  function monthIndex(ym) {
+    return parseInt(ym.slice(0, 4), 10) * 12 + parseInt(ym.slice(5, 7), 10) - 1;
   }
-  function trackEvent(name, params) {
-    if (typeof gtag === "function") gtag('event', name, params || {});
+  function nowMonthIndex() {
+    const d = new Date();
+    return d.getFullYear() * 12 + d.getMonth();
+  }
+  function formatMonthYear(idxOrYm) {
+    const idx = typeof idxOrYm === "string" ? monthIndex(idxOrYm) : idxOrYm;
+    return `${MONTH_NAMES[idx % 12]} ${Math.floor(idx / 12)}`;
+  }
+  function formatAge(totalMonths) {
+    const y = Math.floor(totalMonths / 12);
+    const m = totalMonths % 12;
+    const parts = [];
+    if (y) parts.push(`${y}y`);
+    if (m || !y) parts.push(`${m}m`);
+    return parts.join(" ");
+  }
+  function wasWere(name) {
+    return name === "You" ? "You were" : `${name} was`;
+  }
+  // Normalises anything stored from older versions ("YYYY-MM-DD") to "YYYY-MM".
+  function normalizeBirthday(value) {
+    return /^\d{4}-\d{2}/.test(value || "") ? value.slice(0, 7) : "";
   }
 
-  // ---- Analytics consent banner ----
-  // Only ever shown to a returning user: someone who had adults/kids saved
-  // in storage from a *previous* visit (i.e. they completed the setup
-  // wizard at some point before this page load). A user completing the
-  // wizard for the first time this session never sees it — it only appears
-  // the next time they open the app. Once they answer (accept or decline),
-  // the choice is remembered and the banner never appears again. Ad-related
-  // consent signals are never touched here or anywhere else in the app.
-  const CONSENT_STORAGE_KEY = "analyticsConsent";
-  const consentBanner = document.getElementById("consent-banner");
+  function createMonthYearPicker(root, { yearsBack }) {
+    const now = new Date();
+    const thisYear = now.getFullYear();
+    const thisMonth = now.getMonth() + 1;
+    const monthSel = document.createElement("select");
+    const yearSel = document.createElement("select");
+    monthSel.setAttribute("aria-label", "Month");
+    yearSel.setAttribute("aria-label", "Year");
+    monthSel.innerHTML = `<option value="">Month</option>` +
+      MONTH_NAMES.map((n, i) => `<option value="${String(i + 1).padStart(2, "0")}">${n}</option>`).join("");
+    let years = `<option value="">Year</option>`;
+    for (let y = thisYear; y >= thisYear - yearsBack; y--) years += `<option value="${y}">${y}</option>`;
+    yearSel.innerHTML = years;
+    root.append(monthSel, yearSel);
 
-  function initConsentBanner(hadExistingSetupOnLoad) {
-    if (!hadExistingSetupOnLoad) return;
-    const existingChoice = safeGet(CONSENT_STORAGE_KEY);
-    if (existingChoice === "granted" || existingChoice === "denied") return;
-    consentBanner.classList.remove("hidden");
-    trackEvent('consent_banner_shown', {});
-  }
-
-  document.getElementById("consent-accept-btn").addEventListener("click", () => {
-    safeSet(CONSENT_STORAGE_KEY, "granted");
-    if (typeof gtag === "function") {
-      gtag('consent', 'update', { 'analytics_storage': 'granted' });
+    const listeners = [];
+    function refresh() {
+      // Months later than this month can't be a birth month in the current year.
+      Array.from(monthSel.options).forEach(opt => {
+        opt.disabled = !!opt.value && parseInt(yearSel.value, 10) === thisYear && parseInt(opt.value, 10) > thisMonth;
+      });
+      if (monthSel.selectedOptions[0] && monthSel.selectedOptions[0].disabled) monthSel.value = "";
+      monthSel.classList.toggle("is-empty", !monthSel.value);
+      yearSel.classList.toggle("is-empty", !yearSel.value);
+      listeners.forEach(fn => fn());
     }
-    trackEvent('consent_banner_accept', {});
-    consentBanner.classList.add("hidden");
-  });
+    monthSel.addEventListener("change", refresh);
+    yearSel.addEventListener("change", refresh);
+    refresh();
 
-  document.getElementById("consent-decline-btn").addEventListener("click", () => {
-    safeSet(CONSENT_STORAGE_KEY, "denied");
-    trackEvent('consent_banner_decline', {});
-    consentBanner.classList.add("hidden");
-  });
+    return {
+      getValue: () => (monthSel.value && yearSel.value ? `${yearSel.value}-${monthSel.value}` : ""),
+      clear: () => { monthSel.value = ""; yearSel.value = ""; refresh(); },
+      onChange: (fn) => listeners.push(fn)
+    };
+  }
 
   const savedPanel = document.getElementById("saved-panel");
   const savedClose = document.getElementById("saved-close");
@@ -1871,10 +1802,10 @@
   const adultsListEl = document.getElementById("adults-list");
   const kidsListEl = document.getElementById("kids-list");
   const newAdultName = document.getElementById("new-adult-name");
-  const newAdultBirthday = document.getElementById("new-adult-birthday");
+  const newAdultPicker = createMonthYearPicker(document.getElementById("new-adult-birthday"), { yearsBack: 100 });
   const newAdultAdd = document.getElementById("new-adult-add");
   const newKidName = document.getElementById("new-kid-name");
-  const newKidBirthday = document.getElementById("new-kid-birthday");
+  const newKidPicker = createMonthYearPicker(document.getElementById("new-kid-birthday"), { yearsBack: 30 });
   const newKidAdd = document.getElementById("new-kid-add");
   const feedEl = document.getElementById("feed");
   const scrollHintEl = document.getElementById("scroll-hint");
@@ -2090,7 +2021,9 @@
   let windowStart = null;
   let windowEnd = null;
   let loadedMovies = [];
-  let kidAgeDaysNow = null;
+  let kidAgeMonthsNow = null;
+  let loadGeneration = 0;      // bumps on every fresh load so stale responses are ignored
+  let initialLoadDone = false;
   let pendingScrollToClosest = false;
   let isLoadingEarlier = false;
   let isLoadingLater = false;
@@ -2142,11 +2075,16 @@
     try { kids = JSON.parse(safeGet("people:kids") || "[]"); } catch (e) { kids = []; }
 
     if (adults.length === 0 && safeGet("myBirthday")) {
-      adults.push({ id: genId(), name: "You", birthday: safeGet("myBirthday") });
+      adults.push({ id: genId(), name: "You", birthday: normalizeBirthday(safeGet("myBirthday")) });
     }
     if (kids.length === 0 && safeGet("kidBirthday")) {
-      kids.push({ id: genId(), name: "Kid", birthday: safeGet("kidBirthday") });
+      kids.push({ id: genId(), name: "Kid", birthday: normalizeBirthday(safeGet("kidBirthday")) });
     }
+    // Older versions stored full birthdays: trim them to month + year and
+    // drop anything unusable. Re-saving below overwrites the old full dates.
+    adults = adults.map(a => ({ ...a, birthday: normalizeBirthday(a.birthday) })).filter(a => a.birthday);
+    kids = kids.map(k => ({ ...k, birthday: normalizeBirthday(k.birthday) })).filter(k => k.birthday);
+    try { localStorage.removeItem("myBirthday"); localStorage.removeItem("kidBirthday"); } catch (e) { /* ignore */ }
     savePeopleToStorage();
 
     selectedAdultId = safeGet("selectedAdultId") || (adults[0] && adults[0].id) || null;
@@ -2182,7 +2120,7 @@
       <div class="person-row${a.id === justAddedId ? " just-added" : ""}">
         <div class="person-info">
           <input type="text" class="person-name-input" value="${escapeAttr(a.name)}" data-rename-adult="${a.id}" aria-label="Rename ${escapeHtml(a.name)}" autocomplete="off">
-          <span>${a.birthday}</span>
+          <span>${formatMonthYear(a.birthday)}</span>
         </div>
         <button type="button" class="delete-btn" data-remove-adult="${a.id}" aria-label="Delete ${escapeHtml(a.name)}">🗑</button>
       </div>
@@ -2192,7 +2130,7 @@
       <div class="person-row${k.id === justAddedId ? " just-added" : ""}">
         <div class="person-info">
           <input type="text" class="person-name-input" value="${escapeAttr(k.name)}" data-rename-kid="${k.id}" aria-label="Rename ${escapeHtml(k.name)}" autocomplete="off">
-          <span>${k.birthday}</span>
+          <span>${formatMonthYear(k.birthday)}</span>
         </div>
         <button type="button" class="delete-btn" data-remove-kid="${k.id}" aria-label="Delete ${escapeHtml(k.name)}">🗑</button>
       </div>
@@ -2207,17 +2145,12 @@
   // chosen - and again when the day was picked. Requiring a tap on Add
   // means edits to the wheel never trigger a save by themselves. ----
 
-  function wireAddButton({ nameInput, birthdayInput, addButton, placeholderId, getList, setList, defaultNamePrefix, onAdded }) {
-    const placeholder = document.getElementById(placeholderId);
-    const syncState = () => {
-      placeholder.style.display = birthdayInput.value ? "none" : "block";
-      addButton.disabled = !birthdayInput.value;
-    };
-    birthdayInput.addEventListener("input", syncState);
-    birthdayInput.addEventListener("change", syncState);
+  function wireAddButton({ nameInput, picker, addButton, getList, setList, defaultNamePrefix, onAdded }) {
+    const syncState = () => { addButton.disabled = !picker.getValue(); };
+    picker.onChange(syncState);
 
     const commit = () => {
-      const birthday = birthdayInput.value;
+      const birthday = picker.getValue();
       if (!birthday) return;
       const list = getList();
       const name = nameInput.value.trim() || `${defaultNamePrefix} ${list.length + 1}`;
@@ -2225,8 +2158,7 @@
       list.push(person);
       setList(list);
       nameInput.value = "";
-      birthdayInput.value = "";
-      syncState();
+      picker.clear();
       onAdded(person);
     };
 
@@ -2240,9 +2172,8 @@
 
   wireAddButton({
     nameInput: newAdultName,
-    birthdayInput: newAdultBirthday,
+    picker: newAdultPicker,
     addButton: newAdultAdd,
-    placeholderId: "new-adult-birthday-placeholder",
     getList: () => adults,
     setList: (list) => { adults = list; },
     defaultNamePrefix: "Adult",
@@ -2252,15 +2183,13 @@
       saveSelection();
       renderPeopleUI(person.id);
       tryStartFresh();
-      trackEvent('adult_added', { count: adults.length });
     }
   });
 
   wireAddButton({
     nameInput: newKidName,
-    birthdayInput: newKidBirthday,
+    picker: newKidPicker,
     addButton: newKidAdd,
-    placeholderId: "new-kid-birthday-placeholder",
     getList: () => kids,
     setList: (list) => { kids = list; },
     defaultNamePrefix: "Kid",
@@ -2270,7 +2199,6 @@
       saveSelection();
       renderPeopleUI(person.id);
       tryStartFresh();
-      trackEvent('kid_added', { count: kids.length });
     }
   });
 
@@ -2301,7 +2229,6 @@
       person.name = newName;
       savePeopleToStorage();
       renderPeopleUI();
-      trackClick(attr === "data-rename-adult" ? "rename_adult" : "rename_kid");
     });
   }
 
@@ -2311,7 +2238,6 @@
   adultsListEl.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-remove-adult]");
     if (!btn) return;
-    trackClick('remove_adult_button');
     const id = btn.dataset.removeAdult;
     const person = adults.find(a => a.id === id);
     if (!window.confirm(`Delete ${person ? person.name : "this adult"}? This can't be undone.`)) return;
@@ -2326,7 +2252,6 @@
   kidsListEl.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-remove-kid]");
     if (!btn) return;
-    trackClick('remove_kid_button');
     const id = btn.dataset.removeKid;
     const person = kids.find(k => k.id === id);
     if (!window.confirm(`Delete ${person ? person.name : "this kid"}? This can't be undone.`)) return;
@@ -2341,7 +2266,6 @@
   function openMenuFocusAdd(nameInput) {
     savedPanel.classList.add("hidden");
     menuPanel.classList.remove("hidden");
-    trackClick('add_person_via_selector');
     // Wait a beat for the panel's open transition before scrolling/focusing,
     // otherwise scrollIntoView can measure the pre-transition layout.
     setTimeout(() => {
@@ -2375,17 +2299,14 @@
   // ---- Menu / Saved panel open-close ----
 
   menuBtn.addEventListener("click", () => {
-    trackClick('menu_open');
     savedPanel.classList.add("hidden");
     menuPanel.classList.toggle("hidden");
   });
   menuClose.addEventListener("click", () => {
-    trackClick('menu_close');
     menuPanel.classList.add("hidden");
   });
 
   menuSaveBtn.addEventListener("click", () => {
-    trackClick('menu_save');
     if (adults.length === 0 || kids.length === 0) {
       menuError.classList.remove("hidden");
       return;
@@ -2395,13 +2316,11 @@
   });
 
   savedBtn.addEventListener("click", () => {
-    trackClick('saved_open');
     menuPanel.classList.add("hidden");
     renderSavedList();
     savedPanel.classList.toggle("hidden");
   });
   savedClose.addEventListener("click", () => {
-    trackClick('saved_close');
     savedPanel.classList.add("hidden");
   });
 
@@ -2412,7 +2331,6 @@
   const regionModalList = document.getElementById("region-modal-list");
 
   function openRegionPanel() {
-    trackClick('region_panel_open');
     regionModalSearch.value = "";
     renderRegionChipList(regionModalList, "");
     regionPanel.classList.remove("hidden");
@@ -2422,7 +2340,6 @@
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openRegionPanel(); }
   });
   regionPanelClose.addEventListener("click", () => {
-    trackClick('region_panel_close');
     regionPanel.classList.add("hidden");
   });
   regionModalSearch.addEventListener("input", () => renderRegionChipList(regionModalList, regionModalSearch.value));
@@ -2432,14 +2349,13 @@
     selectRegionChip(btn.dataset.region);
   });
 
-  modeTheatricalBtn.addEventListener("click", () => { trackClick('mode_theatrical'); setMode("theatrical"); });
-  modeRentalBtn.addEventListener("click", () => { trackClick('mode_rental'); setMode("rental"); });
+  modeTheatricalBtn.addEventListener("click", () => { setMode("theatrical"); });
+  modeRentalBtn.addEventListener("click", () => { setMode("rental"); });
 
   ratingToggleEl.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-rating]");
     if (!btn) return;
     const rating = btn.dataset.rating;
-    trackClick('rating_toggle_' + rating);
     if (currentRatings.has(rating)) {
       currentRatings.delete(rating);
       btn.classList.remove("active");
@@ -2458,8 +2374,8 @@
     fullRenderFeed();
   }
 
-  sizeTwoBtn.addEventListener("click", () => { trackClick('size_two'); setCardsPerScreen(2); });
-  sizeOneBtn.addEventListener("click", () => { trackClick('size_one'); setCardsPerScreen(1); });
+  sizeTwoBtn.addEventListener("click", () => { setCardsPerScreen(2); });
+  sizeOneBtn.addEventListener("click", () => { setCardsPerScreen(1); });
 
   function setCardsPerScreen(count) {
     feedEl.classList.toggle("single-card", count === 1);
@@ -2494,10 +2410,15 @@
       return;
     }
     savedListEl.innerHTML = savedMovies.slice().reverse().map(item => {
-      const ageLine = item.ageLabel
-        ? item.ageLabel.replace(/^You were/i, `${item.adultName} was`)
+      let ageLine = item.ageLabel || "";
+      // Entries saved by older versions always said "You were ..."
+      if (/^You were/i.test(ageLine) && item.adultName && item.adultName !== "You") {
+        ageLine = ageLine.replace(/^You were/i, `${item.adultName} was`);
+      }
+      const sameAge = item.diffLabel && !/(older|younger)$/.test(item.diffLabel);
+      const diffLine = item.diffLabel
+        ? `${item.diffLabel} ${sameAge ? "as" : "than"} ${item.kidName} is now`
         : "";
-      const diffLine = item.diffLabel ? `${item.diffLabel} than ${item.kidName} is now` : "";
       return `
       <div class="saved-row" data-open-saved="${item.tmdbId}">
         ${item.poster_path
@@ -2517,7 +2438,6 @@
   savedListEl.addEventListener("click", (e) => {
     const removeBtn = e.target.closest("button[data-remove-saved]");
     if (removeBtn) {
-      trackClick('remove_saved_movie');
       const id = removeBtn.dataset.removeSaved;
       savedMovies = savedMovies.filter(m => m.savedId !== id);
       saveSavedMoviesToStorage();
@@ -2527,7 +2447,6 @@
     }
     const row = e.target.closest("[data-open-saved]");
     if (row) {
-      trackClick('open_saved_movie');
       openMovieDetail(row.dataset.openSaved);
     }
   });
@@ -2646,7 +2565,6 @@
   }
 
   scrollReturnBtn.addEventListener("click", () => {
-    trackClick('scroll_return');
     feedEl.scrollTo({ top: feedOriginScrollTop, behavior: "smooth" });
     scrollReturnBtn.classList.remove("visible");
     scrollReturnBtn.classList.add("hidden");
@@ -2655,8 +2573,8 @@
   function loadEarlier() {
     isLoadingEarlier = true;
     const newStart = addMonths(windowStart, -6);
-    fetchWindow(newStart, windowStart, "earlier").then(() => {
-      windowStart = newStart;
+    fetchWindow(newStart, windowStart, "earlier").then((ok) => {
+      if (ok) windowStart = newStart;
       isLoadingEarlier = false;
     });
   }
@@ -2664,42 +2582,19 @@
   function loadLater() {
     isLoadingLater = true;
     const newEnd = addMonths(windowEnd, 6);
-    fetchWindow(windowEnd, newEnd, "later").then(() => {
-      windowEnd = newEnd;
+    fetchWindow(windowEnd, newEnd, "later").then((ok) => {
+      if (ok) windowEnd = newEnd;
       isLoadingLater = false;
     });
   }
 
   // ---- Date helpers ----
 
-  function diffYMD(fromDate, toDate) {
-    let y = toDate.getFullYear() - fromDate.getFullYear();
-    let m = toDate.getMonth() - fromDate.getMonth();
-    let d = toDate.getDate() - fromDate.getDate();
-    if (d < 0) {
-      m -= 1;
-      const prevMonthLastDay = new Date(toDate.getFullYear(), toDate.getMonth(), 0).getDate();
-      d += prevMonthLastDay;
-    }
-    if (m < 0) { y -= 1; m += 12; }
-    return { years: y, months: m, days: d };
-  }
-
-  function formatYMD({ years, months, days }) {
-    const parts = [];
-    if (years) parts.push(`${years}y`);
-    if (months) parts.push(`${months}m`);
-    parts.push(`${days}d`);
-    return parts.join(" ");
-  }
-
-  function ageInDays(birthDate, onDate) {
-    return Math.round((onDate - birthDate) / (1000 * 60 * 60 * 24));
-  }
-
+  // Adds whole months, clamping the day so e.g. Jan 31 + 1 month is Feb 28, not Mar 3.
   function addMonths(date, months) {
-    const d = new Date(date);
-    d.setMonth(d.getMonth() + months);
+    const d = new Date(date.getFullYear(), date.getMonth() + months, 1);
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(date.getDate(), lastDay));
     return d;
   }
 
@@ -2710,26 +2605,23 @@
     return `${y}-${m}-${day}`;
   }
 
-  function formatDiffDays(diffDays) {
-    const abs = Math.abs(diffDays);
-    if (abs < 10) return "Almost the exact age";
+  // Ages are only known to the month, so a difference of 0 or 1 months is
+  // indistinguishable from "the same age" and is presented that way.
+  function formatDiffMonths(diffMonths) {
+    const abs = Math.abs(diffMonths);
+    if (abs <= 1) return "About the same age";
     let magnitude;
-    if (abs < 45) {
-      magnitude = `${abs} day${abs === 1 ? "" : "s"}`;
-    } else if (abs < 450) {
-      const months = Math.round(abs / 30.44);
-      magnitude = `${months} month${months === 1 ? "" : "s"}`;
+    if (abs < 24) {
+      magnitude = `${abs} months`;
     } else {
-      const years = Math.round((abs / 365.25) * 10) / 10;
-      magnitude = `${years} year${years === 1 ? "" : "s"}`;
+      magnitude = `${(abs / 12).toFixed(1).replace(/\.0$/, "")} years`;
     }
-    return diffDays > 0 ? `${magnitude} older` : `${magnitude} younger`;
+    return diffMonths > 0 ? `${magnitude} older` : `${magnitude} younger`;
   }
 
-  function diffArrow(diffDays) {
-    const abs = Math.abs(diffDays);
-    if (abs < 10) return `<span style="color:var(--accent)">●</span>`;
-    return diffDays > 0 ? `<span class="arrow-up">▲</span>` : `<span class="arrow-down">▼</span>`;
+  function diffArrow(diffMonths) {
+    if (Math.abs(diffMonths) <= 1) return `<span style="color:var(--accent)">●</span>`;
+    return diffMonths > 0 ? `<span class="arrow-up">▲</span>` : `<span class="arrow-down">▼</span>`;
   }
 
   // ---- Core flow ----
@@ -2754,7 +2646,6 @@
   const splashStartBtnBottom = document.getElementById("splash-start-btn-bottom");
 
   function handleSplashStart() {
-    trackClick('splash_start');
     splashOverlay.classList.add("hidden");
     openWizard();
   }
@@ -2772,6 +2663,10 @@
     { key: "region", type: "region" }
   ];
   let wizardStepIndex = 0;
+  const wizardPickers = {
+    adult: createMonthYearPicker(document.getElementById("wizard-adult-birthday"), { yearsBack: 100 }),
+    kid: createMonthYearPicker(document.getElementById("wizard-kid-birthday"), { yearsBack: 30 })
+  };
 
   const wizardOverlay = document.getElementById("wizard-overlay");
   const wizardNextBtn = document.getElementById("wizard-next-btn");
@@ -2786,7 +2681,7 @@
     wizardStepIndex = 0;
     WIZARD_STEPS.forEach(step => {
       if (step.type !== "date") return;
-      document.getElementById(step.input).value = "";
+      wizardPickers[step.key].clear();
       document.getElementById(step.error).classList.add("hidden");
       if (step.nameInput) document.getElementById(step.nameInput).value = "";
     });
@@ -2815,16 +2710,14 @@
     wizardNextBtn.textContent = wizardStepIndex === WIZARD_STEPS.length - 1 ? "Let's go →" : "Next →";
     // Fires whenever a step becomes visible (open, next, or back) so funnel
     // drop-off can be seen even when a user never taps a button on a step.
-    trackEvent('wizard_step_view', { step: WIZARD_STEPS[wizardStepIndex].key, step_index: wizardStepIndex });
   }
 
   wizardNextBtn.addEventListener("click", () => {
     const step = WIZARD_STEPS[wizardStepIndex];
 
     if (step.type === "date") {
-      const input = document.getElementById(step.input);
       const errorEl = document.getElementById(step.error);
-      if (!input.value) {
+      if (!wizardPickers[step.key].getValue()) {
         errorEl.classList.remove("hidden");
         return;
       }
@@ -2832,7 +2725,6 @@
     }
     // Region always has a value (auto-detected or user-picked default), so
     // no validation is needed for that step.
-    trackClick('wizard_next_' + step.key);
 
     if (wizardStepIndex < WIZARD_STEPS.length - 1) {
       wizardStepIndex++;
@@ -2843,7 +2735,6 @@
   });
 
   function selectRegionChip(code) {
-    trackClick('region_select_' + code);
     setRegion(code);
     refreshAllRegionChipLists();
   }
@@ -2856,7 +2747,6 @@
   });
 
   wizardBackBtn.addEventListener("click", () => {
-    trackClick('wizard_back');
     if (wizardStepIndex > 0) {
       wizardStepIndex--;
       renderWizardStep();
@@ -2864,8 +2754,8 @@
   });
 
   function finishWizard() {
-    const adultBirthday = document.getElementById("wizard-adult-birthday").value;
-    const kidBirthday = document.getElementById("wizard-kid-birthday").value;
+    const adultBirthday = wizardPickers.adult.getValue();
+    const kidBirthday = wizardPickers.kid.getValue();
     const adultName = document.getElementById("wizard-adult-name").value.trim() || "You";
     const kidName = document.getElementById("wizard-kid-name").value.trim() || "Kid";
 
@@ -2878,37 +2768,36 @@
     savePeopleToStorage();
     saveSelection();
     renderPeopleUI();
-    trackEvent('wizard_complete', { adults: adults.length, kids: kids.length, adult_named: adultName !== "You", kid_named: kidName !== "Kid" });
 
     wizardOverlay.classList.add("hidden");
     tryStartFresh();
-    // Confirms the funnel actually reached the feed, not just that the
-    // wizard's last step was submitted.
-    trackEvent('feed_view', { source: 'wizard' });
   }
 
   function startFresh(adult, kid) {
-    const today = new Date();
-    const myBirth = new Date(adult.birthday);
-    const kidBirth = new Date(kid.birthday);
+    const gen = ++loadGeneration;
+    initialLoadDone = false;
+    isLoadingEarlier = false;
+    isLoadingLater = false;
 
-    const kidExact = diffYMD(kidBirth, today);
-    kidAgeDaysNow = ageInDays(kidBirth, today);
+    kidAgeMonthsNow = Math.max(0, nowMonthIndex() - monthIndex(kid.birthday));
+    const targetIdx = monthIndex(adult.birthday) + kidAgeMonthsNow;
+    const ty = Math.floor(targetIdx / 12);
+    const tm = targetIdx % 12;
 
-    const targetDate = new Date(myBirth.getTime() + kidAgeDaysNow * 86400000);
-
-    windowStart = addMonths(targetDate, -6);
-    windowEnd = addMonths(targetDate, 6);
+    // Window covers the target month plus six months either side.
+    windowStart = new Date(ty, tm - 6, 1);
+    windowEnd = new Date(ty, tm + 7, 0);
     loadedMovies = [];
 
-    comparisonSummary.innerHTML = `<strong>${escapeHtml(kid.name)}</strong> is ${formatYMD(kidExact)} old. ` +
-      `<strong>${escapeHtml(adult.name)}</strong> was that age around <strong>${fmtDate(targetDate)}</strong>.`;
+    comparisonSummary.innerHTML = `<strong>${escapeHtml(kid.name)}</strong> is about ${formatAge(kidAgeMonthsNow)} old. ` +
+      `<strong>${escapeHtml(adult.name)}</strong> was that age around <strong>${formatMonthYear(targetIdx)}</strong>.`;
 
     feedEl.innerHTML = `<div class="status">Loading movies...</div>`;
     scrollHintEl.style.display = "none";
 
     pendingScrollToClosest = true;
     fetchWindow(windowStart, windowEnd, "initial").then(() => {
+      if (gen !== loadGeneration) return;
       scrollHintEl.style.display = "block";
       maybeShowShareButton();
     });
@@ -2947,7 +2836,6 @@
 
   if (shareBtn) {
     shareBtn.addEventListener("click", async () => {
-      trackClick('share_button');
       try {
         await navigator.share({
           title: SHARE_TITLE,
@@ -2967,10 +2855,11 @@
   }
 
   async function fetchWindow(startDate, endDate, direction) {
+    const gen = loadGeneration;
     const token = getApiToken();
     if (!token) {
       feedEl.innerHTML = `<div class="status">A TMDB Read Access Token is required to load movies.</div>`;
-      return;
+      return false;
     }
     try {
       // include_adult=false is intentionally always hardcoded here — adult
@@ -3039,6 +2928,8 @@
         })
       );
 
+      // The person may have switched adult/kid/region while this was in flight.
+      if (gen !== loadGeneration) return false;
       const filtered = withReleaseDates.filter(m => !isAdultRated(m.releaseDatesData));
 
       if (direction === "earlier") {
@@ -3049,12 +2940,15 @@
         appendCards(filtered);
       } else {
         loadedMovies = loadedMovies.concat(filtered);
+        initialLoadDone = true;
         fullRenderFeed();
       }
+      return true;
     } catch (err) {
-      if (direction === "initial") {
-        feedEl.innerHTML = `<div class="status">Couldn't load movies: ${err.message}</div>`;
+      if (direction === "initial" && gen === loadGeneration) {
+        feedEl.innerHTML = `<div class="status"><div>Couldn't load movies.<br><br><button type="button" class="menu-btn" onclick="tryStartFresh()">Try again</button></div></div>`;
       }
+      return false;
     }
   }
 
@@ -3139,24 +3033,26 @@
     return getReleaseDateInfo(movie).date;
   }
 
-  function computeDisplay(movie, myBirth) {
+  function computeDisplay(movie, myBirthIdx) {
     const { date: dateStr, tag: dateTag } = getReleaseDateInfo(movie);
+    const adult = getSelectedAdult();
+    const adultName = adult ? adult.name : "You";
     let ageLabel = "";
     let diffLabel = "";
-    let diffDays = null;
+    let diffMonths = null;
     if (dateStr) {
-      const releaseDate = new Date(dateStr);
-      if (releaseDate >= myBirth) {
-        const age = diffYMD(myBirth, releaseDate);
-        ageLabel = `You were ${formatYMD(age)}`;
-        const myAgeDaysAtRelease = ageInDays(myBirth, releaseDate);
-        diffDays = myAgeDaysAtRelease - kidAgeDaysNow;
-        diffLabel = formatDiffDays(diffDays);
+      const ageMonths = monthIndex(dateStr) - myBirthIdx;
+      if (ageMonths >= 0) {
+        ageLabel = ageMonths === 0
+          ? `${wasWere(adultName)} born that month`
+          : `${wasWere(adultName)} ${formatAge(ageMonths)}`;
+        diffMonths = ageMonths - kidAgeMonthsNow;
+        diffLabel = formatDiffMonths(diffMonths);
       } else {
-        ageLabel = "Before you were born";
+        ageLabel = adultName === "You" ? "Before you were born" : `Before ${adultName} was born`;
       }
     }
-    return { dateStr, dateTag, ageLabel, diffLabel, diffDays };
+    return { dateStr, dateTag, ageLabel, diffLabel, diffMonths };
   }
 
   function passesRatingFilter(movie) {
@@ -3174,8 +3070,8 @@
     const saved = isSavedMovie(movie.id);
 
     let diffRow = "";
-    if (display.diffDays !== null) {
-      diffRow = `${diffArrow(display.diffDays)} <span>${display.diffLabel}</span>`;
+    if (display.diffMonths !== null) {
+      diffRow = `${diffArrow(display.diffMonths)} <span>${display.diffLabel}</span>`;
     }
 
     return `
@@ -3183,7 +3079,7 @@
         ${poster ? `<img src="${poster}" alt="${escapeHtml(movie.title)} poster">` : `<div class="no-poster"></div>`}
         <div class="title">${escapeHtml(movie.title)}</div>
         <div class="date">${display.dateStr || "No release date"}${display.dateTag ? ` <span class="date-tag">(${escapeHtml(display.dateTag)})</span>` : ""}</div>
-        ${display.ageLabel ? `<div class="age-at-release">${display.ageLabel}</div>` : ""}
+        ${display.ageLabel ? `<div class="age-at-release">${escapeHtml(display.ageLabel)}</div>` : ""}
         ${diffRow ? `<div class="diff-row">${diffRow}</div>` : ""}
         <div class="cert-badge">${cert ? escapeHtml(cert) : "Unrated"}</div>
         ${movie.isLocalPick ? `<div class="local-badge">🌍 Local pick</div>` : ""}
@@ -3195,10 +3091,13 @@
   }
 
   function fullRenderFeed() {
-    if (!loadedMovies.length) return;
+    if (!loadedMovies.length) {
+      if (initialLoadDone) feedEl.innerHTML = `<div class="status">No movies found around that time. Try a different region in settings (☰).</div>`;
+      return;
+    }
     const adult = getSelectedAdult();
     if (!adult) return;
-    const myBirth = new Date(adult.birthday);
+    const myBirth = monthIndex(adult.birthday);
 
     const visible = loadedMovies.filter(passesRatingFilter);
 
@@ -3217,8 +3116,8 @@
     let closestDiff = Infinity;
     sorted.forEach(movie => {
       const display = computeDisplay(movie, myBirth);
-      if (display.diffDays !== null && Math.abs(display.diffDays) < closestDiff) {
-        closestDiff = Math.abs(display.diffDays);
+      if (display.diffMonths !== null && Math.abs(display.diffMonths) < closestDiff) {
+        closestDiff = Math.abs(display.diffMonths);
         closestId = movie.id;
       }
     });
@@ -3243,7 +3142,7 @@
   function appendCards(newMovies) {
     const adult = getSelectedAdult();
     if (!adult) return;
-    const myBirth = new Date(adult.birthday);
+    const myBirth = monthIndex(adult.birthday);
     const visible = newMovies.filter(passesRatingFilter);
     if (!visible.length) return;
     const sorted = [...visible].sort((a, b) => {
@@ -3258,7 +3157,7 @@
   function prependCards(newMovies) {
     const adult = getSelectedAdult();
     if (!adult) return;
-    const myBirth = new Date(adult.birthday);
+    const myBirth = monthIndex(adult.birthday);
     const visible = newMovies.filter(passesRatingFilter);
     if (!visible.length) return;
     const sorted = [...visible].sort((a, b) => {
@@ -3344,7 +3243,6 @@
       pendingTapTimer = null;
       // Guard again in case a scroll happened without a caught scroll event in between
       if (Math.abs(feedEl.scrollTop - scrollTopAtTap) < 2) {
-        trackClick('movie_card_open');
         openMovieDetail(movieId);
       }
     }, 150);
@@ -3382,7 +3280,7 @@
       const adult = getSelectedAdult();
       const kid = getSelectedKid();
       if (movie && adult && kid) {
-        const display = computeDisplay(movie, new Date(adult.birthday));
+        const display = computeDisplay(movie, monthIndex(adult.birthday));
         if (dx > 0) {
           setSavedState(movie, display, adult, kid, true);
           applyCardSavedState(card, true);
@@ -3401,13 +3299,12 @@
   feedEl.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-action='toggle-save']");
     if (!btn) return;
-    trackClick('toggle_save_movie');
     const card = btn.closest(".movie-card");
     if (!card) return;
     const movie = loadedMovies.find(m => String(m.id) === String(card.dataset.movieId));
     const adult = getSelectedAdult();
     if (!movie || !adult) return;
-    const display = computeDisplay(movie, new Date(adult.birthday));
+    const display = computeDisplay(movie, monthIndex(adult.birthday));
     const nowSaved = toggleSaveMovie(movie, display);
     applyCardSavedState(card, nowSaved);
   });
@@ -3415,21 +3312,14 @@
   // ---- Movie detail modal ----
 
   detailClose.addEventListener("click", () => {
-    trackClick('detail_close');
     detailModal.classList.add("hidden");
     updateScrollReturnBtnVisibility();
   });
   detailModal.addEventListener("click", (e) => {
     if (e.target === detailModal) {
-      trackClick('detail_backdrop_close');
       detailModal.classList.add("hidden");
       updateScrollReturnBtnVisibility();
     }
-  });
-  // Delegated so it still fires after renderMovieDetail() replaces detailBody's innerHTML.
-  detailBody.addEventListener("click", (e) => {
-    const tracked = e.target.closest("[data-track]");
-    if (tracked) trackClick(tracked.dataset.track);
   });
 
   // Swipe down on the sheet to dismiss it.
@@ -3592,7 +3482,7 @@
     const groupType = label === "Stream" ? "stream" : "rentbuy";
     const logos = list.map(p => {
       const url = getProviderSearchUrl(p.provider_name, movieTitle);
-      return `<a class="provider-logo-link" href="${url}" target="_blank" rel="noopener" title="Find ${escapeHtml(p.provider_name)}" data-track="provider_click_${groupType}_${escapeHtml(p.provider_name)}"><img class="provider-logo" src="https://image.tmdb.org/t/p/w92${p.logo_path}" alt="${escapeHtml(p.provider_name)}" loading="lazy"></a>`;
+      return `<a class="provider-logo-link" href="${url}" target="_blank" rel="noopener" title="Find ${escapeHtml(p.provider_name)}"><img class="provider-logo" src="https://image.tmdb.org/t/p/w92${p.logo_path}" alt="${escapeHtml(p.provider_name)}" loading="lazy"></a>`;
     }).join("");
     return `<div class="provider-group"><div class="provider-group-label">${label}</div><div class="detail-providers">${logos}</div></div>`;
   }
@@ -3627,7 +3517,7 @@
     const movieRecord = loadedMovies.find(m => String(m.id) === String(movieId));
     let subline = "";
     if (adult && movieRecord) {
-      const display = computeDisplay(movieRecord, new Date(adult.birthday));
+      const display = computeDisplay(movieRecord, monthIndex(adult.birthday));
       const dateWithTag = display.dateStr
         ? `${display.dateStr}${display.dateTag ? ` (${display.dateTag})` : ""}`
         : "";
@@ -3652,7 +3542,7 @@
         ${details.runtime ? `<span class="pill">${details.runtime} min</span>` : ""}
       </div>
       ${watchProvidersHtml}
-      ${trailer ? `<a class="detail-trailer-link" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener" data-track="detail_trailer_link">▶ Watch Trailer</a>` : ""}
+      ${trailer ? `<a class="detail-trailer-link" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener">▶ Watch Trailer</a>` : ""}
       ${details.overview ? `
         <div class="detail-section-label">Overview</div>
         <div class="detail-overview">${escapeHtml(details.overview)}</div>
@@ -3681,10 +3571,6 @@
   window.addEventListener("DOMContentLoaded", () => {
     testStorage();
     loadPeopleFromStorage();
-    // Snapshot this *before* any wizard flow this session can add people —
-    // it reflects only what was already in storage from a previous visit.
-    const hadExistingSetupOnLoad = adults.length > 0 || kids.length > 0;
-    initConsentBanner(hadExistingSetupOnLoad);
     loadSavedMoviesFromStorage();
     renderPeopleUI();
     loadRegion();
