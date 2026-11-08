@@ -22,6 +22,22 @@
 <meta property="og:title" content="Same Age Movies">
 <meta property="og:description" content="Find movies released around the time you were the same age your kid is now, and relive the movies from your own childhood together.">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Same Age Movies">
+<meta property="og:url" content="https://www.same-age.com/">
+<meta property="og:image" content="https://www.same-age.com/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Same Age Movies: Relive your childhood through their eyes.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Same Age Movies">
+<meta name="twitter:description" content="Find movies released around the time you were the same age your kid is now, and relive the movies from your own childhood together.">
+<meta name="twitter:image" content="https://www.same-age.com/og-image.png">
+<meta name="twitter:image:alt" content="Same Age Movies: Relive your childhood through their eyes.">
+<link rel="canonical" href="https://www.same-age.com/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e0b954'/%3E%3Ctext x='32' y='43' font-family='Arial,sans-serif' font-size='30' font-weight='800' text-anchor='middle' fill='%2314161a'%3ESA%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Same Age">
 <style>
   :root {
     color-scheme: dark;
@@ -167,7 +183,7 @@
   .share-badge {
     position: fixed;
     right: 16px;
-    bottom: 20px;
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
     left: auto;
     top: auto;
     transform: translateY(16px);
@@ -377,6 +393,19 @@
     font-weight: 700;
     cursor: pointer;
   }
+  .menu-feedback-btn {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .menu-feedback-btn.hidden { display: none; }
   .tmdb-attribution {
     margin-top: 12px;
     font-size: 10.5px;
@@ -1456,14 +1485,6 @@
       </div>
 
       <div class="menu-section">
-        <div class="toggle-label">Release date</div>
-        <div class="toggle">
-          <button id="mode-theatrical">Theater release</button>
-          <button id="mode-rental" class="active">Rental / digital release</button>
-        </div>
-      </div>
-
-      <div class="menu-section">
         <div class="toggle-label">Region</div>
         <div class="region-row" id="region-row" role="button" tabindex="0">
           <span class="region-row-current" id="region-row-current">🇺🇸 United States</span>
@@ -1481,6 +1502,7 @@
   <div class="menu-footer">
     <div class="menu-error hidden" id="menu-error">Please add at least one adult and one kid to continue.</div>
     <button class="menu-save-btn" id="menu-save-btn">Save &amp; Close</button>
+    <button type="button" class="menu-feedback-btn hidden" id="feedback-btn">Send feedback</button>
     <div class="tmdb-attribution">
       This product uses the TMDB API but is not endorsed or certified by TMDB.<br>
       <a href="https://www.themoviedb.org" target="_blank" rel="noopener">themoviedb.org</a>
@@ -1520,7 +1542,7 @@
   <div id="feed" class="feed single-card"></div>
 </div>
 
-<button class="share-badge hidden" id="share-btn" title="Share with a friend">
+<button class="share-badge hidden" id="share-btn" title="Share">
   <span class="share-badge-icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="18" cy="5" r="3"></circle>
@@ -1530,7 +1552,7 @@
       <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
     </svg>
   </span>
-  <span class="share-badge-label">Share with a friend</span>
+  <span class="share-badge-label">Share</span>
 </button>
 
 <button class="scroll-return-btn hidden" id="scroll-return-btn" title="Back to where you started" aria-label="Back to where you started">
@@ -1809,8 +1831,6 @@
   const newKidAdd = document.getElementById("new-kid-add");
   const feedEl = document.getElementById("feed");
   const scrollHintEl = document.getElementById("scroll-hint");
-  const modeTheatricalBtn = document.getElementById("mode-theatrical");
-  const modeRentalBtn = document.getElementById("mode-rental");
   const ratingToggleEl = document.getElementById("rating-toggle");
   const sizeTwoBtn = document.getElementById("size-two");
   const sizeOneBtn = document.getElementById("size-one");
@@ -1913,6 +1933,10 @@
     return list.filter(c => !isAdultOnlyCert(region, c.certification) && !isUnratedCert(c.certification));
   }
 
+  function ratingsKey() {
+    return getCertificationsForRegion(selectedRegion).map(c => c.certification).filter(c => currentRatings.has(c)).join(",");
+  }
+
   async function loadCertifications() {
     const cached = safeGet("tmdbCertifications");
     if (cached) {
@@ -1936,7 +1960,9 @@
     // accurate now that real data (or a same-shaped cache) is in.
     currentRatings = loadRatingsForRegion(selectedRegion);
     renderRatingToggle();
-    fullRenderFeed();
+    // The feed was fetched with whatever ratings were known at the time; refetch if the real list differs.
+    if (lastFetchRatingsKey !== null && ratingsKey() !== lastFetchRatingsKey && getSelectedAdult() && getSelectedKid()) tryStartFresh();
+    else fullRenderFeed();
   }
 
   function loadRegion() {
@@ -2000,7 +2026,8 @@
   function loadRatingsForRegion(region) {
     const stored = safeGet(`ratings:${region}`);
     if (stored) {
-      try { return new Set(JSON.parse(stored)); } catch (e) { /* fall through to default */ }
+      // "Unrated" was an option in older versions; it's no longer offered.
+      try { return new Set(JSON.parse(stored).filter(r => r !== "Unrated")); } catch (e) { /* fall through to default */ }
     }
     return defaultRatingsForRegion(region);
   }
@@ -2012,16 +2039,15 @@
   function renderRatingToggle() {
     const certs = getCertificationsForRegion(selectedRegion).slice().sort((a, b) => a.order - b.order);
     const chips = certs.map(c => `<button data-rating="${escapeHtml(c.certification)}"${currentRatings.has(c.certification) ? ' class="active"' : ""} title="${escapeHtml(c.meaning || "")}">${escapeHtml(c.certification)}</button>`);
-    chips.push(`<button data-rating="Unrated"${currentRatings.has("Unrated") ? ' class="active"' : ""}>Unrated</button>`);
     ratingToggleEl.innerHTML = chips.join("");
   }
 
-  let currentMode = "rental";
   let currentRatings = new Set(["G", "PG", "PG-13"]);
   let windowStart = null;
   let windowEnd = null;
   let loadedMovies = [];
   let kidAgeMonthsNow = null;
+  let lastFetchRatingsKey = null; // which ratings the current feed was fetched with
   let loadGeneration = 0;      // bumps on every fresh load so stale responses are ignored
   let initialLoadDone = false;
   let pendingScrollToClosest = false;
@@ -2349,9 +2375,6 @@
     selectRegionChip(btn.dataset.region);
   });
 
-  modeTheatricalBtn.addEventListener("click", () => { setMode("theatrical"); });
-  modeRentalBtn.addEventListener("click", () => { setMode("rental"); });
-
   ratingToggleEl.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-rating]");
     if (!btn) return;
@@ -2362,17 +2385,14 @@
     } else {
       currentRatings.add(rating);
       btn.classList.add("active");
+      saveRatingsForRegion(selectedRegion);
+      // Ratings are part of the search itself, so a newly enabled one has not been fetched yet.
+      if (getSelectedAdult() && getSelectedKid()) tryStartFresh();
+      return;
     }
     saveRatingsForRegion(selectedRegion);
     fullRenderFeed();
   });
-
-  function setMode(mode) {
-    currentMode = mode;
-    modeTheatricalBtn.classList.toggle("active", mode === "theatrical");
-    modeRentalBtn.classList.toggle("active", mode === "rental");
-    fullRenderFeed();
-  }
 
   sizeTwoBtn.addEventListener("click", () => { setCardsPerScreen(2); });
   sizeOneBtn.addEventListener("click", () => { setCardsPerScreen(1); });
@@ -2775,6 +2795,7 @@
 
   function startFresh(adult, kid) {
     const gen = ++loadGeneration;
+    lastFetchRatingsKey = ratingsKey();
     initialLoadDone = false;
     isLoadingEarlier = false;
     isLoadingLater = false;
@@ -2808,16 +2829,17 @@
   // (i.e. an adult + kid are picked and movies have loaded), and only in
   // browsers that support the native Web Share API. It then pops out from
   // the middle of the left edge after 10 seconds of being on the feed.
-  const SHARE_URL = "https://same-age.com";
-  const SHARE_TITLE = "Share with a friend";
-  const SHARE_TEXT = "same-age.com: share your childhood memories with your kid, grandkid, niece, or nephew.";
-  // TODO: if this reads as too long in practice, fall back to something
-  // shorter like "same-age.com: share your childhood memories with them."
+  // The www form is used so iOS (Messages, Notes, etc.) reliably turns the link into a tappable one.
+  // The URL is passed only in `url`, never repeated in the text.
+  const SHARE_URL = "https://www.same-age.com";
+  const SHARE_TITLE = "Same Age Movies";
+  const SHARE_TEXT = "Find the movies that came out when you were your kid's age, and watch them together.";
   const SHARE_REVEAL_DELAY_MS = 3 * 60 * 1000; // 3 minutes
   let shareBtnTimer = null;
 
   function maybeShowShareButton() {
     if (!navigator.share) return;
+    if (shareBtnTimer !== null) return; // already counting down or showing: don't restart on every reload
     // TODO: later, consider only doing this reveal once per user (e.g. via
     // localStorage), or swapping the delayed pop-in for an always-present
     // badge with a one-time tutorial-style pointer nudging them to share.
@@ -2830,6 +2852,7 @@
 
   function hideShareButton() {
     clearTimeout(shareBtnTimer);
+    shareBtnTimer = null;
     shareBtn.classList.remove("visible");
     shareBtn.classList.add("hidden");
   }
@@ -2854,6 +2877,119 @@
     return TMDB_READ_ACCESS_TOKEN;
   }
 
+  // ---- Movie fetching ----
+  //
+  // Bump this whenever the fetching, date, or rating logic changes. Cached
+  // results from any other version are discarded on the next load, so a
+  // logic fix can never be hidden behind stale cached data.
+  const FETCH_LOGIC_VERSION = "2026-11-07.1";
+
+  // Cache bounds: it can never grow without limit. Old entries expire, the
+  // entry count and total size are capped (oldest evicted first), and it all
+  // lives in a single localStorage key that is replaced on a version change.
+  const CACHE_KEY = "samFetchCache";
+  const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+  const CACHE_MAX_ENTRIES = 150;
+  const CACHE_MAX_BYTES = 600 * 1024;
+  let cacheStore = null;
+
+  function cacheLoad() {
+    if (cacheStore) return cacheStore;
+    try {
+      const raw = window.localStorage.getItem(CACHE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed && parsed.v === FETCH_LOGIC_VERSION && parsed.e && typeof parsed.e === "object") cacheStore = parsed;
+    } catch (e) { /* unavailable or corrupt: start empty */ }
+    if (!cacheStore) cacheStore = { v: FETCH_LOGIC_VERSION, e: {} };
+    return cacheStore;
+  }
+
+  function cacheGet(key) {
+    const entry = cacheLoad().e[key];
+    if (!entry) return null;
+    if (Date.now() - entry.t > CACHE_TTL_MS) { delete cacheStore.e[key]; return null; }
+    return entry.d;
+  }
+
+  function cachePut(key, data) {
+    cacheLoad().e[key] = { t: Date.now(), d: data };
+  }
+
+  function cacheFlush() {
+    const store = cacheLoad();
+    const now = Date.now();
+    Object.keys(store.e).forEach(k => { if (now - store.e[k].t > CACHE_TTL_MS) delete store.e[k]; });
+    const evictOldest = () => {
+      const keys = Object.keys(store.e);
+      if (!keys.length) return false;
+      delete store.e[keys.reduce((a, b) => (store.e[a].t <= store.e[b].t ? a : b))];
+      return true;
+    };
+    while (Object.keys(store.e).length > CACHE_MAX_ENTRIES) evictOldest();
+    let json = JSON.stringify(store);
+    while (json.length > CACHE_MAX_BYTES && evictOldest()) json = JSON.stringify(store);
+    // Written directly (not via safeSet) so a full or blocked cache never
+    // triggers the "storage unavailable" warning meant for people's settings.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try { window.localStorage.setItem(CACHE_KEY, json); return; }
+      catch (e) {
+        // Quota hit: drop the older half and retry, then give up (memory only).
+        const keys = Object.keys(store.e).sort((a, b) => store.e[a].t - store.e[b].t);
+        keys.slice(0, Math.ceil(keys.length / 2)).forEach(k => delete store.e[k]);
+        json = JSON.stringify(store);
+      }
+    }
+  }
+
+  const TMDB_DISCOVER_URL = "https://api.themoviedb.org/3/discover/movie";
+
+  // REGRESSION GUARDS: wrong release dates (e.g. a 2022 reissue date on a 1993
+  // film) came from region-adjusted dates. So discover requests must NEVER send
+  // `region=`, `release_date.gte/lte` or `with_release_type`; only the movie's
+  // own primary_release_date is used, and any result whose date falls outside
+  // the requested window is discarded below (see cachedDiscover).
+  // Ratings come from `certification_country` + `certification` in the search
+  // itself, so no per-movie /release_dates request is needed.
+  async function discoverPages(params, maxPages) {
+    const token = getApiToken();
+    const results = [];
+    let page = 1;
+    let totalPages = 1;
+    while (page <= Math.min(maxPages, totalPages)) {
+      const res = await fetch(`${TMDB_DISCOVER_URL}?${params}&page=${page}`, {
+        headers: { Authorization: `Bearer ${token}`, accept: "application/json" }
+      });
+      if (res.status === 401) throw new Error("TMDB rejected the API token. Check the hardcoded token in the script.");
+      if (!res.ok) throw new Error(`TMDB request failed: ${res.status}`);
+      const data = await res.json();
+      (data.results || []).forEach(m => results.push(m));
+      totalPages = data.total_pages || 1;
+      page++;
+    }
+    return results;
+  }
+
+  async function cachedDiscover({ kind, cert, region, lang, startStr, endStr, local, maxPages }) {
+    const key = [region, lang, kind, cert, startStr, endStr, maxPages].join("|");
+    const hit = cacheGet(key);
+    if (hit) return hit;
+    // include_adult=false is intentionally always hardcoded here — adult
+    // content exclusion is not a user-configurable setting.
+    let params = `sort_by=vote_count.desc&include_adult=false&language=${lang}` +
+      `&primary_release_date.gte=${startStr}&primary_release_date.lte=${endStr}` +
+      `&certification_country=${region}&certification=${encodeURIComponent(cert)}` +
+      `&vote_count.gte=${local ? 5 : 20}`;
+    // A movie that was only a hit locally (e.g. a French film in France) won't
+    // rank globally, so local picks are a separate query by origin country.
+    if (local) params += `&with_origin_country=${region}`;
+    const raw = await discoverPages(params, maxPages);
+    const data = raw
+      .map(m => ({ id: m.id, title: m.title, poster_path: m.poster_path || null, releaseDate: m.release_date || null }))
+      .filter(m => m.releaseDate && m.releaseDate >= startStr && m.releaseDate <= endStr);
+    cachePut(key, data);
+    return data;
+  }
+
   async function fetchWindow(startDate, endDate, direction) {
     const gen = loadGeneration;
     const token = getApiToken();
@@ -2862,75 +2998,57 @@
       return false;
     }
     try {
-      // include_adult=false is intentionally always hardcoded here — adult
-      // content exclusion is not a user-configurable setting.
-      const dateParams = `&primary_release_date.gte=${fmtDate(startDate)}&primary_release_date.lte=${fmtDate(endDate)}`;
+      const region = selectedRegion;
       const lang = getLanguage();
-      // Deliberately no `region=` param here: when present, TMDB's discover
-      // endpoint returns each movie's release_date adjusted to that region
-      // (e.g. a 2022 US reissue date for a 1993 foreign film) instead of the
-      // movie's true primary release date. That corrupted date then broke
-      // both feed ordering and the theatrical-date fallback in
-      // getReleaseDateInfo. Region-specific certification/release info is
-      // fetched separately per movie below via /release_dates, so it's not
-      // needed here.
-      const baseParams = `sort_by=popularity.desc&page=1&include_adult=false&language=${lang}` + dateParams;
+      const startStr = fmtDate(startDate);
+      const endStr = fmtDate(endDate);
+      // The first window gets two pages per rating (top ~40 by votes); the
+      // 6-month scroll windows get one page.
+      const maxPages = direction === "initial" ? 2 : 1;
+      const base = { region, lang, startStr, endStr, maxPages };
 
-      // Two queries, merged: one for movies that were globally popular, and
-      // one for movies made in the selected region — since TMDB's global
-      // popularity score won't surface a movie that was only a hit locally
-      // (e.g. a French film in France) even when region/language are set.
-      const globalUrl = `https://api.themoviedb.org/3/discover/movie?${baseParams}&vote_count.gte=20`;
-      const localUrl = `https://api.themoviedb.org/3/discover/movie?${baseParams}&vote_count.gte=5&with_origin_country=${selectedRegion}`;
+      const certOrder = new Map(getCertificationsForRegion(region).map(c => [c.certification, c.order]));
+      const ratings = getCertificationsForRegion(region).map(c => c.certification).filter(c => currentRatings.has(c));
+      const adultCerts = ADULT_ONLY_CERTS[region] || ADULT_ONLY_CERTS.US || [];
 
-      const [globalSettled, localSettled] = await Promise.allSettled([
-        fetch(globalUrl, { headers: { Authorization: `Bearer ${token}`, accept: "application/json" } }),
-        fetch(localUrl, { headers: { Authorization: `Bearer ${token}`, accept: "application/json" } })
-      ]);
+      const jobs = [];
+      ratings.forEach(cert => {
+        jobs.push({ ...base, kind: "g", cert, local: false, essential: true });
+        if (region !== "US") jobs.push({ ...base, kind: "l", cert, local: true, essential: false });
+      });
+      // Safety net: movies carrying an adult-only certification in this region
+      // are excluded even if they also appear under a milder rating.
+      adultCerts.forEach(cert => jobs.push({ ...base, kind: "a", cert, local: false, essential: true, maxPages: 1 }));
 
-      const globalRes = globalSettled.status === "fulfilled" ? globalSettled.value : null;
-      const localRes = localSettled.status === "fulfilled" ? localSettled.value : null;
+      const settled = await Promise.allSettled(jobs.map(cachedDiscover));
+      cacheFlush();
+      const failed = settled.find((r, i) => r.status === "rejected" && jobs[i].essential);
+      if (failed) throw failed.reason;
 
-      if (globalRes && globalRes.status === 401) {
-        throw new Error("TMDB rejected the API token. Check the hardcoded token in the script.");
-      }
-      if (!globalRes || !globalRes.ok) throw new Error(`TMDB request failed: ${globalRes ? globalRes.status : "network error"}`);
-
-      const globalData = await globalRes.json();
-      const globalResults = globalData.results || [];
-      const localResults = (localRes && localRes.ok) ? ((await localRes.json()).results || []) : [];
-
-      const globalIds = new Set(globalResults.map(m => m.id));
-      const mergedResults = globalResults.concat(
-        localResults.filter(m => !globalIds.has(m.id)).map(m => ({ ...m, isLocalPick: true }))
-      );
-
-      const existingIds = new Set(loadedMovies.map(m => m.id));
-      const newResults = mergedResults.filter(m => !existingIds.has(m.id));
-
-      const withReleaseDates = await Promise.all(
-        newResults.map(async (m) => {
-          let releaseDatesData = null;
-          try {
-            const rdRes = await fetch(`https://api.themoviedb.org/3/movie/${m.id}/release_dates`, {
-              headers: { Authorization: `Bearer ${token}`, accept: "application/json" }
-            });
-            if (rdRes.ok) releaseDatesData = await rdRes.json();
-          } catch (e) { /* ignore, fallback used */ }
-          return {
-            id: m.id,
-            title: m.title,
-            poster_path: m.poster_path,
-            primaryReleaseDate: m.release_date || null,
-            isLocalPick: !!m.isLocalPick,
-            releaseDatesData
-          };
-        })
-      );
+      const byId = new Map();
+      const adultIds = new Set();
+      settled.forEach((r, i) => {
+        if (r.status !== "fulfilled") return; // only optional local queries can get here
+        const job = jobs[i];
+        if (job.kind === "a") { r.value.forEach(m => adultIds.add(m.id)); return; }
+        r.value.forEach(m => {
+          const prev = byId.get(m.id);
+          if (!prev) {
+            byId.set(m.id, { ...m, cert: job.cert, isLocalPick: job.local });
+          } else {
+            if (!job.local) prev.isLocalPick = false;
+            // If a movie shows up under several ratings, keep the most restrictive.
+            if ((certOrder.get(job.cert) || 0) > (certOrder.get(prev.cert) || 0)) prev.cert = job.cert;
+          }
+        });
+      });
 
       // The person may have switched adult/kid/region while this was in flight.
       if (gen !== loadGeneration) return false;
-      const filtered = withReleaseDates.filter(m => !isAdultRated(m.releaseDatesData));
+
+      const existingIds = new Set(loadedMovies.map(m => m.id));
+      const filtered = Array.from(byId.values())
+        .filter(m => !adultIds.has(m.id) && !isAdultOnlyCert(region, m.cert) && !existingIds.has(m.id));
 
       if (direction === "earlier") {
         loadedMovies = filtered.concat(loadedMovies);
@@ -2952,80 +3070,10 @@
     }
   }
 
-  function isAdultRated(releaseDatesData) {
-    // Hardcoded safety net on top of include_adult=false — always applied,
-    // never exposed as a toggle, regardless of which region is selected.
-    const cert = getCertification(releaseDatesData);
-    return isAdultOnlyCert(selectedRegion, cert);
-  }
-
-  function findRegionReleaseEntry(releaseDatesData) {
-    if (!releaseDatesData || !releaseDatesData.results) return null;
-    return releaseDatesData.results.find(r => r.iso_3166_1 === selectedRegion) ||
-      releaseDatesData.results.find(r => r.iso_3166_1 === "US") ||
-      null;
-  }
-
-  function getCertification(releaseDatesData) {
-    const entry = findRegionReleaseEntry(releaseDatesData);
-    if (!entry) return null;
-    const theatrical = entry.release_dates.find(rd => (rd.type === 3 || rd.type === 2) && rd.certification);
-    const raw = theatrical ? theatrical.certification : (entry.release_dates.find(rd => rd.certification) || {}).certification;
-    if (!raw) return null;
-    // Treat "NR" the same as no certification at all — see isUnratedCert.
-    return isUnratedCert(raw) ? null : raw;
-  }
-
-  function earliestForTypes(us, types) {
-    for (const t of types) {
-      const matches = us.release_dates.filter(rd => rd.type === t && rd.release_date);
-      if (matches.length) {
-        // TMDB doesn't guarantee array order is chronological — pick the earliest,
-        // not just the first entry, to avoid picking a later re-release/reissue date.
-        return matches.reduce((min, rd) => (rd.release_date < min.release_date ? rd : min)).release_date.slice(0, 10);
-      }
-    }
-    return null;
-  }
-
+  // The release date is always TMDB's primary release date (see the guards above).
+  // It is the movie's original release, never a later re-release, and the tag says so.
   function getReleaseDateInfo(movie) {
-    const info = movie.releaseDatesData;
-    let theaterDate = null;
-    let rentalDate = null;
-
-    const regionEntry = findRegionReleaseEntry(info);
-    if (regionEntry) {
-      theaterDate = earliestForTypes(regionEntry, [3, 2]);
-      rentalDate = earliestForTypes(regionEntry, [4, 5]);
-    }
-    // The US release_dates entry (e.g. a later English-dub re-release) can be
-    // newer than TMDB's own primary release date, which usually reflects the
-    // original (often foreign) theatrical release. Always take whichever is
-    // earliest instead of only falling back to primaryReleaseDate when the
-    // US entry is missing entirely.
-    if (movie.primaryReleaseDate && (!theaterDate || movie.primaryReleaseDate < theaterDate)) {
-      theaterDate = movie.primaryReleaseDate;
-    }
-
-    if (currentMode === "theatrical") {
-      return { date: theaterDate, tag: "Theater" };
-    }
-
-    // rental mode
-    const RENTAL_DISTANCE_LIMIT_DAYS = 730; // ~2 years
-    if (rentalDate) {
-      if (theaterDate) {
-        const daysBetween = Math.abs((new Date(rentalDate) - new Date(theaterDate)) / 86400000);
-        if (daysBetween > RENTAL_DISTANCE_LIMIT_DAYS) {
-          return { date: theaterDate, tag: "Theater — rental date too far out" };
-        }
-        if (rentalDate === theaterDate) {
-          return { date: rentalDate, tag: "Rental — same as theater" };
-        }
-      }
-      return { date: rentalDate, tag: "Rental" };
-    }
-    return { date: theaterDate, tag: "Theater — no rental data" };
+    return { date: movie.releaseDate || null, tag: movie.releaseDate ? "Original release" : "" };
   }
 
   // Kept for the few call sites that only need the raw date string for sorting
@@ -3056,9 +3104,7 @@
   }
 
   function passesRatingFilter(movie) {
-    const cert = getCertification(movie.releaseDatesData);
-    if (cert === null) return currentRatings.has("Unrated");
-    return currentRatings.has(cert);
+    return !!movie.cert && currentRatings.has(movie.cert);
   }
 
   function buildCardHtml(movie, myBirth) {
@@ -3066,7 +3112,7 @@
     const poster = movie.poster_path
       ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
       : "";
-    const cert = getCertification(movie.releaseDatesData);
+    const cert = movie.cert;
     const saved = isSavedMovie(movie.id);
 
     let diffRow = "";
@@ -3081,7 +3127,7 @@
         <div class="date">${display.dateStr || "No release date"}${display.dateTag ? ` <span class="date-tag">(${escapeHtml(display.dateTag)})</span>` : ""}</div>
         ${display.ageLabel ? `<div class="age-at-release">${escapeHtml(display.ageLabel)}</div>` : ""}
         ${diffRow ? `<div class="diff-row">${diffRow}</div>` : ""}
-        <div class="cert-badge">${cert ? escapeHtml(cert) : "Unrated"}</div>
+        ${cert ? `<div class="cert-badge">${escapeHtml(cert)}</div>` : ""}
         ${movie.isLocalPick ? `<div class="local-badge">🌍 Local pick</div>` : ""}
         <div class="card-actions">
           <button type="button" class="save-btn${saved ? " saved" : ""}" data-action="toggle-save">${saved ? "★ Saved" : "☆ Save"}</button>
@@ -3092,7 +3138,7 @@
 
   function fullRenderFeed() {
     if (!loadedMovies.length) {
-      if (initialLoadDone) feedEl.innerHTML = `<div class="status">No movies found around that time. Try a different region in settings (☰).</div>`;
+      if (initialLoadDone) feedEl.innerHTML = `<div class="status">No movies found for these ratings around that time. Try turning on more ratings or changing the region in settings (☰).</div>`;
       return;
     }
     const adult = getSelectedAdult();
@@ -3525,7 +3571,7 @@
     }
 
     const poster = details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : "";
-    const cert = movieRecord ? getCertification(movieRecord.releaseDatesData) : null;
+    const cert = movieRecord ? movieRecord.cert : null;
     const rating = details.vote_average ? `${details.vote_average.toFixed(1)}/10 (${details.vote_count || 0} votes)` : null;
     const cast = (details.credits && details.credits.cast || []).slice(0, 6).map(c => c.name).join(", ");
     const trailer = (details.videos && details.videos.results || []).find(v => v.site === "YouTube" && v.type === "Trailer")
@@ -3591,10 +3637,35 @@
 </script>
 
 <script>
+  // Userback feedback widget. The floating button is Userback's own; the
+  // "Send feedback" link in the menu is a backup that opens the same form and
+  // only appears once the widget has actually loaded (it never shows a dead link).
   window.Userback = window.Userback || {};
   Userback.access_token = "A-ITMJ9uqaecvrIqkdgoYCFdyvC";
   (function(d) {
-    var s = d.createElement('script');s.async = true;s.src = 'https://static.userback.io/widget/v1.js';(d.head || d.body).appendChild(s);
+    var s = d.createElement('script');
+    s.async = true;
+    s.src = 'https://static.userback.io/widget/v1.js';
+    s.onerror = function () {
+      if (window.console) console.warn("Feedback widget could not load (blocked by a content blocker, or offline).");
+    };
+    s.onload = function () {
+      var tries = 0;
+      var timer = setInterval(function () {
+        tries++;
+        if (window.Userback && typeof window.Userback.open === "function") {
+          clearInterval(timer);
+          var btn = document.getElementById("feedback-btn");
+          if (btn) {
+            btn.classList.remove("hidden");
+            btn.addEventListener("click", function () { window.Userback.open(); });
+          }
+        } else if (tries > 20) {
+          clearInterval(timer);
+        }
+      }, 500);
+    };
+    (d.head || d.body).appendChild(s);
   })(document);
 </script>
 
