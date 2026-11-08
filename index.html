@@ -745,6 +745,12 @@
     background: var(--card);
     scrollbar-width: thin;
   }
+  /* Fades the feed in once it has been positioned on the closest-age movie */
+  @keyframes feedFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .feed.fade-in { animation: feedFadeIn 0.35s ease-out; }
   .movie-card {
     scroll-snap-align: start;
     height: 50%;
@@ -2545,6 +2551,29 @@
   let feedOriginScrollTop = 0;
   let feedOriginSet = false;
 
+  // The feed has scroll-behavior:smooth, which also animates programmatic
+  // scrollTop assignments. Positioning must be instant, so bypass it.
+  function setFeedScrollInstant(top) {
+    feedEl.style.scrollBehavior = "auto";
+    feedEl.scrollTop = top;
+    feedEl.style.scrollBehavior = "";
+  }
+
+  // A card's scroll position inside the feed (offsetTop is relative to the
+  // page here, not the feed, so measure with bounding rects instead).
+  function cardScrollTop(card) {
+    return card.getBoundingClientRect().top - feedEl.getBoundingClientRect().top + feedEl.scrollTop;
+  }
+
+  function playFeedFadeIn() {
+    feedEl.classList.remove("fade-in");
+    void feedEl.offsetWidth; // restart the animation
+    feedEl.classList.add("fade-in");
+  }
+  feedEl.addEventListener("animationend", (e) => {
+    if (e.target === feedEl) feedEl.classList.remove("fade-in");
+  });
+
   function getCardHeight() {
     const perScreen = feedEl.classList.contains("single-card") ? 1 : 2;
     return (feedEl.clientHeight / perScreen) || 1;
@@ -3168,21 +3197,31 @@
       }
     });
 
-    feedEl.innerHTML = sorted.map(movie => buildCardHtml(movie, myBirth)).join("");
-
-    if (pendingScrollToClosest) {
-      pendingScrollToClosest = false;
-      if (closestId !== null) {
-        const target = feedEl.querySelector(`[data-movie-id="${closestId}"]`);
-        if (target) {
-          target.scrollIntoView({ block: "start" });
-          // Use offsetTop rather than feedEl.scrollTop here — the feed has
-          // scroll-behavior:smooth, so scrollTop hasn't settled yet at this
-          // point in the animation.
-          setFeedOrigin(target.offsetTop);
-        }
+    // Remember which card is at the top so a re-render (ratings toggled,
+    // certifications loaded, etc.) doesn't throw the user back to the start.
+    let anchorId = null;
+    if (!pendingScrollToClosest) {
+      const feedTop = feedEl.getBoundingClientRect().top;
+      const cards = feedEl.querySelectorAll(".movie-card[data-movie-id]");
+      for (const card of cards) {
+        if (card.getBoundingClientRect().bottom > feedTop + 4) { anchorId = card.dataset.movieId; break; }
       }
     }
+
+    const wasPending = pendingScrollToClosest;
+    pendingScrollToClosest = false;
+
+    feedEl.innerHTML = sorted.map(movie => buildCardHtml(movie, myBirth)).join("");
+
+    const closestCard = closestId !== null ? feedEl.querySelector(`[data-movie-id="${closestId}"]`) : null;
+    const anchorCard = anchorId !== null ? feedEl.querySelector(`[data-movie-id="${anchorId}"]`) : null;
+    const scrollTarget = (!wasPending && anchorCard) ? anchorCard : closestCard;
+
+    if (scrollTarget) setFeedScrollInstant(cardScrollTop(scrollTarget));
+    if (closestCard) setFeedOrigin(cardScrollTop(closestCard));
+    // The jump happens before the first paint, so the person never sees the
+    // list rushing past; they just see it fade in on the right movie.
+    if (wasPending) playFeedFadeIn();
   }
 
   function appendCards(newMovies) {
@@ -3218,7 +3257,7 @@
     feedEl.insertAdjacentHTML("afterbegin", html);
     // keep the visual position stable after inserting content above the viewport
     const heightDelta = feedEl.scrollHeight - prevScrollHeight;
-    feedEl.scrollTop = prevScrollTop + heightDelta;
+    setFeedScrollInstant(prevScrollTop + heightDelta);
     shiftFeedOrigin(heightDelta);
   }
 
@@ -3443,7 +3482,14 @@
   async function openMovieDetail(movieId) {
     detailModal.classList.remove("hidden");
     updateScrollReturnBtnVisibility();
-    detailBody.innerHTML = DETAIL_SKELETON_HTML;
+    // Show the poster right away using the same URL the feed card already
+    // loaded (cached), with skeleton lines only for the parts still loading.
+    const knownMovie = loadedMovies.find(m => String(m.id) === String(movieId))
+      || savedMovies.find(m => String(m.tmdbId) === String(movieId));
+    detailBody.innerHTML = knownMovie && knownMovie.poster_path
+      ? `<img class="detail-poster" src="https://image.tmdb.org/t/p/w342${knownMovie.poster_path}" alt="">` +
+        DETAIL_SKELETON_HTML.replace('<div class="skel-poster"></div>', "")
+      : DETAIL_SKELETON_HTML;
 
     const token = getApiToken();
     if (!token) {
@@ -3570,7 +3616,9 @@
       subline = [dateWithTag, display.ageLabel, display.diffLabel].filter(Boolean).join(" · ");
     }
 
-    const poster = details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : "";
+    // Same size as the feed cards (w342) so the browser reuses the cached image.
+    // The detail poster is capped at 30vh tall, so w342 is plenty sharp.
+    const poster = details.poster_path ? `https://image.tmdb.org/t/p/w342${details.poster_path}` : "";
     const cert = movieRecord ? movieRecord.cert : null;
     const rating = details.vote_average ? `${details.vote_average.toFixed(1)}/10 (${details.vote_count || 0} votes)` : null;
     const cast = (details.credits && details.credits.cast || []).slice(0, 6).map(c => c.name).join(", ");
