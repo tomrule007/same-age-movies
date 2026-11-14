@@ -1602,7 +1602,7 @@
   <div class="menu-footer">
     <div class="menu-error hidden" id="menu-error">Please add at least one adult and one kid to continue.</div>
     <button class="menu-save-btn" id="menu-save-btn">Save &amp; Close</button>
-    <button type="button" class="menu-feedback-btn" id="feedback-btn">Send feedback</button>
+    <button type="button" class="menu-feedback-btn hidden" id="feedback-btn">Send feedback</button>
     <div class="feedback-status hidden" id="feedback-status" role="status" aria-live="polite"></div>
     <div class="tmdb-attribution">
       This product uses the TMDB API but is not endorsed or certified by TMDB.<br>
@@ -2972,7 +2972,7 @@
   const SHARE_URL = "https://www.same-age.com";
   const SHARE_TITLE = "Same Age Movies";
   const SHARE_TEXT = "Find the movies that came out when you were your kid's age, and watch them together.";
-  const SHARE_REVEAL_DELAY_MS = 3 * 60 * 1000; // 3 minutes
+  const SHARE_REVEAL_DELAY_MS = 60 * 1000; // 1 minute
   let shareBtnTimer = null;
 
   function maybeShowShareButton() {
@@ -3993,79 +3993,88 @@
 </script>
 
 <script>
-  // Userback feedback widget. The floating button is Userback's own. The
-  // "Send feedback" button in the menu is ALWAYS visible and wired up
-  // immediately (it used to stay hidden until the widget finished loading,
-  // which left it missing or dead). When tapped, it opens the form if the
-  // widget is ready, waits briefly if the widget is still loading, and shows
-  // a short message if the widget failed to load (content blocker, offline,
-  // or a domain the widget isn't authorised for).
+  // Userback feedback widget. Userback adds its own floating button. The
+  // "Send feedback" button in the Settings panel is hidden until the widget is
+  // actually ready, then revealed immediately (no artificial delay), so it is
+  // never a dead button. The script itself is requested right away, below.
+  //
+  // Readiness: Userback's documented `on_load` hook is the primary signal; a
+  // short poll for Userback.openForm after the script loads is a backup in
+  // case the hook is overwritten. Opening uses the documented
+  // Userback.openForm(type, destination); `Userback.open` is not documented.
   window.Userback = window.Userback || {};
   Userback.access_token = "A-ITMJ9uqaecvrIqkdgoYCFdyvC";
   (function(d) {
-    var scriptState = "loading"; // "loading" | "loaded" | "failed"
-    var statusEl = null;
+    var revealed = false;
+    var pollTimer = null;
     var statusTimer = null;
 
     function widgetReady() {
-      return !!(window.Userback && typeof window.Userback.open === "function");
+      return !!(window.Userback && (typeof window.Userback.openForm === "function" || typeof window.Userback.open === "function"));
     }
 
     function showStatus(message) {
-      statusEl = statusEl || d.getElementById("feedback-status");
-      if (!statusEl) return;
-      statusEl.textContent = message;
-      statusEl.classList.remove("hidden");
+      var el = d.getElementById("feedback-status");
+      if (!el) return;
+      el.textContent = message;
+      el.classList.remove("hidden");
       clearTimeout(statusTimer);
-      statusTimer = setTimeout(function () { statusEl.classList.add("hidden"); }, 6000);
+      statusTimer = setTimeout(function () { el.classList.add("hidden"); }, 6000);
     }
 
-    function hideStatus() {
-      statusEl = statusEl || d.getElementById("feedback-status");
-      if (statusEl) statusEl.classList.add("hidden");
+    function revealButton() {
+      if (revealed) return;
+      revealed = true;
+      clearInterval(pollTimer);
+      var btn = d.getElementById("feedback-btn");
+      if (btn) btn.classList.remove("hidden");
+      delayFloatingLauncher();
+    }
+
+    // Userback's own floating side button stays hidden for the first two minutes so
+    // it doesn't distract new visitors. The Settings button above is separate
+    // and opens the form right away, whether or not this launcher is showing.
+    var LAUNCHER_DELAY_MS = 2 * 60 * 1000; // 2 minutes
+    function delayFloatingLauncher() {
+      try {
+        if (typeof window.Userback.hideLauncher === "function") window.Userback.hideLauncher();
+      } catch (e) { return; }
+      setTimeout(function () {
+        try {
+          if (typeof window.Userback.showLauncher === "function") window.Userback.showLauncher();
+        } catch (e) { /* ignore */ }
+      }, LAUNCHER_DELAY_MS);
     }
 
     function openFeedback() {
-      hideStatus();
-      if (widgetReady()) {
-        try { window.Userback.open(); } catch (e) { showStatus("Couldn't open the feedback form. Please try again."); }
-        return;
+      try {
+        if (typeof window.Userback.openForm === "function") window.Userback.openForm("general", "form");
+        else window.Userback.open();
+      } catch (e) {
+        showStatus("Couldn't open the feedback form. Please try again.");
       }
-      if (scriptState === "failed") {
-        showStatus("The feedback form couldn't load. A content blocker or a network issue may be blocking it.");
-        return;
-      }
-      // Still loading: wait up to ~5 seconds for the widget, then report.
-      showStatus("Opening feedback form…");
-      var tries = 0;
-      var timer = setInterval(function () {
-        tries++;
-        if (widgetReady()) {
-          clearInterval(timer);
-          hideStatus();
-          try { window.Userback.open(); } catch (e) { showStatus("Couldn't open the feedback form. Please try again."); }
-        } else if (scriptState === "failed" || tries >= 25) {
-          clearInterval(timer);
-          showStatus("The feedback form isn't available right now. Please try again in a moment.");
-        }
-      }, 200);
     }
 
-    function wireButton() {
-      var btn = d.getElementById("feedback-btn");
-      if (btn) btn.addEventListener("click", openFeedback);
-    }
-    if (d.readyState === "loading") d.addEventListener("DOMContentLoaded", wireButton);
-    else wireButton();
+    var btn = d.getElementById("feedback-btn");
+    if (btn) btn.addEventListener("click", openFeedback);
+
+    Userback.on_load = revealButton;
 
     var s = d.createElement('script');
     s.async = true;
     s.src = 'https://static.userback.io/widget/v1.js';
     s.onerror = function () {
-      scriptState = "failed";
-      if (window.console) console.warn("Feedback widget could not load (blocked by a content blocker, or offline).");
+      if (window.console) console.warn("Feedback widget could not load (blocked by a content blocker, offline, or a domain not added in Userback).");
     };
-    s.onload = function () { scriptState = "loaded"; };
+    s.onload = function () {
+      if (widgetReady()) { revealButton(); return; }
+      var tries = 0;
+      pollTimer = setInterval(function () {
+        tries++;
+        if (widgetReady()) revealButton();
+        else if (tries >= 120) clearInterval(pollTimer); // give up after ~30s
+      }, 250);
+    };
     (d.head || d.body).appendChild(s);
   })(document);
 </script>
