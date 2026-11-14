@@ -1367,6 +1367,66 @@
     font-weight: 700;
   }
 
+  .detail-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .detail-actions .detail-trailer-link { margin-top: 0; }
+  .detail-share-btn {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .card-actions .share-movie-btn { color: var(--accent); }
+
+  /* ---- Shared-link landing view ---- */
+  .shared-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: radial-gradient(circle at 50% 0%, var(--radial-glow) 0%, var(--bg) 65%);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .shared-overlay.hidden { display: none; }
+  .shared-card {
+    position: relative;
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 56px 24px 40px;
+    text-align: center;
+  }
+  .shared-card .detail-close { top: 16px; right: 16px; }
+  .shared-kicker {
+    display: inline-block;
+    background: var(--badge-tint-bg);
+    border: 1px solid var(--badge-tint-border);
+    color: var(--accent);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .shared-year { color: var(--muted); font-weight: 400; }
+  .shared-cta-wrap { margin-top: 18px; }
+  .shared-cta-note {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 10px auto 18px;
+    max-width: 320px;
+  }
+
   /* ---- Where to watch (TMDB / JustWatch) ---- */
   .detail-providers-row {
     display: flex;
@@ -1721,6 +1781,13 @@
       <button class="wizard-back-btn hidden" id="wizard-back-btn">← Back</button>
       <button class="wizard-next-btn" id="wizard-next-btn">Next →</button>
     </div>
+  </div>
+</div>
+
+<div class="shared-overlay hidden" id="shared-overlay" role="dialog" aria-label="Shared movie">
+  <div class="shared-card">
+    <button class="detail-close" id="shared-close" aria-label="Close">✕</button>
+    <div id="shared-body"></div>
   </div>
 </div>
 
@@ -3202,6 +3269,7 @@
         ${movie.isLocalPick ? `<div class="local-badge">🌍 Local pick</div>` : ""}
         <div class="card-actions">
           <button type="button" class="save-btn${saved ? " saved" : ""}" data-action="toggle-save">${saved ? "★ Saved" : "☆ Save"}</button>
+          <button type="button" class="share-movie-btn" data-action="share-movie" aria-label="Share ${escapeHtml(movie.title)}">↗ Share</button>
         </div>
       </div>
     `;
@@ -3424,6 +3492,15 @@
   feedEl.addEventListener("pointercancel", endDrag);
 
   feedEl.addEventListener("click", (e) => {
+    const shareBtnEl = e.target.closest("button[data-action='share-movie']");
+    if (shareBtnEl) {
+      const shareCard = shareBtnEl.closest(".movie-card");
+      const shareMovieRecord = shareCard && loadedMovies.find(m => String(m.id) === String(shareCard.dataset.movieId));
+      if (shareMovieRecord) {
+        shareMovie(shareMovieRecord.id, shareMovieRecord.title, getAdultAgeMonthsAtRelease(shareMovieRecord.releaseDate), shareBtnEl);
+      }
+      return;
+    }
     const btn = e.target.closest("button[data-action='toggle-save']");
     if (!btn) return;
     const card = btn.closest(".movie-card");
@@ -3441,6 +3518,12 @@
   detailClose.addEventListener("click", () => {
     detailModal.classList.add("hidden");
     updateScrollReturnBtnVisibility();
+  });
+  detailBody.addEventListener("click", (e) => {
+    const btn = e.target.closest("button.detail-share-btn");
+    if (!btn) return;
+    const age = btn.dataset.shareAge;
+    shareMovie(btn.dataset.shareId, btn.dataset.shareTitle, age === "" || age === undefined ? null : parseInt(age, 10), btn);
   });
   detailModal.addEventListener("click", (e) => {
     if (e.target === detailModal) {
@@ -3676,6 +3759,7 @@
     const trailer = (details.videos && details.videos.results || []).find(v => v.site === "YouTube" && v.type === "Trailer")
       || (details.videos && details.videos.results || []).find(v => v.site === "YouTube");
     const watchProvidersHtml = buildWatchProvidersHtml(details);
+    const shareAgeMonths = getAdultAgeMonthsAtRelease((movieRecord && movieRecord.releaseDate) || details.release_date, adult);
 
     detailBody.innerHTML = `
       ${poster ? `<img class="detail-poster" src="${poster}" alt="${escapeHtml(details.title)} poster">` : ""}
@@ -3687,7 +3771,10 @@
         ${details.runtime ? `<span class="pill">${details.runtime} min</span>` : ""}
       </div>
       ${watchProvidersHtml}
-      ${trailer ? `<a class="detail-trailer-link" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener">▶ Watch Trailer</a>` : ""}
+      <div class="detail-actions">
+        ${trailer ? `<a class="detail-trailer-link" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener">▶ Watch Trailer</a>` : ""}
+        <button type="button" class="detail-share-btn" data-share-id="${escapeAttr(details.id)}" data-share-title="${escapeAttr(details.title)}" data-share-age="${shareAgeMonths === null ? "" : shareAgeMonths}">↗ Share</button>
+      </div>
       ${details.overview ? `
         <div class="detail-section-label">Overview</div>
         <div class="detail-overview">${escapeHtml(details.overview)}</div>
@@ -3714,6 +3801,171 @@
     return escapeHtml(str).replace(/"/g, "&quot;");
   }
 
+  // ---- Share a single movie ----
+  // The link carries only the TMDB movie id and the sender's age (in months)
+  // when it was released. It never contains birthdays or names.
+  function getAdultAgeMonthsAtRelease(releaseDate, adult) {
+    adult = adult || getSelectedAdult();
+    if (!releaseDate || !adult) return null;
+    const months = monthIndex(releaseDate) - monthIndex(adult.birthday);
+    return months >= 0 ? months : null;
+  }
+
+  function formatAgeLong(totalMonths) {
+    const y = Math.floor(totalMonths / 12);
+    const m = totalMonths % 12;
+    const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+    if (!y) return plural(m, "month");
+    return m ? `${plural(y, "year")}, ${plural(m, "month")}` : plural(y, "year");
+  }
+
+  function buildShareUrl(movieId, ageMonths) {
+    let url = `${SHARE_URL}/?m=${encodeURIComponent(movieId)}`;
+    if (ageMonths !== null && ageMonths !== undefined) url += `&a=${ageMonths}`;
+    return url;
+  }
+
+  function buildShareText(title, ageMonths) {
+    if (ageMonths === null || ageMonths === undefined) {
+      return `Check out ${title}, found on Same Age Movies.`;
+    }
+    const when = ageMonths === 0 ? "The month I was born" : `When I was ${formatAgeLong(ageMonths)} old`;
+    return `${when}, ${title} came out. Find the movies from when you were your kid's age:`;
+  }
+
+  let shareFlashTimer = null;
+  function flashButtonLabel(btn, label) {
+    if (!btn) return;
+    if (btn.dataset.origLabel === undefined) btn.dataset.origLabel = btn.textContent;
+    btn.textContent = label;
+    clearTimeout(shareFlashTimer);
+    shareFlashTimer = setTimeout(() => { btn.textContent = btn.dataset.origLabel; delete btn.dataset.origLabel; }, 1800);
+  }
+
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (err) { /* fall through to the legacy path */ }
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch (err) { return false; }
+  }
+
+  // navigator.share must be called straight from the tap, so it comes first
+  // (before any await). Browsers without it get a copy-to-clipboard fallback.
+  function shareMovie(movieId, title, ageMonths, btn) {
+    const url = buildShareUrl(movieId, ageMonths);
+    const text = buildShareText(title, ageMonths);
+    if (navigator.share) {
+      navigator.share({ title: `${title} · Same Age Movies`, text, url }).catch(() => { /* cancelled */ });
+      return;
+    }
+    copyText(`${text} ${url}`).then((ok) => {
+      if (ok) flashButtonLabel(btn, "✓ Link copied");
+      else window.prompt("Copy this link to share:", url);
+    });
+  }
+
+  // ---- Landing view for people who open a shared link (?m=<id>&a=<months>) ----
+  const sharedOverlay = document.getElementById("shared-overlay");
+  const sharedBody = document.getElementById("shared-body");
+
+  function parseSharedParams() {
+    const p = new URLSearchParams(window.location.search);
+    const m = p.get("m");
+    if (!m || !/^\d{1,9}$/.test(m)) return null;
+    const a = p.get("a");
+    return { movieId: m, ageMonths: a && /^\d{1,4}$/.test(a) ? parseInt(a, 10) : null };
+  }
+
+  function clearSharedParams() {
+    try { history.replaceState(null, "", window.location.pathname + window.location.hash); } catch (e) { /* ignore */ }
+  }
+
+  function closeSharedMovie(startSetup) {
+    sharedOverlay.classList.add("hidden");
+    clearSharedParams();
+    if (startSetup && (adults.length === 0 || kids.length === 0)) {
+      splashOverlay.classList.add("hidden");
+      openWizard();
+    }
+  }
+
+  async function openSharedMovie(shared) {
+    const hasSetup = adults.length > 0 && kids.length > 0;
+    const ctaLabel = hasSetup ? "Back to my movies" : "Find movies from my childhood →";
+    sharedBody.innerHTML = DETAIL_SKELETON_HTML;
+    sharedOverlay.classList.remove("hidden");
+
+    let details = null;
+    try {
+      details = detailCache.get(shared.movieId);
+      if (!details) {
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${shared.movieId}?append_to_response=videos,watch/providers&language=${getLanguage()}`, {
+          headers: { Authorization: `Bearer ${getApiToken()}`, accept: "application/json" }
+        });
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+        details = await res.json();
+        detailCache.set(shared.movieId, details);
+      }
+    } catch (err) {
+      details = null;
+    }
+
+    const cta = `<button type="button" class="splash-btn shared-cta" id="shared-cta-btn">${ctaLabel}</button>`;
+    if (!details || !details.title) {
+      sharedBody.innerHTML = `
+        <div class="detail-title">We couldn't load that movie</div>
+        <div class="detail-subline">The link may be out of date, or you may be offline.</div>
+        <div class="shared-cta-wrap">${cta}</div>`;
+      document.getElementById("shared-cta-btn").addEventListener("click", () => closeSharedMovie(true));
+      return;
+    }
+
+    const poster = details.poster_path ? `https://image.tmdb.org/t/p/w342${details.poster_path}` : "";
+    const year = details.release_date ? details.release_date.slice(0, 4) : "";
+    let sentLine = "";
+    if (shared.ageMonths === 0) sentLine = "Released the month the sender was born";
+    else if (shared.ageMonths !== null) sentLine = `Released when the sender was ${formatAgeLong(shared.ageMonths)} old`;
+    const trailer = (details.videos && details.videos.results || []).find(v => v.site === "YouTube" && v.type === "Trailer")
+      || (details.videos && details.videos.results || []).find(v => v.site === "YouTube");
+    const rating = details.vote_average ? `${details.vote_average.toFixed(1)}/10` : null;
+
+    sharedBody.innerHTML = `
+      <div class="shared-kicker">🎬 A movie shared with you</div>
+      ${poster ? `<img class="detail-poster" src="${poster}" alt="${escapeHtml(details.title)} poster">` : ""}
+      <div class="detail-title">${escapeHtml(details.title)}${year ? ` <span class="shared-year">(${escapeHtml(year)})</span>` : ""}</div>
+      ${sentLine ? `<div class="detail-subline">${escapeHtml(sentLine)}</div>` : ""}
+      <div class="detail-meta-row">
+        ${rating ? `<span class="pill">⭐ ${escapeHtml(rating)}</span>` : ""}
+        ${details.runtime ? `<span class="pill">${details.runtime} min</span>` : ""}
+      </div>
+      <div class="shared-cta-wrap">${cta}</div>
+      <div class="shared-cta-note">Add the month and year you and your kid were born to see the movies from when you were their age.</div>
+      ${buildWatchProvidersHtml(details)}
+      ${trailer ? `<div class="detail-actions"><a class="detail-trailer-link" href="https://www.youtube.com/watch?v=${encodeURIComponent(trailer.key)}" target="_blank" rel="noopener">▶ Watch Trailer</a></div>` : ""}
+      ${details.overview ? `
+        <div class="detail-section-label">Overview</div>
+        <div class="detail-overview">${escapeHtml(details.overview)}</div>
+      ` : ""}
+    `;
+    document.getElementById("shared-cta-btn").addEventListener("click", () => closeSharedMovie(true));
+  }
+
+  document.getElementById("shared-close").addEventListener("click", () => closeSharedMovie(false));
+
   // ---- Init ----
   window.addEventListener("DOMContentLoaded", () => {
     testStorage();
@@ -3734,6 +3986,9 @@
       splashOverlay.classList.remove("hidden");
     }
     tryStartFresh();
+    // Opened from a shared link: show that movie on top of everything else.
+    const sharedLink = parseSharedParams();
+    if (sharedLink) openSharedMovie(sharedLink);
   });
 </script>
 
