@@ -199,40 +199,9 @@
   :root[data-theme="light"] .theme-icon-moon { display: none; }
   :root[data-theme="light"] .theme-icon-sun { display: block; }
 
-  .share-badge {
-    position: fixed;
-    right: 16px;
-    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
-    left: auto;
-    top: auto;
-    transform: translateY(16px);
-    z-index: 40;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    background: var(--accent, #e63946);
-    color: var(--accent-contrast, #fff);
-    border: none;
-    padding: 11px 16px;
-    border-radius: 999px;
-    box-shadow: 0 4px 14px var(--shadow-sm);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1;
-    opacity: 0;
-    transition: transform 0.5s cubic-bezier(.2,1.4,.4,1), opacity 0.5s ease;
-  }
-  .share-badge.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  .share-badge.hidden { display: none; }
-  .share-badge-icon { width: 16px; height: 16px; flex: 0 0 auto; }
-  .share-badge-icon svg { display: block; width: 100%; height: 100%; }
   .scroll-return-btn {
     position: fixed;
-    left: 16px;
+    right: 16px;
     bottom: 20px;
     z-index: 40;
     width: 42px;
@@ -412,7 +381,7 @@
     font-weight: 700;
     cursor: pointer;
   }
-  .menu-feedback-btn {
+  .menu-share-btn {
     display: block;
     width: 100%;
     margin-top: 10px;
@@ -424,15 +393,6 @@
     font-weight: 600;
     cursor: pointer;
   }
-  .menu-feedback-btn.hidden { display: none; }
-  .feedback-status {
-    margin-top: 4px;
-    text-align: center;
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--muted);
-  }
-  .feedback-status.hidden { display: none; }
   .tmdb-attribution {
     margin-top: 12px;
     font-size: 10.5px;
@@ -1376,7 +1336,24 @@
     margin-top: 14px;
   }
   .detail-actions .detail-trailer-link { margin-top: 0; }
-  .detail-share-btn {
+  .detail-remind-note {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .remind-file-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--accent);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .detail-remind-btn,
+  .detail-card-btn {
     background: var(--surface);
     color: var(--text);
     border: 1px solid var(--border);
@@ -1386,7 +1363,6 @@
     font-weight: 700;
     cursor: pointer;
   }
-  .card-actions .share-movie-btn { color: var(--accent); }
 
   /* ---- Shared-link landing view ---- */
   .shared-overlay {
@@ -1506,6 +1482,317 @@
     .navbar .site-name { font-size: 14px; }
     .movie-card .title { font-size: clamp(13px, 3.2vw, 22px); }
   }
+
+  /* =====================================================================
+     UX refinements
+     ===================================================================== */
+  button:focus-visible, select:focus-visible, a:focus-visible,
+  input:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .menu-btn { min-height: 36px; }
+  .theme-toggle-btn { width: 36px; }
+  @keyframes badgeBump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+  .menu-btn.bump { animation: badgeBump 0.3s ease; }
+
+  /* ---- Quick rating filter (always one tap away, synced with Settings) ---- */
+  .quick-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .qf-label {
+    flex: none;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+  }
+  .qf-chips {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 1px 0;
+  }
+  .qf-chips::-webkit-scrollbar { display: none; }
+  .qf-chips button {
+    flex: none;
+    min-height: 30px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .qf-chips button.active {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border-color: var(--accent);
+  }
+
+  /* ---- First-run tip (dismissible, shown once) ---- */
+  .scroll-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .scroll-hint button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+
+  /* ---- Stream cards ---- */
+  .movie-card .date { letter-spacing: 0.01em; }
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 2px 9px;
+  }
+  .chip-accent { color: var(--accent); border-color: var(--accent); }
+  .chip-solid { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+  .feed.single-card .movie-card .chip {
+    font-size: clamp(11px, max(2vw, 1.7vh), 14px);
+    padding: 3px 10px;
+  }
+  .timing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 4px;
+    font-size: clamp(12px, 2.4vw, 16px);
+    color: var(--muted);
+    text-align: center;
+  }
+  .feed.single-card .movie-card .timing { font-size: clamp(12.5px, max(2.3vw, 2vh), 18px); margin-top: 6px; }
+  .timing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+  .timing.soon { color: var(--text); }
+  .timing.soon .timing-dot { background: var(--up); }
+  .timing.now { color: var(--accent); font-weight: 700; }
+  .timing.now .timing-dot { background: var(--accent); }
+  .movie-card .no-poster {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+  }
+  .card-actions { gap: 10px; }
+  .card-actions button {
+    min-height: 38px;
+    background: var(--surface);
+    color: var(--text);
+  }
+  .card-actions .details-btn { color: var(--muted); }
+  .movie-card[data-swipe]::after {
+    position: absolute;
+    top: 14px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+  .movie-card[data-swipe="save"]::after { content: "\2605  Save"; left: 14px; background: var(--accent); color: var(--accent-contrast); }
+  .movie-card[data-swipe="remove"]::after { content: "\2715  Remove"; right: 14px; background: var(--down); color: #fff; }
+  .skeleton-card .skel-poster {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    width: min(58%, 260px);
+    margin: 0 0 14px;
+  }
+  .saved-row button { min-width: 36px; min-height: 36px; font-size: 18px; }
+
+  /* ---- Toast with Undo ---- */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translate(-50%, 24px);
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: calc(100% - 32px);
+    background: var(--bg-elevated);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 14px 10px 16px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    box-shadow: 0 8px 24px var(--shadow-md);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  .toast span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .toast button {
+    flex: none;
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 13.5px;
+    font-weight: 800;
+    padding: 6px 4px;
+    cursor: pointer;
+  }
+
+  /* ---- Detail sheet: native scrolling, drag-to-close only from the handle ---- */
+  .detail-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    touch-action: auto;
+    max-height: 90vh;
+    max-height: 90dvh;
+  }
+  .detail-head {
+    position: relative;
+    flex: 0 0 auto;
+    padding: 10px 20px 8px;
+    touch-action: none;
+  }
+  .detail-handle { width: 44px; height: 5px; margin: 0 auto; }
+  .detail-close { width: 36px; height: 36px; top: 8px; right: 12px; z-index: 2; }
+  .detail-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 20px 28px;
+  }
+  .detail-scroll .status { height: auto; padding: 32px 0; }
+  .detail-modal:not(.hidden) .detail-content { animation: sheetUp 0.22s ease-out; }
+  @keyframes sheetUp {
+    from { transform: translateY(40px); opacity: 0.6; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @media (min-width: 700px) {
+    .detail-modal { align-items: center; }
+    .detail-content { max-width: 560px; border-radius: 16px; }
+  }
+  .detail-hero { display: flex; gap: 16px; align-items: flex-start; margin-top: 4px; }
+  .detail-hero-poster {
+    flex: none;
+    width: 36%;
+    max-width: 150px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 6px 16px var(--shadow-md);
+    background: var(--bg-elevated);
+  }
+  .no-poster-lg { display: flex; align-items: center; justify-content: center; font-size: 40px; }
+  .skel-box {
+    background: linear-gradient(90deg, var(--surface) 25%, var(--skeleton-2) 37%, var(--surface) 63%);
+    background-size: 400% 100%;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+  .detail-hero-info { flex: 1; min-width: 0; }
+  .detail-hero-info .detail-title { text-align: left; font-size: 20px; line-height: 1.25; }
+  .detail-hero-info .detail-subline { text-align: left; margin-top: 4px; }
+  .detail-hero-info .detail-meta-row { justify-content: flex-start; margin: 10px 0 0; }
+  .detail-genres { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .age-callout {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+  }
+  .age-callout.soon { border-left-color: var(--up); }
+  .age-callout.now { border-left-color: var(--accent); }
+  .age-callout.past { border-left-color: var(--muted); }
+  .age-callout-main { font-size: 14px; color: var(--text); line-height: 1.45; }
+  .age-callout-main strong { color: var(--accent); }
+  .age-callout-sub { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .age-callout.soon .age-callout-sub { color: var(--text); }
+  .age-callout.soon .timing-dot { background: var(--up); }
+  .age-callout.now .timing-dot { background: var(--accent); }
+  .detail-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .detail-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .detail-action-btn.detail-trailer-link { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+  .detail-action-btn.saved { background: var(--saved-tint-bg); border-color: var(--saved-tint-border); color: var(--accent); }
+  .detail-scroll .detail-remind-note { text-align: left; margin-top: 10px; }
+  .detail-scroll .detail-providers-row { justify-content: flex-start; gap: 22px; }
+  .detail-scroll .provider-group { align-items: flex-start; }
+  .detail-scroll .provider-logo { width: 44px; height: 44px; }
+  .providers-empty, .providers-note { font-size: 13px; line-height: 1.5; color: var(--muted); margin-bottom: 6px; }
+  .providers-empty a { color: var(--accent); }
+  .detail-overview.clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .read-more-btn {
+    background: none;
+    border: none;
+    padding: 6px 0;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .qf-label { min-width: 50px; }
+  .quick-filters + .quick-filters { margin-top: 6px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -1535,6 +1822,14 @@
     <select id="kid-select"></select>
   </div>
   <div id="comparison-summary" class="comparison-summary"></div>
+  <div class="quick-filters" role="group" aria-label="Filter by rating">
+    <span class="qf-label">Ratings</span>
+    <div class="qf-chips" id="quick-rating-toggle"></div>
+  </div>
+  <div class="quick-filters" role="group" aria-label="How many movies to show">
+    <span class="qf-label">Show</span>
+    <div class="qf-chips" id="quick-density-toggle"></div>
+  </div>
 </div>
 
 <div class="menu-panel hidden" id="menu-panel">
@@ -1596,14 +1891,19 @@
         <div class="toggle-label">Ratings included</div>
         <div class="rating-toggle" id="rating-toggle"></div>
       </div>
+
+      <div class="menu-section">
+        <div class="toggle-label">Movies to show</div>
+        <div class="rating-toggle" id="density-toggle"></div>
+        <div class="add-hint">Top hits keeps only the best-known movies, so more of them feel familiar.</div>
+      </div>
     </details>
   </div>
 
   <div class="menu-footer">
     <div class="menu-error hidden" id="menu-error">Please add at least one adult and one kid to continue.</div>
     <button class="menu-save-btn" id="menu-save-btn">Save &amp; Close</button>
-    <button type="button" class="menu-feedback-btn hidden" id="feedback-btn">Send feedback</button>
-    <div class="feedback-status hidden" id="feedback-status" role="status" aria-live="polite"></div>
+    <button type="button" class="menu-share-btn" id="share-app-btn">↗ Share Same Age Movies</button>
     <div class="tmdb-attribution">
       This product uses the TMDB API but is not endorsed or certified by TMDB.<br>
       <a href="https://www.themoviedb.org" target="_blank" rel="noopener">themoviedb.org</a>
@@ -1639,22 +1939,9 @@
 </div>
 
 <div class="container">
-  <div id="scroll-hint" class="scroll-hint" style="display:none;">Swipe right to save · swipe left to remove · tap for details</div>
+  <div id="scroll-hint" class="scroll-hint" style="display:none;"><span>Tap a movie for details · swipe right to save</span><button type="button" id="scroll-hint-close" aria-label="Dismiss tip">✕</button></div>
   <div id="feed" class="feed single-card"></div>
 </div>
-
-<button class="share-badge hidden" id="share-btn" title="Share">
-  <span class="share-badge-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="18" cy="5" r="3"></circle>
-      <circle cx="6" cy="12" r="3"></circle>
-      <circle cx="18" cy="19" r="3"></circle>
-      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-    </svg>
-  </span>
-  <span class="share-badge-label">Share</span>
-</button>
 
 <button class="scroll-return-btn hidden" id="scroll-return-btn" title="Back to where you started" aria-label="Back to where you started">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -1791,12 +2078,21 @@
   </div>
 </div>
 
-<div class="detail-modal hidden" id="detail-modal">
+<div class="detail-modal hidden" id="detail-modal" role="dialog" aria-modal="true" aria-label="Movie details">
   <div class="detail-content" id="detail-content">
-    <div class="detail-handle"></div>
-    <button class="detail-close" id="detail-close">✕</button>
-    <div id="detail-body"></div>
+    <div class="detail-head" id="detail-head">
+      <div class="detail-handle"></div>
+      <button class="detail-close" id="detail-close" aria-label="Close details">✕</button>
+    </div>
+    <div class="detail-scroll" id="detail-scroll">
+      <div id="detail-body"></div>
+    </div>
   </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span id="toast-msg"></span>
+  <button type="button" id="toast-action"></button>
 </div>
 
 <script>
@@ -1850,7 +2146,7 @@
   const menuSaveBtn = document.getElementById("menu-save-btn");
   const menuError = document.getElementById("menu-error");
   const savedBtn = document.getElementById("saved-btn");
-  const shareBtn = document.getElementById("share-btn");
+  const shareAppBtn = document.getElementById("share-app-btn");
 
 
   // ---- Month + year entry ----
@@ -1940,6 +2236,9 @@
   const feedEl = document.getElementById("feed");
   const scrollHintEl = document.getElementById("scroll-hint");
   const ratingToggleEl = document.getElementById("rating-toggle");
+  const quickRatingEl = document.getElementById("quick-rating-toggle");
+  const quickDensityEl = document.getElementById("quick-density-toggle");
+  const densityToggleEl = document.getElementById("density-toggle");
   const sizeTwoBtn = document.getElementById("size-two");
   const sizeOneBtn = document.getElementById("size-one");
   const detailModal = document.getElementById("detail-modal");
@@ -2148,9 +2447,23 @@
     const certs = getCertificationsForRegion(selectedRegion).slice().sort((a, b) => a.order - b.order);
     const chips = certs.map(c => `<button data-rating="${escapeHtml(c.certification)}"${currentRatings.has(c.certification) ? ' class="active"' : ""} title="${escapeHtml(c.meaning || "")}">${escapeHtml(c.certification)}</button>`);
     ratingToggleEl.innerHTML = chips.join("");
+    quickRatingEl.innerHTML = chips.join("");
   }
 
   let currentRatings = new Set(["G", "PG", "PG-13"]);
+  let bestMatchId = null;      // the card closest to the kid's current age
+  let currentDetail = null;    // movie shown in the detail sheet
+  let detailRequestId = 0;
+
+  // "How many movies to show": keeps only movies with enough TMDB votes to be
+  // widely remembered. Local picks (a hit in the chosen region only) use a
+  // tenth of the threshold because they never collect global vote counts.
+  const DENSITY_LEVELS = [
+    { key: "top", label: "Top hits", minVotes: 3000, hint: "Only the best-known movies" },
+    { key: "popular", label: "Popular", minVotes: 800, hint: "Well-known movies" },
+    { key: "all", label: "Everything", minVotes: 0, hint: "Every movie, including lesser-known ones" }
+  ];
+  let currentDensity = "top";
   let windowStart = null;
   let windowEnd = null;
   let loadedMovies = [];
@@ -2162,6 +2475,214 @@
   let isLoadingEarlier = false;
   let isLoadingLater = false;
   const detailCache = new Map();
+
+  // ---- UX helpers: overlay history, toast, tip, saving ----
+  // Each sheet/panel pushes a history entry so the phone's Back gesture closes
+  // the top sheet instead of leaving the app.
+  const overlayStack = [];
+  const overlayHiders = {};
+
+  function overlayOpen(key) {
+    if (overlayStack[overlayStack.length - 1] === key) return;
+    overlayStack.push(key);
+    try { history.pushState({ overlay: key }, ""); } catch (e) { /* ignore */ }
+  }
+
+  function overlayClose(key) {
+    const hide = overlayHiders[key];
+    const i = overlayStack.lastIndexOf(key);
+    if (i === -1) { if (hide) hide(); return; }
+    if (i === overlayStack.length - 1) {
+      const depth = overlayStack.length;
+      try { history.back(); } catch (e) { overlayStack.pop(); if (hide) hide(); return; }
+      // If the browser never reports the pop, close anyway.
+      setTimeout(() => {
+        if (overlayStack.length === depth && overlayStack[depth - 1] === key) {
+          overlayStack.pop();
+          if (hide) hide();
+        }
+      }, 350);
+      return;
+    }
+    overlayStack.splice(i, 1);
+    if (hide) hide();
+  }
+
+  window.addEventListener("popstate", () => {
+    const key = overlayStack.pop();
+    if (key && overlayHiders[key]) overlayHiders[key]();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && overlayStack.length) overlayClose(overlayStack[overlayStack.length - 1]);
+  });
+
+  // Menu and Saved are siblings: opening one replaces the other instead of stacking.
+  function openPanel(key) {
+    const el = key === "menu" ? menuPanel : savedPanel;
+    const otherKey = key === "menu" ? "saved" : "menu";
+    const other = key === "menu" ? savedPanel : menuPanel;
+    if (!other.classList.contains("hidden")) {
+      other.classList.add("hidden");
+      const i = overlayStack.lastIndexOf(otherKey);
+      if (i !== -1) {
+        overlayStack[i] = key;
+        try { history.replaceState({ overlay: key }, ""); } catch (e) { /* ignore */ }
+        el.classList.remove("hidden");
+        return;
+      }
+    }
+    el.classList.remove("hidden");
+    overlayOpen(key);
+  }
+
+  overlayHiders.menu = () => menuPanel.classList.add("hidden");
+  overlayHiders.saved = () => savedPanel.classList.add("hidden");
+  overlayHiders.region = () => document.getElementById("region-panel").classList.add("hidden");
+  overlayHiders.detail = () => hideDetailNow();
+
+  // ---- Toast (with optional Undo) ----
+  const toastEl = document.getElementById("toast");
+  const toastMsgEl = document.getElementById("toast-msg");
+  const toastActionEl = document.getElementById("toast-action");
+  let toastTimer = null;
+  let toastUndo = null;
+
+  function showToast(message, actionLabel, onAction) {
+    toastMsgEl.textContent = message;
+    toastUndo = onAction || null;
+    toastActionEl.textContent = actionLabel || "";
+    toastActionEl.style.display = actionLabel ? "" : "none";
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, actionLabel ? 4500 : 2200);
+  }
+  function hideToast() { toastEl.classList.remove("show"); }
+  toastActionEl.addEventListener("click", () => {
+    const fn = toastUndo;
+    toastUndo = null;
+    hideToast();
+    if (fn) fn();
+  });
+
+  function haptic() {
+    try { if (navigator.vibrate) navigator.vibrate(10); } catch (e) { /* ignore */ }
+  }
+
+  // ---- First-run tip: shown until dismissed or the first save/open ----
+  function showHintIfNeeded() {
+    scrollHintEl.style.display = safeGet("hintSeen") === "1" ? "none" : "flex";
+  }
+  function dismissHint() {
+    scrollHintEl.style.display = "none";
+    safeSet("hintSeen", "1");
+  }
+  document.getElementById("scroll-hint-close").addEventListener("click", dismissHint);
+
+  // ---- Saving (one path for swipe, card button, detail button, and Undo) ----
+  function commitSave(movie, display, wantSaved) {
+    const adult = getSelectedAdult();
+    const kid = getSelectedKid();
+    if (!adult || !kid) return;
+    if (isSavedMovie(movie.id) === wantSaved) return;
+    const adultId = selectedAdultId;
+    const kidId = selectedKidId;
+    setSavedState(movie, display, adult, kid, wantSaved);
+    updateCardSavedVisualsForAllVisible();
+    updateDetailSaveButton();
+    dismissHint();
+    haptic();
+    savedBtn.classList.remove("bump");
+    void savedBtn.offsetWidth;
+    savedBtn.classList.add("bump");
+    showToast(wantSaved ? `Saved ${movie.title}` : `Removed ${movie.title}`, "Undo", () => {
+      if (selectedAdultId !== adultId || selectedKidId !== kidId) return;
+      setSavedState(movie, display, adult, kid, !wantSaved);
+      updateCardSavedVisualsForAllVisible();
+      updateDetailSaveButton();
+    });
+  }
+
+  function updateDetailSaveButton() {
+    const btn = detailBody.querySelector(".detail-save-btn");
+    if (!btn || !currentDetail) return;
+    const saved = isSavedMovie(currentDetail.movie.id);
+    btn.textContent = saved ? "★ Saved" : "☆ Save";
+    btn.classList.toggle("saved", saved);
+  }
+
+  // ---- Movies-to-show filter ----
+  function passesDensity(movie) {
+    const level = DENSITY_LEVELS.find(l => l.key === currentDensity) || DENSITY_LEVELS[0];
+    const min = movie.isLocalPick ? Math.round(level.minVotes / 10) : level.minVotes;
+    return (movie.voteCount || 0) >= min;
+  }
+
+  function renderDensityToggle() {
+    const html = DENSITY_LEVELS.map(l =>
+      `<button type="button" data-density="${l.key}"${l.key === currentDensity ? ' class="active"' : ""} title="${escapeAttr(l.hint)}">${escapeHtml(l.label)}</button>`
+    ).join("");
+    quickDensityEl.innerHTML = html;
+    densityToggleEl.innerHTML = html;
+  }
+
+  function setDensity(key) {
+    if (key === currentDensity || !DENSITY_LEVELS.some(l => l.key === key)) return;
+    currentDensity = key;
+    safeSet("density", key);
+    renderDensityToggle();
+    // The list changes completely, so land on the closest match again.
+    pendingScrollToClosest = true;
+    fullRenderFeed();
+    ensureEnoughCards();
+  }
+
+  function onDensityClick(e) {
+    const btn = e.target.closest("button[data-density]");
+    if (btn) setDensity(btn.dataset.density);
+  }
+  quickDensityEl.addEventListener("click", onDensityClick);
+  densityToggleEl.addEventListener("click", onDensityClick);
+
+  // A strict filter can leave very few cards, which would leave nothing to
+  // scroll and so never trigger loading more. Load outward until there is.
+  function ensureEnoughCards() {
+    if (!windowStart || !windowEnd) return;
+    if (!isLoadingEarlier && feedEl.scrollTop < SCROLL_THRESHOLD) loadEarlier();
+    const dist = feedEl.scrollHeight - feedEl.scrollTop - feedEl.clientHeight;
+    if (!isLoadingLater && dist < SCROLL_THRESHOLD) loadLater();
+  }
+
+  // ---- Wording helpers ----
+  function formatReleaseDate(dateStr) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateStr || "");
+    if (!m) return dateStr || "";
+    return `${MONTH_NAMES[parseInt(m[2], 10) - 1]} ${parseInt(m[3], 10)}, ${m[1]}`;
+  }
+
+  function spanLabel(abs) {
+    if (abs < 24) return `${abs} month${abs === 1 ? "" : "s"}`;
+    return `${(abs / 12).toFixed(1).replace(/\.0$/, "")} years`;
+  }
+
+  // Turns "how many months older was the parent" into something actionable:
+  // when does the kid reach (or when did they pass) that age?
+  function kidTimingInfo(diffMonths) {
+    if (diffMonths === null || diffMonths === undefined) return null;
+    const kid = getSelectedKid();
+    const name = !kid || kid.name === "Kid" ? "your kid" : kid.name;
+    const cap = name.charAt(0).toUpperCase() + name.slice(1);
+    if (Math.abs(diffMonths) <= 1) return { cls: "now", text: `Same age as ${name} right now` };
+    if (diffMonths > 0) return { cls: "soon", text: `${cap} reaches this age in ${spanLabel(diffMonths)}` };
+    return { cls: "past", text: `${cap} was this age ${spanLabel(-diffMonths)} ago` };
+  }
+
+  function formatRuntime(min) {
+    if (!min) return "";
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+  }
 
   let adults = [];
   let kids = [];
@@ -2398,8 +2919,7 @@
   });
 
   function openMenuFocusAdd(nameInput) {
-    savedPanel.classList.add("hidden");
-    menuPanel.classList.remove("hidden");
+    openPanel("menu");
     // Wait a beat for the panel's open transition before scrolling/focusing,
     // otherwise scrollIntoView can measure the pre-transition layout.
     setTimeout(() => {
@@ -2433,11 +2953,11 @@
   // ---- Menu / Saved panel open-close ----
 
   menuBtn.addEventListener("click", () => {
-    savedPanel.classList.add("hidden");
-    menuPanel.classList.toggle("hidden");
+    if (!menuPanel.classList.contains("hidden")) { overlayClose("menu"); return; }
+    openPanel("menu");
   });
   menuClose.addEventListener("click", () => {
-    menuPanel.classList.add("hidden");
+    overlayClose("menu");
   });
 
   menuSaveBtn.addEventListener("click", () => {
@@ -2446,16 +2966,16 @@
       return;
     }
     menuError.classList.add("hidden");
-    menuPanel.classList.add("hidden");
+    overlayClose("menu");
   });
 
   savedBtn.addEventListener("click", () => {
-    menuPanel.classList.add("hidden");
+    if (!savedPanel.classList.contains("hidden")) { overlayClose("saved"); return; }
     renderSavedList();
-    savedPanel.classList.toggle("hidden");
+    openPanel("saved");
   });
   savedClose.addEventListener("click", () => {
-    savedPanel.classList.add("hidden");
+    overlayClose("saved");
   });
 
   const regionRow = document.getElementById("region-row");
@@ -2468,39 +2988,38 @@
     regionModalSearch.value = "";
     renderRegionChipList(regionModalList, "");
     regionPanel.classList.remove("hidden");
+    overlayOpen("region");
   }
   regionRow.addEventListener("click", openRegionPanel);
   regionRow.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openRegionPanel(); }
   });
   regionPanelClose.addEventListener("click", () => {
-    regionPanel.classList.add("hidden");
+    overlayClose("region");
   });
   regionModalSearch.addEventListener("input", () => renderRegionChipList(regionModalList, regionModalSearch.value));
   regionModalList.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-region]");
     if (!btn) return;
     selectRegionChip(btn.dataset.region);
+    overlayClose("region");
   });
 
-  ratingToggleEl.addEventListener("click", (e) => {
+  // Header chips and the Settings chips share one handler and stay in sync.
+  function onRatingChipClick(e) {
     const btn = e.target.closest("button[data-rating]");
     if (!btn) return;
     const rating = btn.dataset.rating;
-    if (currentRatings.has(rating)) {
-      currentRatings.delete(rating);
-      btn.classList.remove("active");
-    } else {
-      currentRatings.add(rating);
-      btn.classList.add("active");
-      saveRatingsForRegion(selectedRegion);
-      // Ratings are part of the search itself, so a newly enabled one has not been fetched yet.
-      if (getSelectedAdult() && getSelectedKid()) tryStartFresh();
-      return;
-    }
+    const turningOn = !currentRatings.has(rating);
+    if (turningOn) currentRatings.add(rating); else currentRatings.delete(rating);
     saveRatingsForRegion(selectedRegion);
-    fullRenderFeed();
-  });
+    renderRatingToggle();
+    // A newly enabled rating hasn't been fetched yet; disabling only needs a re-render.
+    if (turningOn) { if (getSelectedAdult() && getSelectedKid()) tryStartFresh(); }
+    else fullRenderFeed();
+  }
+  ratingToggleEl.addEventListener("click", onRatingChipClick);
+  quickRatingEl.addEventListener("click", onRatingChipClick);
 
   sizeTwoBtn.addEventListener("click", () => { setCardsPerScreen(2); });
   sizeOneBtn.addEventListener("click", () => { setCardsPerScreen(1); });
@@ -2553,7 +3072,7 @@
           ? `<img class="saved-thumb" src="https://image.tmdb.org/t/p/w92${item.poster_path}" alt="${escapeHtml(item.title)} poster">`
           : `<div class="saved-thumb"></div>`}
         <div class="person-info">
-          <strong>${escapeHtml(item.title)}</strong> <span>${item.dateStr || ""}${item.dateTag ? ` (${item.dateTag})` : ""}</span><br>
+          <strong>${escapeHtml(item.title)}</strong> <span>${item.dateStr ? escapeHtml(formatReleaseDate(item.dateStr)) : ""}</span><br>
           ${ageLine ? `<span>${escapeHtml(ageLine)}</span><br>` : ""}
           <span>${escapeHtml(diffLine || `${item.adultName} vs ${item.kidName}`)}</span>
         </div>
@@ -2567,10 +3086,20 @@
     const removeBtn = e.target.closest("button[data-remove-saved]");
     if (removeBtn) {
       const id = removeBtn.dataset.removeSaved;
+      const index = savedMovies.findIndex(m => m.savedId === id);
+      const removed = index === -1 ? null : savedMovies[index];
       savedMovies = savedMovies.filter(m => m.savedId !== id);
       saveSavedMoviesToStorage();
       renderSavedList();
       updateCardSavedVisualsForAllVisible();
+      if (removed) {
+        showToast(`Removed ${removed.title}`, "Undo", () => {
+          savedMovies.splice(Math.min(index, savedMovies.length), 0, removed);
+          saveSavedMoviesToStorage();
+          renderSavedList();
+          updateCardSavedVisualsForAllVisible();
+        });
+      }
       return;
     }
     const row = e.target.closest("[data-open-saved]");
@@ -2721,28 +3250,40 @@
     scrollReturnBtn.classList.add("hidden");
   });
 
-  function loadEarlier() {
+  function loadEarlier(chain = 0) {
+    if (windowStart.getFullYear() <= 1935) return;
     isLoadingEarlier = true;
     const newStart = addMonths(windowStart, -6);
     const gen = loadGeneration;
     fetchWindow(newStart, windowStart, "earlier").then((ok) => {
       if (gen !== loadGeneration) return;
-      if (ok) windowStart = newStart;
-      // After a failure, wait before retrying so scrolling doesn't spam TMDB.
-      if (ok) isLoadingEarlier = false;
-      else setTimeout(() => { if (gen === loadGeneration) isLoadingEarlier = false; }, 5000);
+      if (ok) {
+        windowStart = newStart;
+        isLoadingEarlier = false;
+        // The filters can leave a window with nothing to show; keep going until there is.
+        if (chain < 8 && feedEl.scrollTop < SCROLL_THRESHOLD) loadEarlier(chain + 1);
+      } else {
+        // After a failure, wait before retrying so scrolling doesn't spam TMDB.
+        setTimeout(() => { if (gen === loadGeneration) isLoadingEarlier = false; }, 5000);
+      }
     });
   }
 
-  function loadLater() {
+  function loadLater(chain = 0) {
+    if (windowEnd > new Date()) return; // nothing has been released after today
     isLoadingLater = true;
     const newEnd = addMonths(windowEnd, 6);
     const gen = loadGeneration;
     fetchWindow(windowEnd, newEnd, "later").then((ok) => {
       if (gen !== loadGeneration) return;
-      if (ok) windowEnd = newEnd;
-      if (ok) isLoadingLater = false;
-      else setTimeout(() => { if (gen === loadGeneration) isLoadingLater = false; }, 5000);
+      if (ok) {
+        windowEnd = newEnd;
+        isLoadingLater = false;
+        const dist = feedEl.scrollHeight - feedEl.scrollTop - feedEl.clientHeight;
+        if (chain < 8 && dist < SCROLL_THRESHOLD) loadLater(chain + 1);
+      } else {
+        setTimeout(() => { if (gen === loadGeneration) isLoadingLater = false; }, 5000);
+      }
     });
   }
 
@@ -2793,7 +3334,6 @@
       comparisonSummary.textContent = "Add an adult and a kid in the menu (☰) to get started.";
       feedEl.innerHTML = `<div class="status">Add an adult and a kid in the menu (☰) to get started.</div>`;
       scrollHintEl.style.display = "none";
-      hideShareButton();
       return;
     }
     menuError.classList.add("hidden");
@@ -2951,61 +3491,40 @@
     comparisonSummary.innerHTML = `<strong>${escapeHtml(kid.name)}</strong> is about ${formatAge(kidAgeMonthsNow)} old. ` +
       `<strong>${escapeHtml(adult.name)}</strong> was that age around <strong>${formatMonthYear(targetIdx)}</strong>.`;
 
-    feedEl.innerHTML = `<div class="status">Loading movies...</div>`;
+    feedEl.innerHTML = `<div class="movie-card skeleton-card" aria-busy="true" aria-label="Loading movies">
+      <div class="skel-poster"></div>
+      <div class="skel-line skel-title"></div>
+      <div class="skel-line skel-subline"></div>
+      <div class="skel-line" style="width:55%"></div>
+    </div>`;
     scrollHintEl.style.display = "none";
 
     pendingScrollToClosest = true;
     fetchWindow(windowStart, windowEnd, "initial").then(() => {
       if (gen !== loadGeneration) return;
-      scrollHintEl.style.display = "block";
-      maybeShowShareButton();
+      showHintIfNeeded();
+      ensureEnoughCards();
     });
   }
 
-  // ---- Share / spread the word ----
-  // Only ever shown once the user has actually reached the movie feed
-  // (i.e. an adult + kid are picked and movies have loaded), and only in
-  // browsers that support the native Web Share API. It then pops out from
-  // the middle of the left edge after 10 seconds of being on the feed.
+  // ---- Share the app (button in Settings) ----
   // The www form is used so iOS (Messages, Notes, etc.) reliably turns the link into a tappable one.
   // The URL is passed only in `url`, never repeated in the text.
   const SHARE_URL = "https://www.same-age.com";
   const SHARE_TITLE = "Same Age Movies";
   const SHARE_TEXT = "Find the movies that came out when you were your kid's age, and watch them together.";
-  const SHARE_REVEAL_DELAY_MS = 60 * 1000; // 1 minute
-  let shareBtnTimer = null;
 
-  function maybeShowShareButton() {
-    if (!navigator.share) return;
-    if (shareBtnTimer !== null) return; // already counting down or showing: don't restart on every reload
-    // TODO: later, consider only doing this reveal once per user (e.g. via
-    // localStorage), or swapping the delayed pop-in for an always-present
-    // badge with a one-time tutorial-style pointer nudging them to share.
-    clearTimeout(shareBtnTimer);
-    shareBtn.classList.remove("hidden");
-    shareBtnTimer = setTimeout(() => {
-      shareBtn.classList.add("visible");
-    }, SHARE_REVEAL_DELAY_MS);
-  }
-
-  function hideShareButton() {
-    clearTimeout(shareBtnTimer);
-    shareBtnTimer = null;
-    shareBtn.classList.remove("visible");
-    shareBtn.classList.add("hidden");
-  }
-
-  if (shareBtn) {
-    shareBtn.addEventListener("click", async () => {
-      try {
-        await navigator.share({
-          title: SHARE_TITLE,
-          text: SHARE_TEXT,
-          url: SHARE_URL
-        });
-      } catch (err) {
-        // User cancelled the share sheet or it failed silently — nothing to do.
+  // "Share Same Age Movies" in Settings: native share sheet, or copy the link where that isn't available.
+  if (shareAppBtn) {
+    shareAppBtn.addEventListener("click", () => {
+      if (navigator.share) {
+        navigator.share({ title: SHARE_TITLE, text: SHARE_TEXT, url: SHARE_URL }).catch(() => { /* cancelled */ });
+        return;
       }
+      copyText(`${SHARE_TEXT} ${SHARE_URL}`).then((ok) => {
+        if (ok) flashButtonLabel(shareAppBtn, "✓ Link copied");
+        else window.prompt("Copy this link to share:", SHARE_URL);
+      });
     });
   }
 
@@ -3020,7 +3539,7 @@
   // Bump this whenever the fetching, date, or rating logic changes. Cached
   // results from any other version are discarded on the next load, so a
   // logic fix can never be hidden behind stale cached data.
-  const FETCH_LOGIC_VERSION = "2026-11-07.1";
+  const FETCH_LOGIC_VERSION = "2026-11-15.1";
 
   // Cache bounds: it can never grow without limit. Old entries expire, the
   // entry count and total size are capped (oldest evicted first), and it all
@@ -3122,7 +3641,7 @@
     if (local) params += `&with_origin_country=${region}`;
     const raw = await discoverPages(params, maxPages);
     const data = raw
-      .map(m => ({ id: m.id, title: m.title, poster_path: m.poster_path || null, releaseDate: m.release_date || null }))
+      .map(m => ({ id: m.id, title: m.title, poster_path: m.poster_path || null, releaseDate: m.release_date || null, voteCount: m.vote_count || 0 }))
       .filter(m => m.releaseDate && m.releaseDate >= startStr && m.releaseDate <= endStr);
     cachePut(key, data);
     return data;
@@ -3242,7 +3761,7 @@
   }
 
   function passesRatingFilter(movie) {
-    return !!movie.cert && currentRatings.has(movie.cert);
+    return !!movie.cert && currentRatings.has(movie.cert) && passesDensity(movie);
   }
 
   function buildCardHtml(movie, myBirth) {
@@ -3250,26 +3769,27 @@
     const poster = movie.poster_path
       ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
       : "";
-    const cert = movie.cert;
     const saved = isSavedMovie(movie.id);
+    const timing = kidTimingInfo(display.diffMonths);
 
-    let diffRow = "";
-    if (display.diffMonths !== null) {
-      diffRow = `${diffArrow(display.diffMonths)} <span>${display.diffLabel}</span>`;
-    }
+    const chips = [];
+    if (movie.id === bestMatchId) chips.push(`<span class="chip chip-solid">★ Closest match</span>`);
+    if (movie.cert) chips.push(`<span class="chip">${escapeHtml(movie.cert)}</span>`);
+    if (movie.isLocalPick) chips.push(`<span class="chip chip-accent">🌍 Local pick</span>`);
 
     return `
-      <div class="movie-card${saved ? " is-saved" : ""}" data-movie-id="${movie.id}">
-        ${poster ? `<img src="${poster}" alt="${escapeHtml(movie.title)} poster">` : `<div class="no-poster"></div>`}
+      <div class="movie-card${saved ? " is-saved" : ""}" data-movie-id="${movie.id}" role="article">
+        ${poster
+          ? `<img src="${poster}" alt="${escapeHtml(movie.title)} poster" loading="lazy" decoding="async" draggable="false">`
+          : `<div class="no-poster" aria-hidden="true"><span>🎬</span></div>`}
         <div class="title">${escapeHtml(movie.title)}</div>
-        <div class="date">${display.dateStr || "No release date"}${display.dateTag ? ` <span class="date-tag">(${escapeHtml(display.dateTag)})</span>` : ""}</div>
+        <div class="date" title="Original release date">${display.dateStr ? escapeHtml(formatReleaseDate(display.dateStr)) : "No release date"}</div>
+        ${chips.length ? `<div class="chip-row">${chips.join("")}</div>` : ""}
         ${display.ageLabel ? `<div class="age-at-release">${escapeHtml(display.ageLabel)}</div>` : ""}
-        ${diffRow ? `<div class="diff-row">${diffRow}</div>` : ""}
-        ${cert ? `<div class="cert-badge">${escapeHtml(cert)}</div>` : ""}
-        ${movie.isLocalPick ? `<div class="local-badge">🌍 Local pick</div>` : ""}
+        ${timing ? `<div class="timing ${timing.cls}"><span class="timing-dot"></span><span>${escapeHtml(timing.text)}</span></div>` : ""}
         <div class="card-actions">
           <button type="button" class="save-btn${saved ? " saved" : ""}" data-action="toggle-save">${saved ? "★ Saved" : "☆ Save"}</button>
-          <button type="button" class="share-movie-btn" data-action="share-movie" aria-label="Share ${escapeHtml(movie.title)}">↗ Share</button>
+          <button type="button" class="details-btn" data-action="open-details">Details</button>
         </div>
       </div>
     `;
@@ -3277,7 +3797,7 @@
 
   function fullRenderFeed() {
     if (!loadedMovies.length) {
-      if (initialLoadDone) feedEl.innerHTML = `<div class="status">No movies found for these ratings around that time. Try turning on more ratings or changing the region in settings (☰).</div>`;
+      if (initialLoadDone) feedEl.innerHTML = `<div class="status"><div>No movies found for these ratings around that time.<br><br><button type="button" class="menu-btn" data-action="enable-all-ratings">Show all ratings</button></div></div>`;
       return;
     }
     const adult = getSelectedAdult();
@@ -3287,7 +3807,7 @@
     const visible = loadedMovies.filter(passesRatingFilter);
 
     if (!visible.length) {
-      feedEl.innerHTML = `<div class="status">No movies match the current rating filter.</div>`;
+      feedEl.innerHTML = `<div class="status"><div>No movies match these filters.<br><br><button type="button" class="menu-btn" data-action="show-more">Show more movies</button></div></div>`;
       return;
     }
 
@@ -3306,6 +3826,8 @@
         closestId = movie.id;
       }
     });
+
+    bestMatchId = closestId;
 
     // Remember which card is at the top so a re-render (ratings toggled,
     // certifications loaded, etc.) doesn't throw the user back to the start.
@@ -3340,6 +3862,8 @@
     const myBirth = monthIndex(adult.birthday);
     const visible = newMovies.filter(passesRatingFilter);
     if (!visible.length) return;
+    // The feed only shows a message so far: rebuild it now that there is something to show.
+    if (!feedEl.querySelector(".movie-card[data-movie-id]")) { fullRenderFeed(); return; }
     const sorted = [...visible].sort((a, b) => {
       const da = pickReleaseDate(a) || "9999-99-99";
       const db = pickReleaseDate(b) || "9999-99-99";
@@ -3355,6 +3879,7 @@
     const myBirth = monthIndex(adult.birthday);
     const visible = newMovies.filter(passesRatingFilter);
     if (!visible.length) return;
+    if (!feedEl.querySelector(".movie-card[data-movie-id]")) { fullRenderFeed(); return; }
     const sorted = [...visible].sort((a, b) => {
       const da = pickReleaseDate(a) || "9999-99-99";
       const db = pickReleaseDate(b) || "9999-99-99";
@@ -3424,6 +3949,8 @@
     if (dragState && dragState.direction === "horizontal") {
       e.preventDefault();
       dragState.card.style.transform = `translateX(${dx}px) rotate(${dx / 24}deg)`;
+      const cue = dx > 40 ? "save" : dx < -40 ? "remove" : "";
+      if (cue) dragState.card.dataset.swipe = cue; else delete dragState.card.dataset.swipe;
     }
   }, { passive: false });
 
@@ -3463,10 +3990,11 @@
     const dx = currentX - startX;
     const dy = currentY - startY;
     card.style.transition = "transform 0.22s ease";
+    delete card.dataset.swipe;
 
     if (!direction || (Math.abs(dx) < TAP_THRESHOLD && Math.abs(dy) < TAP_THRESHOLD)) {
       card.style.transform = "";
-      if (posterHit) scheduleTapOpen(card.dataset.movieId);
+      scheduleTapOpen(card.dataset.movieId);
       return;
     }
 
@@ -3476,13 +4004,7 @@
       const kid = getSelectedKid();
       if (movie && adult && kid) {
         const display = computeDisplay(movie, monthIndex(adult.birthday));
-        if (dx > 0) {
-          setSavedState(movie, display, adult, kid, true);
-          applyCardSavedState(card, true);
-        } else {
-          setSavedState(movie, display, adult, kid, false);
-          applyCardSavedState(card, false);
-        }
+        commitSave(movie, display, dx > 0);
       }
     }
     card.style.transform = "";
@@ -3492,129 +4014,187 @@
   feedEl.addEventListener("pointercancel", endDrag);
 
   feedEl.addEventListener("click", (e) => {
-    const shareBtnEl = e.target.closest("button[data-action='share-movie']");
-    if (shareBtnEl) {
-      const shareCard = shareBtnEl.closest(".movie-card");
-      const shareMovieRecord = shareCard && loadedMovies.find(m => String(m.id) === String(shareCard.dataset.movieId));
-      if (shareMovieRecord) {
-        shareMovie(shareMovieRecord.id, shareMovieRecord.title, getAdultAgeMonthsAtRelease(shareMovieRecord.releaseDate), shareBtnEl);
-      }
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const action = btn.dataset.action;
+    if (action === "enable-all-ratings") {
+      getCertificationsForRegion(selectedRegion).forEach(c => currentRatings.add(c.certification));
+      saveRatingsForRegion(selectedRegion);
+      renderRatingToggle();
+      if (getSelectedAdult() && getSelectedKid()) tryStartFresh();
       return;
     }
-    const btn = e.target.closest("button[data-action='toggle-save']");
-    if (!btn) return;
+    if (action === "show-more") {
+      const order = DENSITY_LEVELS.map(l => l.key);
+      const i = order.indexOf(currentDensity);
+      if (i < order.length - 1) { setDensity(order[i + 1]); return; }
+      getCertificationsForRegion(selectedRegion).forEach(c => currentRatings.add(c.certification));
+      saveRatingsForRegion(selectedRegion);
+      renderRatingToggle();
+      if (getSelectedAdult() && getSelectedKid()) tryStartFresh();
+      return;
+    }
     const card = btn.closest(".movie-card");
     if (!card) return;
-    const movie = loadedMovies.find(m => String(m.id) === String(card.dataset.movieId));
-    const adult = getSelectedAdult();
-    if (!movie || !adult) return;
-    const display = computeDisplay(movie, monthIndex(adult.birthday));
-    const nowSaved = toggleSaveMovie(movie, display);
-    applyCardSavedState(card, nowSaved);
+    if (action === "open-details") { openMovieDetail(card.dataset.movieId); return; }
+    if (action === "toggle-save") {
+      const movie = loadedMovies.find(m => String(m.id) === String(card.dataset.movieId));
+      const adult = getSelectedAdult();
+      if (!movie || !adult) return;
+      const display = computeDisplay(movie, monthIndex(adult.birthday));
+      commitSave(movie, display, !isSavedMovie(movie.id));
+    }
   });
 
   // ---- Movie detail modal ----
 
   detailClose.addEventListener("click", () => {
-    detailModal.classList.add("hidden");
-    updateScrollReturnBtnVisibility();
+    overlayClose("detail");
   });
   detailBody.addEventListener("click", (e) => {
-    const btn = e.target.closest("button.detail-share-btn");
-    if (!btn) return;
-    const age = btn.dataset.shareAge;
-    shareMovie(btn.dataset.shareId, btn.dataset.shareTitle, age === "" || age === undefined ? null : parseInt(age, 10), btn);
+    const retryBtn = e.target.closest("button[data-retry-detail]");
+    if (retryBtn) { openMovieDetail(retryBtn.dataset.retryDetail); return; }
+    const saveBtn = e.target.closest("button.detail-save-btn");
+    if (saveBtn) {
+      const adult = getSelectedAdult();
+      if (currentDetail && adult) {
+        const display = computeDisplay(currentDetail.movie, monthIndex(adult.birthday));
+        commitSave(currentDetail.movie, display, !isSavedMovie(currentDetail.movie.id));
+      }
+      return;
+    }
+    const moreBtn = e.target.closest("button.read-more-btn");
+    if (moreBtn) {
+      const el = document.getElementById("detail-overview");
+      const clamped = el.classList.toggle("clamped");
+      moreBtn.textContent = clamped ? "Read more" : "Show less";
+      return;
+    }
+    const movieFromRemindBtn = (b) => ({
+      id: b.dataset.remindId,
+      title: b.dataset.remindTitle,
+      releaseDate: b.dataset.remindDate,
+      ageMonths: parseInt(b.dataset.remindAge, 10)
+    });
+    const fileLink = e.target.closest("button.remind-file-link");
+    if (fileLink) { addMovieReminder(movieFromRemindBtn(fileLink), fileLink, "ics"); return; }
+    const remindBtn = e.target.closest("button.detail-remind-btn");
+    if (remindBtn) { addMovieReminder(movieFromRemindBtn(remindBtn), remindBtn); return; }
+    const cardBtn = e.target.closest("button.detail-card-btn");
+    if (cardBtn) {
+      const ageAttr = cardBtn.dataset.shareAge;
+      shareMovieCard({
+        id: cardBtn.dataset.shareId,
+        title: cardBtn.dataset.shareTitle,
+        posterPath: cardBtn.dataset.sharePoster || "",
+        year: cardBtn.dataset.shareYear || "",
+        ageMonths: ageAttr === "" || ageAttr === undefined ? null : parseInt(ageAttr, 10)
+      }, cardBtn);
+    }
   });
   detailModal.addEventListener("click", (e) => {
-    if (e.target === detailModal) {
-      detailModal.classList.add("hidden");
-      updateScrollReturnBtnVisibility();
-    }
+    if (e.target === detailModal) overlayClose("detail");
   });
 
-  // Swipe down on the sheet to dismiss it.
-  // Note: touch-action:pan-y tells the browser vertical panning is always native,
-  // which makes preventDefault() ineffective for vertical drags on Android/Chrome.
-  // So instead: when a gesture starts at the very top of the content, we switch
-  // touch-action to "none" for that gesture and drive scrolling manually in JS,
-  // which lets us cleanly distinguish "pull down to close" from "scroll into content".
+  // Drag the handle area down to dismiss. The content below scrolls natively,
+  // so reading a long overview never fights the close gesture.
   const detailContent = document.getElementById("detail-content");
+  const detailHead = document.getElementById("detail-head");
+  const detailScroll = document.getElementById("detail-scroll");
   let detailDrag = null;
-  const DETAIL_CLOSE_THRESHOLD = 110;
+  let lastFocusBeforeDetail = null;
+  const DETAIL_CLOSE_THRESHOLD = 100;
 
-  detailContent.addEventListener("pointerdown", (e) => {
-    if (e.target.closest("button, a")) return;
-    detailDrag = {
-      startY: e.clientY,
-      lastY: e.clientY,
-      pointerId: e.pointerId,
-      isClosing: false
-    };
+  function hideDetailNow() {
+    detailModal.classList.add("hidden");
     detailContent.style.transition = "none";
-    try { detailContent.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    detailContent.style.transform = "";
+    detailContent.style.opacity = "";
+    detailRequestId++;
+    updateScrollReturnBtnVisibility();
+    if (lastFocusBeforeDetail && lastFocusBeforeDetail.focus) {
+      try { lastFocusBeforeDetail.focus({ preventScroll: true }); } catch (err) { /* ignore */ }
+    }
+    lastFocusBeforeDetail = null;
+  }
+
+  detailHead.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("button")) return;
+    detailDrag = { startY: e.clientY, dy: 0, pointerId: e.pointerId };
+    detailContent.style.transition = "none";
+    try { detailHead.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
   });
 
-  detailContent.addEventListener("pointermove", (e) => {
+  detailHead.addEventListener("pointermove", (e) => {
     if (!detailDrag || e.pointerId !== detailDrag.pointerId) return;
-    const currentY = e.clientY;
-    const stepDy = currentY - detailDrag.lastY;
-    const totalDy = currentY - detailDrag.startY;
-    detailDrag.lastY = currentY;
-    e.preventDefault();
-
-    if (detailContent.scrollTop <= 0 && totalDy > 0) {
-      // Pulling down from the very top — treat as a close gesture
-      detailDrag.isClosing = true;
-      detailContent.style.transform = `translateY(${totalDy}px)`;
-      detailContent.style.opacity = String(Math.max(1 - totalDy / 500, 0.4));
-    } else {
-      // Otherwise, drive scrolling manually since native panning is disabled for this gesture
-      detailDrag.isClosing = false;
-      detailContent.style.transform = "";
-      detailContent.style.opacity = "";
-      detailContent.scrollTop = Math.max(0, detailContent.scrollTop - stepDy);
-    }
-  }, { passive: false });
+    detailDrag.dy = Math.max(0, e.clientY - detailDrag.startY);
+    detailContent.style.transform = `translateY(${detailDrag.dy}px)`;
+    detailContent.style.opacity = String(Math.max(1 - detailDrag.dy / 500, 0.4));
+  });
 
   function endDetailDrag(e) {
     if (!detailDrag) return;
     if (e && e.pointerId !== undefined && e.pointerId !== detailDrag.pointerId) return;
-    const { pointerId, isClosing, startY, lastY } = detailDrag;
-    const totalDy = lastY - startY;
-    try { detailContent.releasePointerCapture(pointerId); } catch (err) { /* ignore */ }
+    const { pointerId, dy } = detailDrag;
+    try { detailHead.releasePointerCapture(pointerId); } catch (err) { /* ignore */ }
     detailDrag = null;
     detailContent.style.transition = "transform 0.2s ease, opacity 0.2s ease";
-
-    if (isClosing && totalDy > DETAIL_CLOSE_THRESHOLD) {
-      detailContent.style.transform = `translateY(100%)`;
+    if (dy > DETAIL_CLOSE_THRESHOLD) {
+      detailContent.style.transform = "translateY(100%)";
       detailContent.style.opacity = "0";
-      setTimeout(() => {
-        detailModal.classList.add("hidden");
-        detailContent.style.transition = "none";
-        detailContent.style.transform = "";
-        detailContent.style.opacity = "";
-        updateScrollReturnBtnVisibility();
-      }, 180);
+      setTimeout(() => overlayClose("detail"), 180);
+    } else if (dy < 6) {
+      // A plain tap on the handle closes too.
+      detailContent.style.transform = "";
+      detailContent.style.opacity = "";
+      if (dy === 0) overlayClose("detail");
     } else {
       detailContent.style.transform = "";
       detailContent.style.opacity = "";
     }
   }
 
-  detailContent.addEventListener("pointerup", endDetailDrag);
-  detailContent.addEventListener("pointercancel", endDetailDrag);
+  detailHead.addEventListener("pointerup", endDetailDrag);
+  detailHead.addEventListener("pointercancel", endDetailDrag);
+
+  function buildDetailLoadingHtml(known) {
+    const posterPath = known && known.poster_path;
+    const title = known && known.title;
+    return `
+      <div class="detail-hero">
+        ${posterPath
+          ? `<img class="detail-hero-poster" src="https://image.tmdb.org/t/p/w342${posterPath}" alt="">`
+          : `<div class="detail-hero-poster skel-box"></div>`}
+        <div class="detail-hero-info">
+          ${title ? `<div class="detail-title">${escapeHtml(title)}</div>` : `<div class="skel-line skel-title" style="margin-left:0"></div>`}
+          <div class="skel-line skel-subline" style="margin-left:0;margin-top:10px"></div>
+          <div class="skel-row" style="justify-content:flex-start"><div class="skel-pill"></div><div class="skel-pill"></div></div>
+        </div>
+      </div>
+      <div class="skel-line" style="width:100%;height:56px;border-radius:12px;margin-top:16px"></div>
+      <div class="skel-line" style="width:100%;height:44px;border-radius:10px;margin-top:14px"></div>
+      <div class="skel-line" style="width:90%;margin-top:18px"></div>
+      <div class="skel-line" style="width:95%"></div>
+      <div class="skel-line" style="width:70%"></div>
+    `;
+  }
 
   async function openMovieDetail(movieId) {
+    dismissHint();
+    if (detailModal.classList.contains("hidden")) lastFocusBeforeDetail = document.activeElement;
     detailModal.classList.remove("hidden");
+    overlayOpen("detail");
+    detailScroll.scrollTop = 0;
     updateScrollReturnBtnVisibility();
-    // Show the poster right away using the same URL the feed card already
-    // loaded (cached), with skeleton lines only for the parts still loading.
+    currentDetail = null;
+    const reqId = ++detailRequestId;
     const knownMovie = loadedMovies.find(m => String(m.id) === String(movieId))
-      || savedMovies.find(m => String(m.tmdbId) === String(movieId));
-    detailBody.innerHTML = knownMovie && knownMovie.poster_path
-      ? `<img class="detail-poster" src="https://image.tmdb.org/t/p/w342${knownMovie.poster_path}" alt="">` +
-        DETAIL_SKELETON_HTML.replace('<div class="skel-poster"></div>', "")
-      : DETAIL_SKELETON_HTML;
+      || (() => {
+        const s = savedMovies.find(m => String(m.tmdbId) === String(movieId));
+        return s ? { id: s.tmdbId, title: s.title, poster_path: s.poster_path } : null;
+      })();
+    detailBody.innerHTML = buildDetailLoadingHtml(knownMovie);
+    try { detailClose.focus({ preventScroll: true }); } catch (err) { /* ignore */ }
 
     const token = getApiToken();
     if (!token) {
@@ -3632,9 +4212,12 @@
         details = await res.json();
         detailCache.set(movieId, details);
       }
+      // The sheet may have been closed or switched to another movie while loading.
+      if (reqId !== detailRequestId || detailModal.classList.contains("hidden")) return;
       renderMovieDetail(details, movieId);
     } catch (err) {
-      detailBody.innerHTML = `<div class="status">Couldn't load details: ${err.message}</div>`;
+      if (reqId !== detailRequestId) return;
+      detailBody.innerHTML = `<div class="status"><div>Couldn't load details. Check your connection and try again.<br><br><button type="button" class="menu-btn" data-retry-detail="${escapeAttr(movieId)}">Try again</button></div></div>`;
     }
   }
 
@@ -3706,11 +4289,15 @@
   }
 
   function buildWatchProvidersHtml(details) {
+    const heading = `<div class="detail-section-label">Where to watch</div>`;
     const allRegions = details["watch/providers"] && details["watch/providers"].results;
-    if (!allRegions) return "";
-    const region = selectedRegion || getUserRegion();
-    const data = allRegions[region] || allRegions.US;
-    if (!data) return "";
+    const wanted = selectedRegion || getUserRegion();
+    const usedCode = allRegions ? (allRegions[wanted] ? wanted : (allRegions.US ? "US" : null)) : null;
+    const data = usedCode ? allRegions[usedCode] : null;
+    const wantedName = regionInfo(wanted).name;
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(`watch ${details.title} online`)}`;
+    const empty = `${heading}<div class="providers-empty">No streaming info for ${escapeHtml(wantedName)} yet. <a href="${searchUrl}" target="_blank" rel="noopener">Search the web</a></div>`;
+    if (!data) return empty;
 
     // Rent and buy overlap heavily (same provider offers both); merge into
     // one de-duplicated list rather than showing the same logo twice.
@@ -3721,10 +4308,14 @@
 
     const groups = buildProviderGroup("Stream", data.flatrate, details.title) +
       buildProviderGroup("Rent / Buy", rentBuy, details.title);
-    if (!groups) return "";
+    if (!groups) return empty;
+    const note = usedCode !== wanted
+      ? `<div class="providers-note">Not listed for ${escapeHtml(wantedName)}. Showing ${escapeHtml(regionInfo(usedCode).name)} availability.</div>`
+      : "";
     const attributionLink = data.link || "https://www.justwatch.com/";
     return `
-      <div class="detail-section-label">Where to Watch</div>
+      ${heading}
+      ${note}
       <div class="detail-providers-row">${groups}</div>
       <div class="justwatch-attribution">Streaming data by <a href="${attributionLink}" target="_blank" rel="noopener">JustWatch</a></div>
     `;
@@ -3732,52 +4323,85 @@
 
   function renderMovieDetail(details, movieId) {
     const adult = getSelectedAdult();
+    const kid = getSelectedKid();
     const movieRecord = loadedMovies.find(m => String(m.id) === String(movieId));
-    let subline = "";
-    if (adult && movieRecord) {
-      const display = computeDisplay(movieRecord, monthIndex(adult.birthday));
-      const dateWithTag = display.dateStr
-        ? `${display.dateStr}${display.dateTag ? ` (${display.dateTag})` : ""}`
-        : "";
-      subline = [dateWithTag, display.ageLabel, display.diffLabel].filter(Boolean).join(" · ");
-    } else {
-      // Opened from the Saved list for a movie that isn't in the current feed:
-      // fall back to the details stored when it was saved.
-      const saved = savedMovies.find(m => String(m.tmdbId) === String(movieId));
-      if (saved) {
-        const dateWithTag = saved.dateStr ? `${saved.dateStr}${saved.dateTag ? ` (${saved.dateTag})` : ""}` : "";
-        subline = [dateWithTag, saved.ageLabel, saved.diffLabel].filter(Boolean).join(" · ");
+    const releaseDate = (movieRecord && movieRecord.releaseDate) || details.release_date || "";
+    const movieForSave = movieRecord || {
+      id: details.id,
+      title: details.title,
+      poster_path: details.poster_path || null,
+      releaseDate: releaseDate || null
+    };
+    currentDetail = { movie: movieForSave };
+
+    const shareAgeMonths = getAdultAgeMonthsAtRelease(releaseDate, adult);
+    const kidName = kid && kid.name !== "Kid" ? kid.name : "your kid";
+
+    // The point of the app, stated plainly: how old were you, and when does your kid get there?
+    let calloutHtml = "";
+    if (adult && releaseDate) {
+      if (shareAgeMonths === null) {
+        const who = adult.name === "You" ? "you were" : `${adult.name} was`;
+        calloutHtml = `<div class="age-callout"><div class="age-callout-main">This came out before ${escapeHtml(who)} born.</div></div>`;
+      } else {
+        const timing = kidTimingInfo(kidAgeMonthsNow === null ? null : shareAgeMonths - kidAgeMonthsNow);
+        calloutHtml = `
+          <div class="age-callout ${timing ? timing.cls : ""}">
+            <div class="age-callout-main">${escapeHtml(wasWere(adult.name))} <strong>${escapeHtml(formatAge(shareAgeMonths))}</strong> when this came out</div>
+            ${timing ? `<div class="age-callout-sub"><span class="timing-dot"></span><span>${escapeHtml(timing.text)}</span></div>` : ""}
+          </div>`;
       }
     }
 
     // Same size as the feed cards (w342) so the browser reuses the cached image.
-    // The detail poster is capped at 30vh tall, so w342 is plenty sharp.
     const poster = details.poster_path ? `https://image.tmdb.org/t/p/w342${details.poster_path}` : "";
     const cert = movieRecord ? movieRecord.cert : null;
-    const rating = details.vote_average ? `${details.vote_average.toFixed(1)}/10 (${details.vote_count || 0} votes)` : null;
+    const rating = details.vote_average ? details.vote_average.toFixed(1) : null;
+    const votes = details.vote_count ? details.vote_count.toLocaleString() : "0";
+    const runtime = formatRuntime(details.runtime);
+    const genres = (details.genres || []).slice(0, 3).map(g => g.name).join(" · ");
     const cast = (details.credits && details.credits.cast || []).slice(0, 6).map(c => c.name).join(", ");
     const trailer = (details.videos && details.videos.results || []).find(v => v.site === "YouTube" && v.type === "Trailer")
       || (details.videos && details.videos.results || []).find(v => v.site === "YouTube");
     const watchProvidersHtml = buildWatchProvidersHtml(details);
-    const shareAgeMonths = getAdultAgeMonthsAtRelease((movieRecord && movieRecord.releaseDate) || details.release_date, adult);
+    const saved = isSavedMovie(movieForSave.id);
+    const remindDiff = reminderDiffMonths(shareAgeMonths);
+    const remindIdx = kid && shareAgeMonths !== null ? getReminderMonthIdx(kid, shareAgeMonths) : null;
+    const longOverview = !!details.overview && details.overview.length > 240;
+    // Start fetching the poster for the share-as-image card now, so it's ready by the time they tap.
+    if (details.poster_path) preloadCardPoster(details.poster_path);
+
+    const remindAttrs = `data-remind-id="${escapeAttr(details.id)}" data-remind-title="${escapeAttr(details.title)}" data-remind-date="${escapeAttr(details.release_date || "")}" data-remind-age="${shareAgeMonths}"`;
 
     detailBody.innerHTML = `
-      ${poster ? `<img class="detail-poster" src="${poster}" alt="${escapeHtml(details.title)} poster">` : ""}
-      <div class="detail-title">${escapeHtml(details.title)}</div>
-      ${subline ? `<div class="detail-subline">${escapeHtml(subline)}</div>` : ""}
-      <div class="detail-meta-row">
-        ${rating ? `<span class="pill">⭐ ${escapeHtml(rating)}</span>` : ""}
-        ${cert ? `<span class="pill">${escapeHtml(cert)}</span>` : ""}
-        ${details.runtime ? `<span class="pill">${details.runtime} min</span>` : ""}
+      <div class="detail-hero">
+        ${poster
+          ? `<img class="detail-hero-poster" src="${poster}" alt="${escapeHtml(details.title)} poster">`
+          : `<div class="detail-hero-poster no-poster-lg" aria-hidden="true">🎬</div>`}
+        <div class="detail-hero-info">
+          <div class="detail-title">${escapeHtml(details.title)}</div>
+          ${releaseDate ? `<div class="detail-subline" title="Original release date">${escapeHtml(formatReleaseDate(releaseDate))}</div>` : ""}
+          ${genres ? `<div class="detail-genres">${escapeHtml(genres)}</div>` : ""}
+          <div class="detail-meta-row">
+            ${rating ? `<span class="pill" title="${escapeAttr(votes)} votes">⭐ ${escapeHtml(rating)}</span>` : ""}
+            ${cert ? `<span class="pill">${escapeHtml(cert)}</span>` : ""}
+            ${runtime ? `<span class="pill">${escapeHtml(runtime)}</span>` : ""}
+          </div>
+        </div>
       </div>
+      ${calloutHtml}
+      <div class="detail-action-grid">
+        ${trailer ? `<a class="detail-action-btn detail-trailer-link" href="https://www.youtube.com/watch?v=${encodeURIComponent(trailer.key)}" target="_blank" rel="noopener">▶ Trailer</a>` : ""}
+        <button type="button" class="detail-action-btn detail-save-btn${saved ? " saved" : ""}">${saved ? "★ Saved" : "☆ Save"}</button>
+        <button type="button" class="detail-action-btn detail-card-btn" data-share-id="${escapeAttr(details.id)}" data-share-title="${escapeAttr(details.title)}" data-share-age="${shareAgeMonths === null ? "" : shareAgeMonths}" data-share-poster="${escapeAttr(details.poster_path || "")}" data-share-year="${escapeAttr((details.release_date || "").slice(0, 4))}">↗ Share</button>
+        ${remindDiff !== null ? `<button type="button" class="detail-action-btn detail-remind-btn" ${remindAttrs}>📅 Remind me</button>` : ""}
+      </div>
+      ${remindDiff !== null ? `<div class="detail-remind-note">Adds an all-day reminder for ${escapeHtml(remindIdx !== null ? formatMonthYear(remindIdx) : `${formatAgeLong(remindDiff)} from now`)}, when ${escapeHtml(kidName)} reaches this age. Using Outlook or Apple Calendar? <button type="button" class="remind-file-link" ${remindAttrs}>Download a file</button></div>` : ""}
       ${watchProvidersHtml}
-      <div class="detail-actions">
-        ${trailer ? `<a class="detail-trailer-link" href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener">▶ Watch Trailer</a>` : ""}
-        <button type="button" class="detail-share-btn" data-share-id="${escapeAttr(details.id)}" data-share-title="${escapeAttr(details.title)}" data-share-age="${shareAgeMonths === null ? "" : shareAgeMonths}">↗ Share</button>
-      </div>
       ${details.overview ? `
         <div class="detail-section-label">Overview</div>
-        <div class="detail-overview">${escapeHtml(details.overview)}</div>
+        <div class="detail-overview${longOverview ? " clamped" : ""}" id="detail-overview">${escapeHtml(details.overview)}</div>
+        ${longOverview ? `<button type="button" class="read-more-btn">Read more</button>` : ""}
       ` : ""}
       ${cast ? `
         <div class="detail-section-label">Cast</div>
@@ -3819,18 +4443,36 @@
     return m ? `${plural(y, "year")}, ${plural(m, "month")}` : plural(y, "year");
   }
 
-  function buildShareUrl(movieId, ageMonths) {
+  // Everything that leaves the app (share text, link, image) uses only the DIFFERENCE
+  // between the two ages, never either age itself.
+  function getDiffMonthsFromAge(ageMonths) {
+    if (ageMonths === null || ageMonths === undefined || kidAgeMonthsNow === null) return null;
+    return ageMonths - kidAgeMonthsNow;
+  }
+
+  function kidLabel(name) {
+    return name && name !== "Kid" ? name : "my kid";
+  }
+
+  // "I was the same age as Maya." / "I was 12 months older than Maya is now."
+  function buildDifferenceClause(diffMonths, kidName) {
+    const kid = kidLabel(kidName);
+    if (Math.abs(diffMonths) <= 1) return `I was the same age as ${kid}.`;
+    return `I was ${formatDiffMonths(diffMonths)} than ${kid} is now.`;
+  }
+
+  function buildShareUrl(movieId, diffMonths) {
     let url = `${SHARE_URL}/?m=${encodeURIComponent(movieId)}`;
-    if (ageMonths !== null && ageMonths !== undefined) url += `&a=${ageMonths}`;
+    if (diffMonths !== null && diffMonths !== undefined) url += `&d=${diffMonths}`;
     return url;
   }
 
-  function buildShareText(title, ageMonths) {
-    if (ageMonths === null || ageMonths === undefined) {
+  function buildShareText(title, diffMonths) {
+    if (diffMonths === null || diffMonths === undefined) {
       return `Check out ${title}, found on Same Age Movies.`;
     }
-    const when = ageMonths === 0 ? "The month I was born" : `When I was ${formatAgeLong(ageMonths)} old`;
-    return `${when}, ${title} came out. Find the movies from when you were your kid's age:`;
+    const kid = getSelectedKid();
+    return `When ${title} came out, ${buildDifferenceClause(diffMonths, kid ? kid.name : null)} Find the movies from when you were your kid's age:`;
   }
 
   let shareFlashTimer = null;
@@ -3863,22 +4505,382 @@
     } catch (err) { return false; }
   }
 
-  // navigator.share must be called straight from the tap, so it comes first
-  // (before any await). Browsers without it get a copy-to-clipboard fallback.
-  function shareMovie(movieId, title, ageMonths, btn) {
-    const url = buildShareUrl(movieId, ageMonths);
-    const text = buildShareText(title, ageMonths);
-    if (navigator.share) {
-      navigator.share({ title: `${title} · Same Age Movies`, text, url }).catch(() => { /* cancelled */ });
-      return;
-    }
-    copyText(`${text} ${url}`).then((ok) => {
-      if (ok) flashButtonLabel(btn, "✓ Link copied");
-      else window.prompt("Copy this link to share:", url);
+  // ---- Shareable card image ----
+  // Drawn entirely in the browser with <canvas>; no server involved. The poster
+  // is requested with CORS so the canvas stays exportable. If the poster can't
+  // be loaded that way, the card is drawn with a placeholder instead.
+  const cardPosterCache = new Map(); // posterPath -> { img, status: "loading" | "ready" | "failed", promise }
+
+  function preloadCardPoster(path) {
+    if (!path) return null;
+    let entry = cardPosterCache.get(path);
+    if (entry) return entry;
+    entry = { img: new Image(), status: "loading", promise: null };
+    entry.promise = new Promise((resolve) => {
+      entry.img.onload = () => { entry.status = "ready"; resolve(); };
+      entry.img.onerror = () => { entry.status = "failed"; resolve(); };
     });
+    entry.img.crossOrigin = "anonymous";
+    entry.img.src = `https://image.tmdb.org/t/p/w780${path}`;
+    cardPosterCache.set(path, entry);
+    return entry;
   }
 
-  // ---- Landing view for people who open a shared link (?m=<id>&a=<months>) ----
+  function wrapCanvasText(ctx, text, maxWidth, maxLines) {
+    const words = String(text).split(/\s+/).filter(Boolean);
+    const lines = [];
+    let line = "";
+    words.forEach((word) => {
+      const test = line ? `${line} ${word}` : word;
+      if (!line || ctx.measureText(test).width <= maxWidth) line = test;
+      else { lines.push(line); line = word; }
+    });
+    if (line) lines.push(line);
+    if (lines.length > maxLines) {
+      lines.length = maxLines;
+      let last = lines[maxLines - 1];
+      while (last && ctx.measureText(`${last}…`).width > maxWidth) last = last.slice(0, -1);
+      lines[maxLines - 1] = `${last}…`;
+    }
+    return lines;
+  }
+
+  function canvasRoundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // Headline wording uses only the DIFFERENCE between the two ages (never either age itself).
+  // The poster sits in a rounded frame, and the text sits on gradients over it.
+  function drawMovieCard(canvas, { title, year, ageMonths, kidName, kidAgeMonths, posterImg }) {
+    const W = 1080, H = 1350;
+    const FONT = '-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+    const GOLD = "#e0b954";
+    const M = 54;                       // margin around the poster frame
+    const FX = M, FY = M, FW = W - M * 2, FH = H - M * 2;
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+
+    // Card background with a soft gold glow behind the frame
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#23262e");
+    bg.addColorStop(1, "#14161a");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+    const glow = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, 800);
+    glow.addColorStop(0, "rgba(224,185,84,0.20)");
+    glow.addColorStop(1, "rgba(224,185,84,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
+
+    // Poster frame
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 36;
+    ctx.shadowOffsetY = 12;
+    ctx.fillStyle = "#1e2126";
+    canvasRoundRect(ctx, FX, FY, FW, FH, 40);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    canvasRoundRect(ctx, FX, FY, FW, FH, 40);
+    ctx.clip();
+    if (posterImg) {
+      const iw = posterImg.naturalWidth || posterImg.width;
+      const ih = posterImg.naturalHeight || posterImg.height;
+      const scale = Math.max(FW / iw, FH / ih);
+      const dw = iw * scale, dh = ih * scale;
+      ctx.drawImage(posterImg, FX + (FW - dw) / 2, FY + (FH - dh) / 2, dw, dh);
+    } else {
+      ctx.font = `200px ${FONT}`;
+      ctx.fillStyle = GOLD;
+      ctx.fillText("🎬", W / 2, H / 2 + 70);
+    }
+    // Dark fades at the top and bottom of the frame so text is readable on any poster
+    const top = ctx.createLinearGradient(0, FY, 0, FY + 560);
+    top.addColorStop(0, "rgba(14,16,20,0.94)");
+    top.addColorStop(0.65, "rgba(14,16,20,0.70)");
+    top.addColorStop(1, "rgba(14,16,20,0)");
+    ctx.fillStyle = top;
+    ctx.fillRect(FX, FY, FW, 560);
+    const bottom = ctx.createLinearGradient(0, 790, 0, FY + FH);
+    bottom.addColorStop(0, "rgba(14,16,20,0)");
+    bottom.addColorStop(0.45, "rgba(14,16,20,0.80)");
+    bottom.addColorStop(1, "rgba(14,16,20,0.96)");
+    ctx.fillStyle = bottom;
+    ctx.fillRect(FX, 790, FW, FY + FH - 790);
+    ctx.restore();
+
+    ctx.shadowColor = "rgba(0,0,0,0.55)";
+    ctx.shadowBlur = 14;
+    const TEXT_W = 880;
+
+    // Brand line
+    ctx.fillStyle = GOLD;
+    ctx.font = `700 30px ${FONT}`;
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "6px";
+    ctx.fillText("SAME AGE MOVIES", W / 2, 124);
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+
+    // Headline, using the kid's name and only the age difference:
+    //   "When this came out, / I was the same age as Maya."
+    //   "When this came out, / I was 12 months older than Maya is now."
+    const kid = kidName && kidName !== "Kid" ? kidName : "my kid";
+    ctx.font = `800 58px ${FONT}`;
+    let y = 212;
+    const white = (text) => { ctx.fillStyle = "#ffffff"; ctx.fillText(text, W / 2, y); y += 68; };
+    const gold = (text) => {
+      ctx.fillStyle = GOLD;
+      let lines = wrapCanvasText(ctx, text, TEXT_W, 2);
+      if (lines.length === 2) {
+        // Balance the two lines so a single word isn't left alone on the second one.
+        const words = text.split(/\s+/);
+        let bestWidth = Infinity;
+        for (let i = 1; i < words.length; i++) {
+          const a = words.slice(0, i).join(" ");
+          const b = words.slice(i).join(" ");
+          const widest = Math.max(ctx.measureText(a).width, ctx.measureText(b).width);
+          if (widest < bestWidth) { bestWidth = widest; lines = [a, b]; }
+        }
+      }
+      lines.forEach((l) => { ctx.fillText(l, W / 2, y); y += 68; });
+    };
+    if (ageMonths === null || ageMonths === undefined || kidAgeMonths === null || kidAgeMonths === undefined) {
+      white("Movie night idea");
+      gold(`for ${kid}:`);
+    } else {
+      white("When this came out,");
+      gold(buildDifferenceClause(ageMonths - kidAgeMonths, kidName));
+    }
+
+    // Title + year
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `800 58px ${FONT}`;
+    const titleLines = wrapCanvasText(ctx, title, TEXT_W, 2);
+    const ty = 1068;
+    titleLines.forEach((l, i) => { ctx.fillText(l, W / 2, ty + i * 68); });
+    if (year) {
+      ctx.fillStyle = "#c3c8d0";
+      ctx.font = `400 36px ${FONT}`;
+      ctx.fillText(`(${year})`, W / 2, ty + (titleLines.length - 1) * 68 + 56);
+    }
+
+    // Footer
+    ctx.fillStyle = GOLD;
+    ctx.font = `700 34px ${FONT}`;
+    ctx.fillText("same-age.com", W / 2, 1258);
+    ctx.shadowBlur = 0;
+  }
+
+  function slugify(text, fallback) {
+    const s = String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    return s || fallback;
+  }
+
+  function dataUrlToFile(dataUrl, filename) {
+    const b64 = dataUrl.split(",")[1];
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new File([bytes], filename, { type: "image/png" });
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }
+
+  async function shareMovieCard(movie, btn) {
+    const entry = movie.posterPath ? preloadCardPoster(movie.posterPath) : null;
+    if (entry && entry.status === "loading") {
+      flashButtonLabel(btn, "Making card…");
+      await entry.promise;
+    }
+    const posterImg = entry && entry.status === "ready" ? entry.img : null;
+    const canvas = document.createElement("canvas");
+    let file;
+    try {
+      const kid = getSelectedKid();
+      drawMovieCard(canvas, {
+        title: movie.title,
+        year: movie.year,
+        ageMonths: movie.ageMonths,
+        kidName: kid ? kid.name : null,
+        kidAgeMonths: kid ? kidAgeMonthsNow : null,
+        posterImg
+      });
+      file = dataUrlToFile(canvas.toDataURL("image/png"), `same-age-movies-${slugify(movie.title, "movie")}.png`);
+    } catch (err) {
+      window.alert("Sorry, this device couldn't make the image.");
+      return;
+    }
+    const diff = getDiffMonthsFromAge(movie.ageMonths);
+    const url = buildShareUrl(movie.id, diff);
+    const text = buildShareText(movie.title, diff);
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: `${movie.title} · Same Age Movies`, text: `${text} ${url}` });
+        return;
+      } catch (err) {
+        if (err && err.name === "AbortError") return; // they closed the share sheet
+        // Anything else (e.g. the tap expired while the poster loaded): save the image instead.
+      }
+    }
+    downloadBlob(file, file.name);
+    flashButtonLabel(btn, "✓ Image saved");
+  }
+
+  // ---- "Remind me" on a movie (.ics download) ----
+  // For a movie where the adult was OLDER than the kid is now (e.g. 1 year
+  // older), this sets a reminder for when the kid reaches the age the adult was
+  // at release. Only birth months are stored, so it is an all-day event on the
+  // 1st of that month.
+  function icsEscape(text) {
+    return String(text).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  }
+
+  function icsFold(line) {
+    const LIMIT = 70;
+    const out = [];
+    let rest = line;
+    while (rest.length > LIMIT) {
+      let cut = LIMIT;
+      const code = rest.charCodeAt(cut - 1);
+      if (code >= 0xD800 && code <= 0xDBFF) cut--; // don't split an emoji in half
+      out.push(rest.slice(0, cut));
+      rest = " " + rest.slice(cut);
+    }
+    out.push(rest);
+    return out.join("\r\n");
+  }
+
+  // Month the kid reaches the age the adult was at release, or null if that has already happened.
+  function getReminderMonthIdx(kid, adultAgeMonths) {
+    if (!kid || adultAgeMonths === null || adultAgeMonths === undefined) return null;
+    const idx = monthIndex(kid.birthday) + adultAgeMonths;
+    return idx > nowMonthIndex() ? idx : null;
+  }
+
+  // Everything a calendar needs for the reminder, or null if the kid is already past that age.
+  function getMovieReminderData(adult, kid, movie) {
+    const idx = getReminderMonthIdx(kid, movie.ageMonths);
+    if (idx === null) return null;
+    const pad = (n) => String(n).padStart(2, "0");
+    const year = Math.floor(idx / 12);
+    const month = (idx % 12) + 1;
+    const adultRef = adult.name === "You" ? "you" : adult.name;
+    const releaseYear = movie.releaseDate ? movie.releaseDate.slice(0, 4) : "";
+    const url = buildShareUrl(movie.id, null);
+    return {
+      start: `${year}${pad(month)}01`,
+      end: `${year}${pad(month)}02`, // all-day events end on the following day
+      url,
+      summary: `Movie night: ${movie.title}`,
+      description: `${kid.name} is now about the same age ${adultRef} ${adultRef === "you" ? "were" : "was"} when ${movie.title}${releaseYear ? ` (${releaseYear})` : ""} came out. ` +
+        `See it here: ${url}\n\n` +
+        `This reminder is set for the 1st of the month because only birth months are saved. Move it if you like.`
+    };
+  }
+
+  function buildMovieReminderIcs(data) {
+    const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    const lines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Same Age Movies//Movie Reminder//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      `UID:${genId()}@same-age.com`,
+      `DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${data.start}`,
+      `DTEND;VALUE=DATE:${data.end}`,
+      `SUMMARY:${icsEscape(data.summary)}`,
+      `DESCRIPTION:${icsEscape(data.description)}`,
+      `URL:${data.url}`,
+      "BEGIN:VALARM",
+      "ACTION:DISPLAY",
+      `DESCRIPTION:${icsEscape(data.summary)}`,
+      "TRIGGER;RELATED=START:PT9H",
+      "END:VALARM",
+      "END:VEVENT",
+      "END:VCALENDAR"
+    ];
+    return lines.map(icsFold).join("\r\n") + "\r\n";
+  }
+
+  // Opens Google Calendar with the event already filled in (Android, desktop, anywhere).
+  function buildGoogleCalendarUrl(data) {
+    return "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+      `&text=${encodeURIComponent(data.summary)}` +
+      `&dates=${data.start}/${data.end}` +
+      `&details=${encodeURIComponent(data.description)}`;
+  }
+
+  function isIosDevice() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+
+  // A web page can't launch a calendar app directly, so this uses the closest thing per device:
+  //  - iPhone/iPad: open the .ics in Safari, which shows its own "Add to Calendar" sheet right away.
+  //  - Everything else: open Google Calendar with the event pre-filled.
+  //  - mode "ics": always download the .ics file (for Outlook, Apple Calendar on a computer, etc.).
+  function addMovieReminder(movie, btn, mode) {
+    const adult = getSelectedAdult();
+    const kid = getSelectedKid();
+    if (!adult || !kid) return;
+    const data = getMovieReminderData(adult, kid, movie);
+    if (!data) { flashButtonLabel(btn, "Already that age"); return; }
+    const icsBlob = new Blob([buildMovieReminderIcs(data)], { type: "text/calendar;charset=utf-8" });
+    const filename = `same-age-${slugify(movie.title, "movie")}-reminder.ics`;
+    if (mode === "ics") {
+      downloadBlob(icsBlob, filename);
+      flashButtonLabel(btn, "✓ File saved");
+      return;
+    }
+    if (isIosDevice()) {
+      const blobUrl = URL.createObjectURL(icsBlob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.target = "_blank";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+      flashButtonLabel(btn, "✓ Opening Calendar");
+      return;
+    }
+    const win = window.open(buildGoogleCalendarUrl(data), "_blank", "noopener");
+    if (win) flashButtonLabel(btn, "✓ Opening Google Calendar");
+    else { downloadBlob(icsBlob, filename); flashButtonLabel(btn, "✓ File saved"); } // popup blocked
+  }
+
+  // Months until the kid reaches the age the adult was at release, or null when that has
+  // already happened (the kid is at or past that age, so a reminder makes no sense).
+  function reminderDiffMonths(adultAgeMonths) {
+    if (adultAgeMonths === null || adultAgeMonths === undefined || kidAgeMonthsNow === null) return null;
+    const diff = adultAgeMonths - kidAgeMonthsNow;
+    return diff > 1 ? diff : null;
+  }
+
+  // ---- Landing view for people who open a shared link (?m=<id>&d=<months>) ----
   const sharedOverlay = document.getElementById("shared-overlay");
   const sharedBody = document.getElementById("shared-body");
 
@@ -3886,8 +4888,8 @@
     const p = new URLSearchParams(window.location.search);
     const m = p.get("m");
     if (!m || !/^\d{1,9}$/.test(m)) return null;
-    const a = p.get("a");
-    return { movieId: m, ageMonths: a && /^\d{1,4}$/.test(a) ? parseInt(a, 10) : null };
+    const d = p.get("d");
+    return { movieId: m, diffMonths: d && /^-?\d{1,4}$/.test(d) ? parseInt(d, 10) : null };
   }
 
   function clearSharedParams() {
@@ -3937,8 +4939,11 @@
     const poster = details.poster_path ? `https://image.tmdb.org/t/p/w342${details.poster_path}` : "";
     const year = details.release_date ? details.release_date.slice(0, 4) : "";
     let sentLine = "";
-    if (shared.ageMonths === 0) sentLine = "Released the month the sender was born";
-    else if (shared.ageMonths !== null) sentLine = `Released when the sender was ${formatAgeLong(shared.ageMonths)} old`;
+    if (shared.diffMonths !== null) {
+      sentLine = Math.abs(shared.diffMonths) <= 1
+        ? "When this came out, the sender was the same age as their kid is now."
+        : `When this came out, the sender was ${formatDiffMonths(shared.diffMonths)} than their kid is now.`;
+    }
     const trailer = (details.videos && details.videos.results || []).find(v => v.site === "YouTube" && v.type === "Trailer")
       || (details.videos && details.videos.results || []).find(v => v.site === "YouTube");
     const rating = details.vote_average ? `${details.vote_average.toFixed(1)}/10` : null;
@@ -3977,6 +4982,9 @@
     currentRatings = loadRatingsForRegion(selectedRegion);
     renderRatingToggle(); // re-rendered again once live TMDB certs arrive
     loadCertifications();
+    const storedDensity = safeGet("density");
+    if (DENSITY_LEVELS.some(l => l.key === storedDensity)) currentDensity = storedDensity;
+    renderDensityToggle();
     const savedCardCount = parseInt(safeGet("cardsPerScreen") || "1", 10);
     setCardsPerScreen(savedCardCount === 1 ? 1 : 2);
     if (storageBroken) {
@@ -3993,51 +5001,29 @@
 </script>
 
 <script>
-  // Userback feedback widget. Userback adds its own floating button. The
-  // "Send feedback" button in the Settings panel is hidden until the widget is
-  // actually ready, then revealed immediately (no artificial delay), so it is
-  // never a dead button. The script itself is requested right away, below.
+  // Userback feedback widget. Userback adds its own floating feedback button, which
+  // is the only feedback entry point. It stays hidden for the first two minutes so
+  // it doesn't distract new visitors, then appears.
   //
-  // Readiness: Userback's documented `on_load` hook is the primary signal; a
-  // short poll for Userback.openForm after the script loads is a backup in
-  // case the hook is overwritten. Opening uses the documented
-  // Userback.openForm(type, destination); `Userback.open` is not documented.
+  // Readiness: Userback's documented `on_load` hook is the primary signal; a short
+  // poll after the script loads is a backup in case the hook is overwritten.
   window.Userback = window.Userback || {};
   Userback.access_token = "A-ITMJ9uqaecvrIqkdgoYCFdyvC";
   (function(d) {
-    var revealed = false;
+    var LAUNCHER_DELAY_MS = 2 * 60 * 1000; // 2 minutes
+    var handled = false;
     var pollTimer = null;
-    var statusTimer = null;
 
     function widgetReady() {
-      return !!(window.Userback && (typeof window.Userback.openForm === "function" || typeof window.Userback.open === "function"));
+      return !!(window.Userback && typeof window.Userback.hideLauncher === "function");
     }
 
-    function showStatus(message) {
-      var el = d.getElementById("feedback-status");
-      if (!el) return;
-      el.textContent = message;
-      el.classList.remove("hidden");
-      clearTimeout(statusTimer);
-      statusTimer = setTimeout(function () { el.classList.add("hidden"); }, 6000);
-    }
-
-    function revealButton() {
-      if (revealed) return;
-      revealed = true;
-      clearInterval(pollTimer);
-      var btn = d.getElementById("feedback-btn");
-      if (btn) btn.classList.remove("hidden");
-      delayFloatingLauncher();
-    }
-
-    // Userback's own floating side button stays hidden for the first two minutes so
-    // it doesn't distract new visitors. The Settings button above is separate
-    // and opens the form right away, whether or not this launcher is showing.
-    var LAUNCHER_DELAY_MS = 2 * 60 * 1000; // 2 minutes
     function delayFloatingLauncher() {
+      if (handled) return;
+      handled = true;
+      clearInterval(pollTimer);
       try {
-        if (typeof window.Userback.hideLauncher === "function") window.Userback.hideLauncher();
+        window.Userback.hideLauncher();
       } catch (e) { return; }
       setTimeout(function () {
         try {
@@ -4046,19 +5032,7 @@
       }, LAUNCHER_DELAY_MS);
     }
 
-    function openFeedback() {
-      try {
-        if (typeof window.Userback.openForm === "function") window.Userback.openForm("general", "form");
-        else window.Userback.open();
-      } catch (e) {
-        showStatus("Couldn't open the feedback form. Please try again.");
-      }
-    }
-
-    var btn = d.getElementById("feedback-btn");
-    if (btn) btn.addEventListener("click", openFeedback);
-
-    Userback.on_load = revealButton;
+    Userback.on_load = delayFloatingLauncher;
 
     var s = d.createElement('script');
     s.async = true;
@@ -4067,11 +5041,11 @@
       if (window.console) console.warn("Feedback widget could not load (blocked by a content blocker, offline, or a domain not added in Userback).");
     };
     s.onload = function () {
-      if (widgetReady()) { revealButton(); return; }
+      if (widgetReady()) { delayFloatingLauncher(); return; }
       var tries = 0;
       pollTimer = setInterval(function () {
         tries++;
-        if (widgetReady()) revealButton();
+        if (widgetReady()) delayFloatingLauncher();
         else if (tries >= 120) clearInterval(pollTimer); // give up after ~30s
       }, 250);
     };
