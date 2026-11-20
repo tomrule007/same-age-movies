@@ -6875,21 +6875,38 @@ summary:focus:not(:focus-visible),
       }, LAUNCHER_DELAY_MS);
     }
 
-    // Userback docks its tab at the vertical middle of the right edge and has no
-    // offset setting, so shift it with the independent CSS `translate` property
-    // (leaves the widget's own transform/rotation alone) until its center sits
-    // 75% of the way down the screen, i.e. a quarter of the way up from the bottom.
-    var LAUNCHER_CENTER_Y = 0.75;
+    // Userback docks its tab near the vertical middle of the right edge (right over
+    // the detail sheet's "Remind me" and Share buttons). Shift it down to 84% of
+    // viewport height while keeping at least 76px clear of the bottom edge so it
+    // never collides with the scroll-return button.
+    var LAUNCHER_CENTER_Y = 0.84;
+    var placingLauncher = false;
     function placeLauncher() {
-      var btn = d.querySelector(".userback-button");
+      if (placingLauncher) return;
+      var btn = d.querySelector(".userback-button, [class*='userback-button']");
       if (!btn) return;
       var box = d.querySelector(".userback-button-container") || btn;
-      box.style.removeProperty("translate");
-      var r = btn.getBoundingClientRect();
-      if (!r.height) return; // still hidden
-      var vh = window.innerHeight || d.documentElement.clientHeight;
-      var delta = Math.round(vh * LAUNCHER_CENTER_Y - (r.top + r.height / 2));
-      if (delta) box.style.setProperty("translate", "0 " + delta + "px", "important");
+      placingLauncher = true;
+      try {
+        box.style.removeProperty("translate");
+        var r = btn.getBoundingClientRect();
+        if (!r.height) return; // still hidden
+        var vh = window.innerHeight || d.documentElement.clientHeight;
+        var maxCenterY = vh - 76 - r.height / 2;
+        var targetCenterY = Math.min(vh * LAUNCHER_CENTER_Y, maxCenterY);
+        var delta = Math.round(targetCenterY - (r.top + r.height / 2));
+        if (delta) box.style.setProperty("translate", "0 " + delta + "px", "important");
+      } finally {
+        placingLauncher = false;
+      }
+    }
+    if (window.MutationObserver && d.body) {
+      new MutationObserver(function () { placeLauncher(); }).observe(d.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["style", "class"]
+      });
     }
     window.addEventListener("resize", placeLauncher);
     window.addEventListener("orientationchange", function () { setTimeout(placeLauncher, 300); });
