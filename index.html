@@ -1369,7 +1369,7 @@
   .shared-overlay {
     position: fixed;
     inset: 0;
-    z-index: 70;
+    z-index: 740;
     background: radial-gradient(circle at 50% 0%, var(--radial-glow) 0%, var(--bg) 65%);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -1379,10 +1379,13 @@
     position: relative;
     max-width: 440px;
     margin: 0 auto;
-    padding: 56px 24px 40px;
+    padding: calc(56px + env(safe-area-inset-top)) 24px 40px;
     text-align: center;
   }
-  .shared-card .detail-close { top: 16px; right: 16px; }
+  .shared-card .detail-close {
+    top: calc(16px + env(safe-area-inset-top));
+    right: 16px;
+  }
   .shared-kicker {
     display: inline-block;
     background: var(--badge-tint-bg);
@@ -3056,11 +3059,15 @@
   width: 100%;
 }
 
-/* Search and region panels also remain above the header when opened from
-   Settings, while the specific Saved/Settings takeover behavior stays intact. */
-#search-panel,
-#region-panel {
+/* Search and region panels remain above the header, and #region-panel sits
+   above Settings (#menu-panel is z-index: 720) when opened from it. */
+#search-panel {
   z-index: 710 !important;
+}
+#region-panel {
+  z-index: 730 !important;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Details: a real bottom-sheet dialog above the entire app. The sheet itself
@@ -6789,7 +6796,7 @@ summary:focus:not(:focus-visible),
         ${details.runtime ? `<span class="pill">${details.runtime} min</span>` : ""}
       </div>
       <div class="shared-cta-wrap">${cta}</div>
-      <div class="shared-cta-note">Add the month and year you and your kid were born to see the movies from when you were their age.</div>
+      ${hasSetup ? "" : `<div class="shared-cta-note">Add the month and year you and your kid were born to see the movies from when you were their age.</div>`}
       ${buildWatchProvidersHtml(details)}
       ${trailer ? `<div class="detail-actions"><a class="detail-trailer-link" href="https://www.youtube.com/watch?v=${encodeURIComponent(trailer.key)}" target="_blank" rel="noopener">▶ Watch Trailer</a></div>` : ""}
       ${details.overview ? `
