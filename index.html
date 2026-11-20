@@ -13,7 +13,8 @@
         : (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
       document.documentElement.setAttribute('data-theme', theme);
     } catch (e) {
-      document.documentElement.setAttribute('data-theme', 'dark');
+      var systemTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', systemTheme);
     }
   })();
 </script>
@@ -1793,6 +1794,1557 @@
       scroll-behavior: auto !important;
     }
   }
+
+  /* ---- Family-first discovery refresh ---- */
+  .navbar {
+    padding: 12px 16px 13px;
+    box-shadow: 0 5px 22px var(--shadow-sm);
+    position: relative;
+    z-index: 2;
+  }
+  .navbar .site-name {
+    font-size: 16px;
+    letter-spacing: -.025em;
+  }
+  .selector-row { margin-top: 12px; gap: 9px; }
+  .selector-row select {
+    min-height: 42px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .selector-row .vs { font-weight: 800; letter-spacing: .04em; }
+  .comparison-summary {
+    margin-top: 10px;
+    padding: 11px 13px;
+    border: 1px solid var(--badge-tint-border);
+    border-radius: 11px;
+    background: linear-gradient(110deg, var(--badge-tint-bg), transparent 85%);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .comparison-summary strong { color: var(--accent); }
+  .quick-filters { margin-top: 10px; }
+  .qf-chips { display:flex; gap:7px; flex-wrap:wrap; }
+  .quick-filters button { min-height:34px; border-radius:999px; padding:7px 13px; }
+  .container { padding: 13px 14px 16px; gap: 10px; }
+  .discovery-heading {
+    flex: 0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding: 2px 2px 4px;
+  }
+  .eyebrow {
+    color:var(--accent);
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.12em;
+    margin-bottom:4px;
+  }
+  .discovery-title { font-size:17px; font-weight:800; letter-spacing:-.025em; }
+  .discovery-subtitle { color:var(--muted); font-size:11px; margin-top:3px; }
+  .edit-family-btn {
+    flex:0 0 auto;
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    border-radius:999px;
+    padding:8px 11px;
+    font-size:11px;
+    font-weight:700;
+  }
+  .feed {
+    background: transparent;
+    border-radius: 14px;
+    scroll-padding-top: 8px;
+  }
+  .movie-card {
+    height: 50%;
+    margin: 0 0 10px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    background: var(--card);
+    padding: 13px 15px;
+    box-shadow: 0 5px 18px var(--shadow-sm);
+    gap: 0;
+  }
+  .movie-card.is-saved {
+    border-color: var(--saved-tint-border);
+  }
+  .movie-card img {
+    max-width: clamp(48%, 43vw, 62%);
+    border-radius: 9px;
+    box-shadow: 0 8px 22px var(--shadow-md);
+  }
+  .movie-card .title {
+    letter-spacing:-.025em;
+    line-height:1.2;
+  }
+  .movie-card .age-at-release {
+    background:var(--badge-tint-bg);
+    border:1px solid var(--badge-tint-border);
+    border-radius:999px;
+    padding:5px 12px;
+    margin-top:8px;
+  }
+  .movie-card .timing { margin-top:5px; }
+  .card-actions { margin-top:10px; gap:8px; }
+  .card-actions button {
+    background:var(--surface);
+    border-radius:999px;
+    min-height:36px;
+    padding:7px 16px;
+    font-size:12px;
+  }
+  .card-actions .details-btn { color:var(--text); }
+  .card-actions .save-btn.saved { background:var(--accent); }
+  .detail-content {
+    max-width:560px;
+    max-height:92dvh;
+    padding:18px 18px calc(24px + env(safe-area-inset-bottom));
+    border-radius:22px 22px 0 0;
+  }
+  .detail-hero { gap:15px; align-items:flex-start; }
+  .detail-hero-poster { border-radius:11px; box-shadow:0 8px 22px var(--shadow-md); }
+  .detail-title { text-align:left; line-height:1.2; letter-spacing:-.02em; }
+  .detail-subline,.detail-meta-row { text-align:left; justify-content:flex-start; }
+  .age-callout {
+    border-radius:13px;
+    border-left-width:4px;
+    padding:13px 14px;
+    margin:15px 0;
+    background:var(--surface);
+  }
+  .detail-action-grid { gap:8px; }
+  .detail-action-btn { min-height:44px; border-radius:11px; }
+  @media (max-width:480px) {
+    .navbar { padding-left:13px; padding-right:13px; }
+    .container { padding-left:12px; padding-right:12px; }
+    .movie-card { padding:10px 12px; }
+    .discovery-title { font-size:15px; }
+    .discovery-subtitle { max-width:220px; line-height:1.35; }
+    .edit-family-btn { padding:8px 9px; }
+    .detail-hero { gap:12px; }
+    .detail-content { padding-left:16px; padding-right:16px; }
+  }
+
+
+
+  /* ---- Compact, poster-led mobile experience ----
+     Keep the controls available, but stop them competing with the movies. */
+  .navbar {
+    padding: 9px 14px 10px;
+    box-shadow: 0 4px 18px var(--shadow-sm);
+  }
+  .navbar .site-name { font-size: 15px; }
+  .menu-btn { min-height: 34px; padding: 7px 10px; border-radius: 9px; }
+  .theme-toggle-btn { width: 34px; }
+  .selector-row { margin-top: 7px; gap: 7px; }
+  .selector-row select {
+    min-height: 36px;
+    padding: 6px 9px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 650;
+  }
+  .selector-row .vs { font-size: 11px; }
+  .comparison-summary {
+    margin-top: 6px;
+    padding: 5px 1px 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    font-size: 11.5px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Filters remain fully available in Settings > Display & filters. */
+  .navbar .quick-filters { display: none; }
+
+  .container {
+    padding: 10px 12px 12px;
+    gap: 7px;
+  }
+  .discovery-heading {
+    min-height: 30px;
+    padding: 0 2px;
+    align-items: center;
+  }
+  .eyebrow, .discovery-subtitle { display: none; }
+  .discovery-title {
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 750;
+  }
+  .edit-family-btn {
+    padding: 6px 9px;
+    font-size: 10.5px;
+  }
+  .scroll-hint {
+    min-height: 22px;
+    margin: 0;
+    font-size: 10.5px;
+  }
+  .scroll-hint button { padding: 0 5px; }
+
+  .feed {
+    overflow-y: auto;
+    background: transparent;
+    border-radius: 18px;
+    scroll-padding-top: 4px;
+  }
+  .movie-card {
+    height: 50%;
+    min-height: 0;
+    align-items: stretch;
+    justify-content: flex-end;
+    text-align: left;
+    padding: 20px 18px 18px;
+    margin: 0 0 10px;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: #101722;
+    box-shadow: 0 8px 24px var(--shadow-md);
+    isolation: isolate;
+  }
+  .feed.single-card .movie-card {
+    height: 100%;
+    min-height: 0;
+  }
+  .movie-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg,
+      rgba(8,13,22,.06) 0%,
+      rgba(8,13,22,.16) 28%,
+      rgba(8,13,22,.82) 62%,
+      rgba(8,13,22,.98) 100%);
+  }
+  .movie-card > img {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    max-width: none !important;
+    min-height: 100%;
+    object-fit: cover;
+    object-position: center 28%;
+    border-radius: 0;
+    opacity: .82;
+    box-shadow: none;
+    cursor: pointer;
+  }
+  .feed.single-card .movie-card > img { max-width: none; }
+  .movie-card > .no-poster {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    max-width: none;
+    aspect-ratio: auto;
+    border-radius: 0;
+    background: radial-gradient(circle at 50% 30%, #34445b, #101722 70%);
+  }
+  .movie-card > .title,
+  .movie-card > .date,
+  .movie-card > .chip-row,
+  .movie-card > .age-at-release,
+  .movie-card > .timing,
+  .movie-card > .card-actions { position: relative; z-index: 1; }
+  .movie-card > .title {
+    color: #fff;
+    font-size: clamp(22px, 6vw, 30px);
+    line-height: 1.12;
+    letter-spacing: -.035em;
+    margin-top: 0;
+    text-shadow: 0 2px 12px rgba(0,0,0,.35);
+  }
+  .movie-card > .date {
+    color: rgba(255,255,255,.76);
+    font-size: 14px;
+    margin-top: 7px;
+  }
+  .movie-card > .chip-row {
+    justify-content: flex-start;
+    margin-top: 10px;
+    gap: 7px;
+  }
+  .movie-card .chip {
+    color: rgba(255,255,255,.88);
+    background: rgba(15,22,34,.55);
+    border-color: rgba(255,255,255,.22);
+    backdrop-filter: blur(8px);
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+  .movie-card .chip.chip-solid {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-contrast);
+  }
+  .movie-card > .age-at-release {
+    align-self: flex-start;
+    color: #f4cf69;
+    background: rgba(224,185,84,.16);
+    border: 1px solid rgba(224,185,84,.45);
+    border-radius: 999px;
+    padding: 7px 13px;
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 750;
+  }
+  .movie-card > .timing {
+    justify-content: flex-start;
+    color: rgba(255,255,255,.82);
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .movie-card > .timing.now { color: #f4cf69; }
+  .movie-card > .card-actions {
+    justify-content: flex-start;
+    margin-top: 15px;
+    gap: 9px;
+  }
+  .movie-card > .card-actions button {
+    min-height: 42px;
+    padding: 8px 17px;
+    border-radius: 999px;
+    background: rgba(16,22,32,.72);
+    border: 1px solid rgba(255,255,255,.2);
+    color: #fff;
+    font-size: 13px;
+    backdrop-filter: blur(8px);
+  }
+  .movie-card > .card-actions .save-btn.saved {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-contrast);
+  }
+  .movie-card.is-saved { box-shadow: inset 0 0 0 2px var(--saved-tint-border), 0 8px 24px var(--shadow-md); }
+  .movie-card[data-swipe="save"]::after { z-index: 2; }
+  .movie-card[data-swipe="remove"]::after { z-index: 2; }
+
+  @media (max-width: 480px) {
+    .navbar { padding: 8px 12px 9px; }
+    .container { padding: 8px 10px 10px; }
+    .discovery-title { font-size: 13px; }
+    .movie-card { padding: 18px 16px 16px; }
+  }
+
+
+
+  /* Friendly branded header and clearly visible bottom navigation */
+  .navbar { padding: 9px 15px 8px; }
+  .navbar-top-row { min-height: 54px; }
+  .brand-lockup { display:flex; align-items:center; gap:8px; min-width:0; }
+  .brand-mark { width:54px; height:50px; flex:0 0 auto; filter: drop-shadow(0 2px 2px rgba(0,0,0,.22)); }
+  .navbar .site-name { font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", sans-serif; font-size:19px; line-height:.98; font-weight:800; letter-spacing:-.045em; }
+  .navbar .site-name b { font-weight:900; }
+  .header-actions { display:flex; align-items:center; gap:10px; }
+  .icon-btn { width:42px; height:42px; display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--border); border-radius:13px; background:var(--surface); color:var(--text); cursor:pointer; }
+  .icon-btn svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .settings-head-actions { display:flex; align-items:center; gap:12px; }
+  .settings-theme-btn { width:36px; height:36px; }
+  .settings-theme-btn .theme-icon { width:18px; height:18px; }
+  .navbar .selector-row { margin-top:7px; }
+  .navbar .comparison-summary { margin-top:5px; }
+  .navbar .quick-filters { display:none; }
+  .container { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+  .nav-item.active { color:var(--accent); background:var(--badge-tint-bg); }
+  .nav-item.active svg { stroke-width:2.2; }
+  .nav-item.active::after { content:""; position:absolute; bottom:-8px; width:30px; height:3px; border-radius:3px 3px 0 0; background:var(--accent); }
+  .history-row,.search-result { display:flex; align-items:center; gap:11px; padding:8px; border:1px solid var(--border); border-radius:10px; background:var(--surface); cursor:pointer; }
+  .history-row img,.search-result img { width:42px; height:62px; object-fit:cover; border-radius:5px; background:var(--bg-elevated); }
+  .history-row strong,.search-result strong { display:block; color:var(--text); font-size:13px; }
+  .history-row small,.search-result small { display:block; margin-top:4px; color:var(--muted); font-size:11px; }
+  @media(max-width:480px) { .brand-mark { width:49px; height:46px; } .navbar .site-name { font-size:18px; } .icon-btn { width:40px; height:40px; } .container { padding-bottom: max(18px, env(safe-area-inset-bottom)); } }
+
+
+  #saved-btn[hidden] { display:none !important; }
+
+  /* Mockup-matched branded top navigation */
+  .navbar {
+    padding: 0 0 8px;
+    background: var(--bg-elevated);
+    box-shadow: 0 4px 18px rgba(0,0,0,.18);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .brand-bar {
+    position: relative;
+    /* Let the top-bar movie-selection dropdown extend below the branded header. */
+    overflow: visible;
+    padding: 8px 19px 9px;
+    background: radial-gradient(ellipse at 18% 0%, rgba(61,133,196,.28), transparent 54%), linear-gradient(112deg, #172b46 0%, #14243b 48%, #101d31 100%);
+    border-bottom: 1px solid rgba(143,183,224,.22);
+  }
+  .brand-bar::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .22;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.035), transparent);
+  }
+  .navbar-top-row { position: relative; z-index: 1; min-height: 70px; align-items: center; }
+  .brand-lockup { gap: 10px; }
+  .brand-mark { width: 64px; height: 58px; filter: drop-shadow(0 3px 3px rgba(0,0,0,.38)); transform: rotate(-2deg); }
+  .navbar .site-name {
+    color: #f7f8fc; font-family: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+    font-size: 22px; line-height: .96; font-weight: 850; letter-spacing: -.055em;
+    text-shadow: 0 1px 1px rgba(0,0,0,.22);
+  }
+  .navbar .site-name b { font-weight: 900; }
+  .header-actions { gap: 13px; }
+  .icon-btn {
+    width: 42px; height: 42px; border: 0; border-radius: 12px; background: transparent;
+    color: #f2f5fb; box-shadow: none; transition: background .16s ease, transform .16s ease;
+  }
+  .icon-btn:active { transform: scale(.94); background: rgba(255,255,255,.1); }
+  .icon-btn svg { width: 25px; height: 25px; stroke-width: 2; }
+  .navbar > .selector-row { margin: 8px 16px 0; }
+  .navbar > .comparison-summary { margin: 5px 18px 0; }
+  @media (max-width: 480px) {
+    .brand-bar { padding: 7px 15px 8px; }
+    .navbar-top-row { min-height: 66px; }
+    .brand-mark { width: 60px; height: 55px; }
+    .navbar .site-name { font-size: 21px; }
+    .header-actions { gap: 9px; }
+    .icon-btn { width: 40px; height: 40px; }
+    .navbar > .selector-row { margin-left: 13px; margin-right: 13px; }
+    .navbar > .comparison-summary { margin-left: 15px; margin-right: 15px; }
+  }
+
+
+  /* ---- Compact family comparison bar ---- */
+  .navbar {
+    padding-bottom: 10px;
+  }
+  .navbar > .comparison-summary {
+    display: block;
+    margin: 10px 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    overflow: visible;
+    white-space: normal;
+  }
+  .comparison-bar-content {
+    min-height: 62px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border: 1px solid rgba(137,163,207,.25);
+    border-radius: 17px;
+    background: linear-gradient(110deg, rgba(41,57,87,.72), rgba(24,34,54,.92));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 4px 12px rgba(0,0,0,.12);
+  }
+  .comparison-family-icon {
+    width: 37px;
+    height: 32px;
+    flex: 0 0 37px;
+    display: grid;
+    place-items: center;
+    color: #f4c943;
+  }
+  .comparison-family-icon svg { display:block; width:37px; height:29px; }
+  .comparison-family-meta {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .comparison-family-names {
+    min-width: 0;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .comparison-family-names span {
+    color: var(--muted);
+    padding: 0 2px;
+  }
+  .comparison-when {
+    color: var(--muted);
+    font-size: 11.5px;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .comparison-when strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+  .comparison-age {
+    flex: 0 0 auto;
+    color: #f4c943;
+    font-size: 20px;
+    font-weight: 850;
+    letter-spacing: -.04em;
+    white-space: nowrap;
+    padding-left: 8px;
+    border-left: 1px solid rgba(164,181,213,.28);
+  }
+  .comparison-edit-btn {
+    flex: 0 0 auto;
+    min-width: 57px;
+    min-height: 36px;
+    margin-left: 2px;
+    padding: 6px 12px;
+    border: 1px solid rgba(157,176,215,.45);
+    border-radius: 999px;
+    background: rgba(10,17,31,.18);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 750;
+  }
+  .comparison-selector-row {
+    display: none;
+    align-items: center;
+    gap: 7px;
+    margin: 8px 0 0;
+    padding: 9px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 13px;
+    background: var(--surface);
+  }
+  .navbar.comparison-edit-open .comparison-selector-row { display:flex; }
+  .comparison-selector-row select {
+    min-width: 0;
+    min-height: 38px;
+    padding: 7px 8px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 650;
+  }
+  .comparison-selector-row .vs { font-size:11px; }
+  .comparison-done-btn {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 6px 11px;
+    border: 0;
+    border-radius: 9px;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .container { padding-top: 10px; }
+  @media (max-width: 390px) {
+    .navbar { padding-left: 12px; padding-right: 12px; }
+    .comparison-bar-content { gap: 7px; padding: 8px 9px; min-height:58px; }
+    .comparison-family-icon { width:31px; flex-basis:31px; }
+    .comparison-family-icon svg { width:31px; }
+    .comparison-family-names { font-size:12px; }
+    .comparison-when { font-size:10.5px; }
+    .comparison-age { font-size:18px; padding-left:6px; }
+    .comparison-edit-btn { min-width:50px; padding:5px 9px; }
+  }
+
+
+  /* Favorites live in the top bar; no fixed bottom navigation. */
+  .header-actions { gap: 8px; }
+  .favorites-top-btn {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+  }
+  .favorites-top-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .favorites-top-btn:active svg { fill: rgba(239,190,72,.18); }
+  .favorites-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-elevated);
+    border-radius: 999px;
+    background: var(--accent);
+    color: #171717;
+    font-size: 9px;
+    line-height: 1;
+    font-weight: 850;
+  }
+  .favorites-count.is-empty { display:none; }
+  .container { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+  @media (max-width:480px) {
+    .header-actions { gap: 6px; }
+    .favorites-top-btn { width: 40px; height: 40px; }
+  }
+
+
+
+
+  /* Top-bar movie selection menu */
+  .density-nav-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .density-top-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+  .density-top-btn[aria-expanded="true"] {
+    color: var(--accent);
+    background: var(--badge-tint-bg);
+    border-color: rgba(235,190,75,.38);
+  }
+  .density-dropdown {
+    position: absolute;
+    z-index: 150;
+    top: calc(100% + 9px);
+    right: -5px;
+    width: 184px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    box-shadow: 0 14px 34px rgba(0,0,0,.42);
+    transform-origin: top right;
+  }
+  .density-dropdown.hidden { display: none !important; }
+  .density-dropdown-title {
+    padding: 7px 10px 8px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .density-option {
+    width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+  .density-option + .density-option { margin-top: 2px; }
+  .density-option.active {
+    color: var(--accent);
+    background: var(--badge-tint-bg);
+  }
+  .density-option-check {
+    min-width: 16px;
+    color: var(--accent);
+    font-size: 16px;
+    font-weight: 900;
+    text-align: center;
+  }
+  .density-option:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  @media (max-width: 480px) {
+    .density-dropdown { right: -48px; }
+  }
+
+
+  /* Keep the movie-mode popover above the comparison bar and feed content. */
+  .navbar {
+    position: relative;
+    z-index: 500;
+    overflow: visible !important;
+  }
+  .navbar .header-actions,
+  .navbar .density-nav-wrap {
+    position: relative;
+    z-index: 501;
+    overflow: visible;
+  }
+  .density-dropdown {
+    z-index: 9999;
+  }
+  .density-top-btn {
+    position: relative;
+  }
+  .density-current-indicator {
+    position: absolute;
+    left: 50%;
+    bottom: -5px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px var(--bg-elevated, #182235);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+  .density-top-btn[aria-expanded="true"] .density-current-indicator {
+    width: 14px;
+    border-radius: 999px;
+  }
+  .density-current-label {
+    position: absolute;
+    right: -3px;
+    bottom: -7px;
+    padding: 1px 4px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--accent);
+    font-size: 8px;
+    line-height: 1.2;
+    font-weight: 850;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+
+
+  /* ---- Shared header / feed surface (mobile) ----
+     Bring the movie feed closer to the family bar and visually connect both
+     areas, while keeping the existing icon-based Top hits control untouched. */
+  @media (max-width: 600px) {
+    body {
+      background: #07152b;
+    }
+
+    .navbar {
+      position: relative;
+      z-index: 500;
+      padding: 0 0 5px;
+      background: linear-gradient(180deg, #102b50 0%, #101f38 100%);
+      border-bottom: 1px solid rgba(143,183,224,.18);
+      box-shadow: 0 4px 16px rgba(0,0,0,.16);
+    }
+
+    .brand-bar {
+      padding: 5px 15px 5px;
+      background: transparent;
+      border-bottom: 0;
+    }
+
+    .navbar-top-row {
+      min-height: 59px;
+    }
+
+    .brand-mark {
+      width: 53px;
+      height: 49px;
+    }
+
+    .navbar .site-name {
+      font-size: 19px;
+      line-height: .97;
+    }
+
+    /* The family bar now sits directly under the brand row, on the same
+       continuous blue surface instead of looking like a separate section. */
+    .navbar > .comparison-summary {
+      margin: 1px 12px 0;
+    }
+
+    .comparison-bar-content {
+      min-height: 57px;
+      padding: 7px 10px;
+      border-radius: 16px;
+      background: linear-gradient(110deg, rgba(37,57,91,.82), rgba(24,36,61,.94));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 3px 10px rgba(0,0,0,.12);
+    }
+
+    .container {
+      padding: 5px 10px max(12px, env(safe-area-inset-bottom));
+      gap: 0;
+      background: transparent;
+    }
+
+    .feed {
+      border-radius: 18px;
+      scroll-padding-top: 3px;
+    }
+
+    /* Make the navbar, spacer area, and feed use one continuous navy surface. */
+    body,
+    .navbar,
+    .container,
+    .feed {
+      background: #101f38;
+    }
+
+    .navbar {
+      border-bottom: 0;
+      box-shadow: none;
+    }
+
+    /* In single-card mode, leave a small preview of the next movie visible
+       at the bottom of the scroll viewport as a cue that the feed continues. */
+    .feed.single-card .movie-card {
+      height: calc(100% - 44px);
+      min-height: 0;
+      flex: 0 0 calc(100% - 44px);
+    }
+  }
+
+/* Full-app refresh: family editor, settings, splash and first-run wizard. */
+:root {
+  --bg:#101f38; --bg-elevated:#142744; --card:#192d4c; --surface:#1c3355;
+  --surface-hover:#254064; --border:#3b5278; --border-subtle:rgba(151,181,225,.20);
+  --border-input:#536b91; --text:#f4f6fb; --muted:#b2bfd5; --placeholder:#8799b7;
+  --accent:#f4c943; --accent-contrast:#111b2c; --radial-glow:#1c3c66;
+  --shadow-sm:rgba(0,0,0,.25); --shadow-md:rgba(0,0,0,.34);
+}
+:root[data-theme="light"] {
+  --bg:#eef3fa; --bg-elevated:#f8faff; --card:#fff; --surface:#e8eef7;
+  --surface-hover:#dce6f3; --border:#c5d2e4; --border-subtle:#d8e1ed;
+  --border-input:#b7c6da; --text:#182943; --muted:#63748d; --placeholder:#8796aa;
+  --accent:#d9a91c; --accent-contrast:#17243a; --radial-glow:#fff;
+  --shadow-sm:rgba(30,55,90,.10); --shadow-md:rgba(30,55,90,.14);
+}
+.menu-panel,.menu-scroll { background:var(--bg); color:var(--text); }
+.menu-top,.menu-footer { background:var(--bg-elevated); border-color:var(--border-subtle); }
+.menu-top { padding:max(18px,env(safe-area-inset-top)) 20px 16px; }
+.menu-app-title { font-size:19px; letter-spacing:-.035em; color:var(--text); margin-bottom:12px; }
+.menu-header span { color:var(--muted); font-size:11px; letter-spacing:.11em; }
+.menu-close { width:36px; height:36px; border-radius:50%; background:var(--surface); color:var(--text); border:1px solid var(--border); }
+.menu-scroll { padding:18px 16px 24px; }
+.menu-section { margin:14px 0 20px; padding:16px; border:1px solid var(--border-subtle); border-radius:17px; background:var(--bg-elevated); box-shadow:0 5px 18px var(--shadow-sm); }
+.menu-section>.toggle-label { color:var(--accent); font-size:11px; font-weight:800; letter-spacing:.09em; margin-bottom:12px; }
+.settings-appearance { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 18px; padding:15px 14px; border:1px solid var(--border); border-radius:17px; background:linear-gradient(120deg,var(--surface),var(--bg-elevated)); box-shadow:0 5px 18px var(--shadow-sm); }
+.settings-appearance-copy { display:flex; align-items:center; gap:11px; min-width:0; }
+.settings-appearance-copy>span:last-child { display:flex; flex-direction:column; gap:3px; }
+.settings-appearance-copy strong { color:var(--text); font-size:14px; font-weight:800; }
+.settings-appearance-copy small { color:var(--muted); font-size:11px; }
+.settings-appearance-icon { display:grid; place-items:center; width:38px; height:38px; flex:0 0 38px; border-radius:12px; background:var(--badge-tint-bg); color:var(--accent); font-size:24px; }
+.settings-theme-btn { display:flex; align-items:center; gap:7px; flex:0 0 auto; min-height:38px; padding:0 10px; border:1px solid var(--border); border-radius:999px; background:var(--surface-hover); color:var(--text); font-size:11px; font-weight:750; cursor:pointer; }
+.settings-theme-btn .theme-icon { width:16px; height:16px; color:var(--accent); }
+.settings-theme-switch { width:27px; height:16px; border-radius:999px; padding:2px; background:var(--border); display:inline-flex; align-items:center; }
+.settings-theme-switch i { display:block; width:12px; height:12px; border-radius:50%; background:#fff; transition:transform .2s ease; }
+:root[data-theme="light"] .settings-theme-switch { background:var(--accent); }
+:root[data-theme="light"] .settings-theme-switch i { transform:translateX(11px); }
+.person-row,.saved-row { border-radius:12px; border-color:var(--border-subtle); background:var(--surface); padding:10px 12px; }
+.person-row .person-info { font-size:13px; font-weight:650; }
+.person-row .person-name-input { color:var(--text); font-weight:700; font-size:13px; }
+.person-row .delete-btn { width:30px; height:30px; border-radius:9px; background:rgba(224,82,82,.08); }
+.add-person-row { gap:8px; flex-wrap:wrap; }
+.add-person-row .name-input { flex:1 1 100%; height:42px; padding:0 12px; border:1px solid var(--border-input); border-radius:11px; background:var(--surface); }
+.add-person-row .date-field { flex:1 1 auto; min-width:0; padding:0 9px; border:1px solid var(--border-input); border-radius:11px; background:var(--surface); }
+.add-person-row .my-picker select { height:40px; border-bottom:0; background:transparent; }
+.add-person-btn { height:40px; min-width:66px; border-radius:999px; font-weight:800; }
+.light-input,.wizard-name-input { color:var(--text); }
+.comparison-selector-row { border:1px solid var(--border); border-radius:15px; background:var(--bg-elevated); box-shadow:0 8px 22px var(--shadow-sm); padding:11px; }
+.comparison-selector-row select { background:var(--surface); color:var(--text); border:1px solid var(--border-input); border-radius:10px; }
+.comparison-done-btn { border-radius:999px; min-width:58px; }
+.toggle { border-radius:12px; background:var(--surface); padding:4px; }
+.toggle button { border-radius:9px; }
+.rating-toggle button,.region-row { border-radius:999px; }
+.region-row { background:var(--surface); border-color:var(--border); padding:12px 14px; }
+.advanced-settings { margin:14px 0 20px; padding:14px 16px; border:1px solid var(--border-subtle); border-radius:16px; background:var(--bg-elevated); }
+.advanced-settings summary { padding:2px 0; color:var(--text); font-size:12px; }
+.advanced-settings[open] { padding-bottom:8px; }
+.advanced-settings .menu-section { margin:12px 0; padding:13px; background:var(--surface); box-shadow:none; }
+.menu-footer { padding:13px 16px max(18px,env(safe-area-inset-bottom)); }
+.menu-save-btn { border-radius:999px; min-height:48px; font-weight:850; box-shadow:0 5px 14px rgba(0,0,0,.12); }
+.menu-share-btn { color:var(--muted); padding:12px 8px 4px; font-weight:700; }
+.tmdb-attribution { color:var(--muted); }
+.splash-overlay { background:radial-gradient(ellipse at 50% -8%,rgba(75,130,196,.28),transparent 55%),var(--bg); }
+.splash-hero { min-height:min(100%,760px); padding:max(36px,env(safe-area-inset-top)) 22px 32px; }
+.splash-content { width:100%; max-width:420px; padding:0; border:none; border-radius:0; background:transparent; box-shadow:none; }
+.splash-badge { background:var(--badge-tint-bg); border-color:var(--badge-tint-border); color:var(--accent); }
+.splash-title { color:var(--text); letter-spacing:-.045em; }
+.splash-text { color:var(--muted); }
+.splash-text strong { color:var(--text); }
+.splash-btn { min-height:50px; border-radius:999px; padding:14px 28px; box-shadow:0 7px 18px rgba(0,0,0,.16); }
+.splash-note { color:var(--muted); }
+.splash-more { padding-bottom:max(56px,env(safe-area-inset-bottom)); }
+.splash-step { padding:15px; border:1px solid var(--border-subtle); border-radius:16px; background:var(--bg-elevated); }
+.splash-step-number { box-shadow:0 4px 12px rgba(0,0,0,.14); }
+.splash-story { border-radius:20px; background:var(--bg-elevated); border-color:var(--border); }
+.wizard-overlay { background:radial-gradient(ellipse at 50% 0%,rgba(75,130,196,.20),transparent 55%),var(--bg); padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom)); }
+.wizard-card { width:100%; max-width:340px; padding:0; border:none; border-radius:0; background:transparent; box-shadow:none; }
+.wizard-step-labels { margin-bottom:26px; }
+.wizard-emoji { display:grid; place-items:center; width:62px; height:62px; margin:0 auto 14px; border-radius:19px; background:var(--badge-tint-bg); border:1px solid var(--badge-tint-border); }
+.wizard-title { color:var(--text); letter-spacing:-.035em; }
+.wizard-sub { color:var(--muted); }
+.wizard-name-field { max-width:100%; }
+.wizard-name-input { height:48px; padding:8px 12px; border:1px solid var(--border-input); border-radius:12px; background:var(--surface); }
+.my-picker.wizard-picker { max-width:100%; gap:10px; padding:0 10px; border:1px solid var(--border-input); border-radius:12px; background:var(--surface); }
+.my-picker.wizard-picker select { border:0; height:48px; background:transparent; color:var(--text); }
+.wizard-actions { margin-top:28px; }
+.wizard-next-btn { min-height:49px; border-radius:999px; box-shadow:0 6px 16px rgba(0,0,0,.14); }
+:root[data-theme="light"] .brand-bar { background:linear-gradient(110deg,#e3edf9 0%,#dce8f7 55%,#eef3fa 100%); border-bottom-color:#d2deed; }
+:root[data-theme="light"] .navbar,:root[data-theme="light"] .container,:root[data-theme="light"] body { background:var(--bg); }
+:root[data-theme="light"] .navbar { background:linear-gradient(180deg,#f8faff 0%,#eef3fa 100%); box-shadow:none; }
+:root[data-theme="light"] .navbar .site-name { color:#1b3150; text-shadow:none; }
+:root[data-theme="light"] .icon-btn { color:#203a5d; }
+:root[data-theme="light"] .density-current-label { background:#fff; border-color:#c7d5e7; color:#9a7418; }
+:root[data-theme="light"] .comparison-bar-content { background:linear-gradient(110deg,#fff,#e7eef8); border-color:#c8d6e8; box-shadow:0 3px 12px rgba(42,70,110,.08); }
+:root[data-theme="light"] .comparison-family-names { color:#1b3150; }
+:root[data-theme="light"] .comparison-family-names span { color:#74849b; }
+:root[data-theme="light"] .comparison-when { color:#5b6d87; }
+:root[data-theme="light"] .comparison-when strong { color:#1b3150; }
+:root[data-theme="light"] .comparison-age { color:#a77a08; border-left-color:#c8d6e8; }
+:root[data-theme="light"] .comparison-edit-btn { color:#203a5d; background:#f8faff; border-color:#b8c9df; }
+:root[data-theme="light"] .movie-card { border-color:rgba(80,105,145,.35); }
+:root[data-theme="light"] .splash-overlay,:root[data-theme="light"] .wizard-overlay { background:radial-gradient(ellipse at 50% 0%,rgba(94,143,202,.14),transparent 58%),var(--bg); }
+@media(max-width:600px) {
+  .settings-appearance { padding:12px; }
+  .settings-appearance-copy small { max-width:150px; line-height:1.3; }
+  .settings-theme-btn { gap:5px; padding:0 8px; font-size:10px; }
+  .menu-section { padding:14px; }
+  .splash-content { padding:0; }
+  .wizard-card { padding:0; }
+}
+:root[data-theme="light"] .feed { background:var(--bg); }
+
+
+/* Mobile overlay and detail-view corrections */
+.menu-panel {
+  z-index: 220 !important;
+  inset: 0 !important;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.menu-panel *,
+.detail-modal * {
+  box-sizing: border-box;
+}
+.menu-top {
+  padding-top: max(18px, env(safe-area-inset-top));
+}
+.menu-scroll {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+.settings-appearance {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  gap: 8px;
+}
+.settings-appearance-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.settings-appearance-copy small {
+  overflow-wrap: anywhere;
+}
+.settings-theme-btn {
+  flex: 0 0 auto;
+  max-width: 132px;
+  min-width: 0;
+  white-space: nowrap;
+}
+.menu-footer {
+  width: 100%;
+  min-width: 0;
+}
+.menu-save-btn,
+.menu-share-btn {
+  max-width: 100%;
+}
+
+/* Details is a true full-screen mobile surface, not a sheet tucked under
+   the persistent site header. Its own close control remains available. */
+.detail-modal {
+  z-index: 230 !important;
+  inset: 0 !important;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0;
+}
+.detail-content {
+  width: 100%;
+  max-width: 760px;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  border-radius: 0;
+  background: var(--bg-elevated);
+  box-shadow: 0 0 40px var(--shadow-md);
+}
+.detail-head {
+  min-height: 54px;
+  padding: max(12px, env(safe-area-inset-top)) 18px 8px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.detail-handle {
+  display: none;
+}
+.detail-close {
+  top: max(10px, env(safe-area-inset-top));
+  right: 16px;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 3px 12px var(--shadow-sm);
+  font-size: 17px;
+}
+.detail-scroll {
+  padding: 18px 18px max(30px, env(safe-area-inset-bottom));
+  background:
+    radial-gradient(ellipse at 50% 0%, var(--radial-glow), transparent 48%),
+    var(--bg-elevated);
+}
+.detail-hero {
+  gap: 16px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  background: linear-gradient(145deg, var(--card), var(--bg-elevated));
+  box-shadow: 0 8px 24px var(--shadow-sm);
+}
+.detail-hero-poster {
+  width: 34%;
+  max-width: 156px;
+  border-radius: 13px;
+  box-shadow: 0 8px 22px var(--shadow-md);
+}
+.detail-hero-info .detail-title {
+  font-size: clamp(19px, 5vw, 25px);
+  letter-spacing: -.035em;
+}
+.detail-hero-info .detail-subline {
+  font-size: 13px;
+  line-height: 1.45;
+}
+.detail-genres {
+  line-height: 1.45;
+}
+.detail-meta-row .pill {
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: var(--surface);
+}
+.age-callout {
+  margin-top: 14px;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+.detail-action-grid {
+  gap: 9px;
+  margin-top: 14px;
+}
+.detail-action-btn {
+  margin: 0;
+  height: 48px;
+  min-height: 48px;
+  line-height: 1;
+  font-family: inherit;
+  border-radius: 13px;
+  box-shadow: 0 3px 10px var(--shadow-sm);
+}
+.detail-action-btn.detail-trailer-link {
+  margin-top: 0;
+}
+.detail-section-label {
+  margin-top: 22px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  color: var(--accent);
+}
+.detail-overview,
+.detail-cast {
+  font-size: 14px;
+  line-height: 1.65;
+}
+.detail-providers-row {
+  gap: 20px;
+}
+.detail-scroll .provider-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+}
+@media (max-width: 600px) {
+  .settings-appearance {
+    gap: 7px;
+    padding: 11px;
+  }
+  .settings-appearance-copy {
+    gap: 8px;
+  }
+  .settings-appearance-icon {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+  .settings-appearance-copy small {
+    max-width: none;
+    font-size: 10.5px;
+  }
+  .settings-theme-btn {
+    width: 72px;
+    min-width: 72px;
+    max-width: 72px;
+    min-height: 40px;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 7px;
+  }
+  .settings-theme-btn #theme-mode-label {
+    display: none;
+  }
+  .settings-theme-btn .settings-theme-switch {
+    flex: 0 0 27px;
+  }
+  .detail-modal {
+    align-items: stretch;
+  }
+  .detail-content {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+  .detail-scroll {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .detail-hero {
+    gap: 12px;
+    padding: 11px;
+  }
+}
+@media (min-width: 700px) {
+  .detail-modal {
+    align-items: center;
+    padding: 24px;
+  }
+  .detail-content {
+    width: min(760px, 100%);
+    height: min(92dvh, 900px);
+    max-height: 92dvh;
+    border-radius: 22px;
+  }
+  .detail-head {
+    border-radius: 22px 22px 0 0;
+  }
+}
+
+
+/* Final overlay UX: full-page Saved/Settings, floating swipeable detail sheet.
+   Keep these layers above the sticky navigation (navbar uses z-index: 500). */
+#menu-panel,
+#saved-panel {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 720 !important;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+  overflow: hidden;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: none;
+}
+#menu-panel.hidden,
+#saved-panel.hidden {
+  display: none !important;
+}
+#menu-panel .menu-top,
+#saved-panel .menu-top {
+  flex: 0 0 auto;
+  min-height: 68px;
+  padding: 14px 18px 13px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 16px var(--shadow-sm);
+}
+#menu-panel .menu-header,
+#saved-panel .menu-header {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+#menu-panel .menu-header > span,
+#saved-panel .menu-header > span {
+  color: var(--text);
+  font-size: 19px;
+  line-height: 1.2;
+  font-weight: 850;
+  letter-spacing: -.035em;
+}
+#menu-panel .menu-app-title {
+  display: none;
+}
+#menu-panel .menu-close,
+#saved-panel .menu-close {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+}
+#menu-panel .menu-scroll,
+#saved-panel .menu-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 18px 16px 26px;
+}
+#menu-panel .menu-footer {
+  flex: 0 0 auto;
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border-subtle);
+}
+#saved-panel .menu-section {
+  margin-top: 0;
+}
+#saved-panel #saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#saved-panel .saved-row {
+  width: 100%;
+}
+
+/* Search and region panels also remain above the header when opened from
+   Settings, while the specific Saved/Settings takeover behavior stays intact. */
+#search-panel,
+#region-panel {
+  z-index: 710 !important;
+}
+
+/* Details: a real bottom-sheet dialog above the entire app. The sheet itself
+   scrolls; the handle/header is the intentional swipe-to-dismiss grab area. */
+#detail-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 760 !important;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  background: rgba(4, 10, 22, .58);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+#detail-modal.hidden {
+  display: none !important;
+}
+#detail-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 620px;
+  height: min(88vh, 900px);
+  height: min(88dvh, 900px);
+  max-height: min(88vh, 900px);
+  max-height: min(88dvh, 900px);
+  min-height: 260px;
+  flex: 0 1 auto;
+  overflow: hidden;
+  position: relative;
+  border-radius: 24px 24px 0 0;
+  padding: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  box-shadow: 0 -12px 42px rgba(0,0,0,.28);
+  touch-action: pan-y;
+  will-change: transform;
+}
+#detail-head {
+  position: relative;
+  flex: 0 0 48px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 11px 60px 8px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 24px 24px 0 0;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#detail-head:active { cursor: grabbing; }
+#detail-head .detail-handle {
+  display: block !important;
+  box-sizing: border-box !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  height: 5px !important;
+  min-height: 5px !important;
+  flex: 0 0 40px !important;
+  align-self: center;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #9aa8bd !important;
+  opacity: .78 !important;
+  margin: 2px auto 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+}
+:root[data-theme="light"] #detail-head .detail-handle {
+  background: #9aa8bd !important;
+  opacity: .85 !important;
+}
+#detail-close {
+  position: absolute;
+  top: 7px;
+  right: 12px;
+  z-index: 3;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 17px;
+}
+#detail-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 15px 18px max(28px, env(safe-area-inset-bottom));
+  background:
+    radial-gradient(ellipse at 50% 0%, var(--radial-glow), transparent 48%),
+    var(--bg-elevated);
+}
+#detail-modal:not(.hidden) #detail-content {
+  animation: detailSheetEnter .24s cubic-bezier(.2,.75,.25,1);
+}
+@keyframes detailSheetEnter {
+  from { transform: translateY(42px); opacity: .8; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@media (min-width: 700px) {
+  #detail-modal {
+    align-items: center;
+    padding: 24px;
+  }
+  #detail-content {
+    width: min(620px, 100%);
+    height: min(88dvh, 900px);
+    max-height: 88dvh;
+    border-radius: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  #detail-head { border-radius: 24px 24px 0 0; }
+}
+@media (max-width: 600px) {
+  #menu-panel .menu-top,
+  #saved-panel .menu-top {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  #menu-panel .menu-scroll,
+  #saved-panel .menu-scroll {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+  #detail-content {
+    width: 100%;
+    max-width: none;
+    height: min(90vh, 900px);
+    height: min(90dvh, 900px);
+    max-height: min(90vh, 900px);
+    max-height: min(90dvh, 900px);
+    border-radius: 22px 22px 0 0;
+  }
+  #detail-scroll {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+
+/* Remove rectangular Android/iOS tap-highlight boxes on buttons, posters, and cards */
+*, *::before, *::after {
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+select:focus:not(:focus-visible),
+summary:focus:not(:focus-visible),
+[role="button"]:focus:not(:focus-visible),
+.movie-card:focus:not(:focus-visible) {
+  outline: none;
+}
+.navbar.hidden {
+  display: none !important;
+}
+
+/* =====================================================================
+   Detail view v2: single surface, icon actions, labelled providers
+   (colors all come from the existing theme tokens)
+   ===================================================================== */
+.toast { z-index: 900; }
+.ico {
+  width: 22px; height: 22px; flex: none; display: block;
+  fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.ico.ico-sm { width: 18px; height: 18px; }
+.ico.ico-fill { fill: currentColor; }
+
+/* One continuous section: no separate header band. The background lives on the
+   sheet itself; the handle row and close button simply sit on it. */
+#detail-content {
+  background:
+    radial-gradient(ellipse at 50% 0%, var(--radial-glow), transparent 48%),
+    var(--bg-elevated);
+}
+#detail-head {
+  flex: 0 0 44px; background: transparent; border-bottom: 0; box-shadow: none;
+}
+#detail-head .detail-handle { margin: 10px auto 0 !important; }
+#detail-close {
+  top: 6px; right: 14px; width: 38px; height: 38px;
+  background: transparent; border: 1px solid var(--border);
+  box-shadow: none; padding: 0; color: var(--text); cursor: pointer;
+}
+#detail-scroll { padding-top: 8px; background: transparent; }
+
+/* Hero: flat, no card */
+.detail-hero {
+  padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none;
+  gap: 16px; align-items: flex-start; margin-top: 0;
+}
+.detail-hero-poster { width: 32%; max-width: 132px; border-radius: 12px; }
+.detail-hero-info .detail-title { font-size: clamp(22px, 6vw, 28px); font-weight: 800; line-height: 1.15; }
+.detail-hero-info .detail-meta { font-size: 14px; color: var(--muted); margin-top: 6px; }
+.detail-hero-info .detail-rating {
+  display: flex; align-items: center; gap: 6px; margin-top: 8px;
+  font-size: 14px; color: var(--text);
+}
+.detail-hero-info .detail-rating .ico { color: var(--accent); }
+.detail-age { margin-top: 14px; }
+.detail-age-label { font-size: 14px; color: var(--muted); }
+.detail-age-value { font-size: clamp(28px, 8vw, 36px); font-weight: 800; color: var(--accent); line-height: 1.1; letter-spacing: -.02em; }
+
+/* Age callout: sentence + inline Remind me */
+.age-callout {
+  border-left-width: 1px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin: 16px 0 0; padding: 12px 14px; border-radius: 16px;
+}
+.age-callout-text { min-width: 0; }
+.age-callout.soon, .age-callout.now, .age-callout.past { border-left-color: var(--border); }
+.age-callout-main { font-size: 14.5px; line-height: 1.4; color: var(--text); }
+.age-callout-sub { font-size: 14.5px; line-height: 1.4; margin-top: 0; }
+.age-callout .timing-dot { display: none; }
+.detail-remind-btn {
+  flex: none; display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: 0; box-shadow: none; padding: 8px 4px; min-height: 40px;
+  color: var(--accent); font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer;
+}
+
+/* Action row: wide Trailer pill + round Save / Share */
+.detail-action-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.detail-action-row .detail-trailer-link {
+  flex: 1 1 auto; display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 52px; min-height: 52px; margin: 0; border-radius: 999px; box-shadow: none;
+  background: var(--accent); border: 1px solid var(--accent); color: var(--accent-contrast);
+  font-size: 16px; font-weight: 700; text-decoration: none;
+}
+.icon-btn {
+  flex: none; width: 52px; height: 52px; padding: 0; margin: 0; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer;
+  background: transparent; border: 1px solid var(--border); color: var(--text);
+  box-shadow: none; transition: background-color .2s ease, border-color .2s ease, color .2s ease;
+}
+.icon-btn:active { background: var(--surface); }
+.icon-btn.saved { background: var(--saved-tint-bg); border-color: var(--saved-tint-border); color: var(--accent); }
+.icon-btn.saved .ico { fill: currentColor; }
+
+/* Where to watch */
+.watch-section { margin-top: 26px; text-align: left; }
+.watch-heading { font-size: 20px; font-weight: 800; color: var(--text); margin: 0 0 12px; letter-spacing: -.02em; }
+.watch-group + .watch-group { margin-top: 18px; }
+.watch-group-label { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
+.watch-tiles { display: flex; flex-wrap: wrap; gap: 12px 10px; }
+.watch-tile {
+  width: 76px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  text-decoration: none; color: var(--text); text-align: center;
+}
+.watch-tile .provider-logo {
+  width: 58px; height: 58px; border-radius: 14px; background: var(--surface);
+}
+.watch-tile-fallback {
+  width: 58px; height: 58px; border-radius: 14px; background: var(--surface);
+  border: 1px solid var(--border); display: grid; place-items: center; color: var(--muted);
+}
+.watch-tile-name { font-size: 12.5px; line-height: 1.25; color: var(--muted); overflow-wrap: anywhere; }
+.watch-section .providers-note { margin: 0 0 12px; }
+.watch-section .justwatch-attribution { margin-top: 14px; font-size: 12px; }
+
+/* Overview with inline More / Less */
+.detail-overview-wrap { margin-top: 22px; font-size: 15px; line-height: 1.55; color: var(--muted); }
+.detail-overview-wrap .overview-more {
+  background: none; border: 0; padding: 0; margin: 0; font: inherit; font-weight: 700;
+  color: var(--accent); cursor: pointer;
+}
+.detail-genres-line { font-size: 13px; color: var(--muted); margin-top: 14px; }
+.shared-card .watch-section { margin-top: 22px; }
 </style>
 </head>
 <body>
@@ -1804,44 +3356,86 @@
   </div>
 </noscript>
 
-<div class="navbar">
+<div class="navbar hidden" id="navbar">
+  <div class="brand-bar">
   <div class="navbar-top-row">
-    <div class="site-name">Same Age Movies</div>
+    <div class="brand-lockup" aria-label="Same-Age Movies">
+      <svg class="brand-mark" viewBox="0 0 88 78" role="img" aria-label="Cartoon movie clapperboard">
+        <defs>
+          <linearGradient id="boardBlue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a4e0ff"/><stop offset="1" stop-color="#4598dc"/></linearGradient>
+        </defs>
+        <g stroke-linejoin="round" stroke-linecap="round">
+          <path d="M9 18 2 12M77 18l8-6M12 5 9 1M72 6l5-5" fill="none" stroke="#ffd65c" stroke-width="3.5"/>
+          <path d="m78 24 5 2-4 3M6 33l-4 2 4 3" fill="none" stroke="#ffd65c" stroke-width="3"/>
+          <g transform="rotate(-10 43 19)">
+            <rect x="12" y="5" width="63" height="23" rx="6" fill="#f7c84b" stroke="#fff5d8" stroke-width="3"/>
+            <path d="m21 6 10 21M39 5l10 22M57 5l10 21" stroke="#273b58" stroke-width="7"/>
+            <path d="M14 17h59" stroke="#fff4cf" stroke-width="2.5"/>
+          </g>
+          <path d="M17 27 72 23l5 43q.5 6-6 7l-49 3q-6 .2-6-6z" fill="url(#boardBlue)" stroke="#fff8e9" stroke-width="3"/>
+          <path d="m25 39 39-3M26 48l39-3" stroke="#2e5278" stroke-width="3" opacity=".75"/>
+          <path d="m47 43 4.4 8.2 9.1 1.3-6.6 6.4 1.5 9-8.1-4.3-8.1 4.3 1.5-9-6.6-6.4 9.1-1.3z" fill="#fff5d7" stroke="#315273" stroke-width="1.8"/>
+          <path d="m79 39 2.5 4.5 5 1-3.7 3.3.8 5-4.6-2.4-4.5 2.4.8-5-3.7-3.3 5-1z" fill="#ffd65c" stroke="#fff2c7" stroke-width="1.2"/>
+        </g>
+      </svg>
+      <span class="site-name">Same-Age<br><b>Movies</b></span>
+    </div>
     <div class="header-actions">
-      <button class="menu-btn" id="saved-btn">★ <span id="saved-count">0</span></button>
-      <button class="menu-btn theme-toggle-btn" id="theme-toggle-btn" aria-label="Switch to light mode" title="Switch to light mode">
-        <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
-        <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      <div class="density-nav-wrap">
+        <button class="icon-btn density-top-btn" id="density-menu-btn"
+          aria-label="Choose movie selection" title="Movie selection"
+          aria-haspopup="true" aria-expanded="false" aria-controls="density-dropdown">
+          <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <path d="m4 8 18-4 2 7-18 4-2-7Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            <path d="m7 7 3 5M14 5.5l3 5M21 4l2.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M5 14h19v10H5z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+            <path d="M9 18h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          <span class="density-current-label" id="density-current-label">Top hits</span>
+        </button>
+        <div class="density-dropdown hidden" id="density-dropdown"
+          role="menu" aria-label="Movie selection options">
+          <div class="density-dropdown-title">Show movies</div>
+          <div id="density-dropdown-options"></div>
+        </div>
+      </div>
+      <button class="icon-btn favorites-top-btn" id="favorites-btn" aria-label="Open saved movies" title="Saved movies">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>
+        <span id="favorites-count" class="favorites-count" aria-label="Saved movie count">0</span>
       </button>
-      <button class="menu-btn" id="menu-btn">☰</button>
+      <button class="icon-btn" id="search-btn" aria-label="Search movies" title="Search movies"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></button>
+      <button class="icon-btn" id="menu-btn" aria-label="Open settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
     </div>
   </div>
-  <div class="selector-row">
-    <select id="adult-select"></select>
-    <span class="vs">vs</span>
-    <select id="kid-select"></select>
   </div>
-  <div id="comparison-summary" class="comparison-summary"></div>
+  <div id="comparison-summary" class="comparison-summary" aria-live="polite"></div>
+  <div class="selector-row comparison-selector-row" id="comparison-selector-row">
+    <select id="adult-select" aria-label="Choose adult"></select>
+    <span class="vs">vs</span>
+    <select id="kid-select" aria-label="Choose child"></select>
+    <button type="button" class="comparison-done-btn" id="comparison-done-btn">Done</button>
+  </div>
   <div class="quick-filters" role="group" aria-label="Filter by rating">
     <span class="qf-label">Ratings</span>
     <div class="qf-chips" id="quick-rating-toggle"></div>
   </div>
-  <div class="quick-filters" role="group" aria-label="How many movies to show">
-    <span class="qf-label">Show</span>
-    <div class="qf-chips" id="quick-density-toggle"></div>
-  </div>
 </div>
+<button type="button" id="saved-btn" hidden aria-hidden="true" tabindex="-1"><span id="saved-count">0</span></button>
 
 <div class="menu-panel hidden" id="menu-panel">
   <div class="menu-top">
     <div class="menu-app-title">Same Age Movies</div>
     <div class="menu-header">
       <span>Settings</span>
-      <button class="menu-close" id="menu-close">✕</button>
+      <div class="settings-head-actions"><button class="menu-close" id="menu-close" aria-label="Close settings">✕</button></div>
     </div>
   </div>
 
   <div class="menu-scroll">
+    <section class="settings-appearance" aria-label="Appearance settings">
+      <div class="settings-appearance-copy"><span class="settings-appearance-icon" aria-hidden="true">◐</span><span><strong>Appearance</strong><small>Choose how Same Age Movies looks</small></span></div>
+      <button class="settings-theme-btn" id="theme-toggle-btn" type="button" aria-label="Switch theme" title="Switch theme"><svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg><svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l1.41-1.41"/></svg><span id="theme-mode-label">Dark mode</span><span class="settings-theme-switch" aria-hidden="true"><i></i></span></button>
+    </section>
     <div class="storage-warning hidden" id="storage-warning">
       ⚠️ This browser isn't saving changes between visits. Try opening this file in a full browser app (Chrome, Safari, etc.) instead of a file viewer or downloads preview.
     </div>
@@ -2081,14 +3675,21 @@
 <div class="detail-modal hidden" id="detail-modal" role="dialog" aria-modal="true" aria-label="Movie details">
   <div class="detail-content" id="detail-content">
     <div class="detail-head" id="detail-head">
-      <div class="detail-handle"></div>
-      <button class="detail-close" id="detail-close" aria-label="Close details">✕</button>
+      <div class="detail-handle" role="button" tabindex="0" aria-label="Swipe down or activate to close movie details"></div>
+      <button class="detail-close" id="detail-close" aria-label="Close details"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div class="detail-scroll" id="detail-scroll">
       <div id="detail-body"></div>
     </div>
   </div>
 </div>
+
+<div class="menu-panel hidden" id="search-panel">
+  <div class="menu-top"><div class="menu-header"><span>Find a movie</span><button class="menu-close" id="search-close" aria-label="Close search">✕</button></div></div>
+  <div class="menu-scroll"><input id="movie-search-input" class="light-input" type="search" placeholder="Search movie titles…" autocomplete="off"><div class="add-hint">Search movies currently loaded in your feed.</div><div id="search-results" class="people-list"></div></div>
+</div>
+
+
 
 <div class="toast" id="toast" role="status" aria-live="polite">
   <span id="toast-msg"></span>
@@ -2109,6 +3710,9 @@
     const nextLabel = theme === "light" ? "Switch to dark mode" : "Switch to light mode";
     themeToggleBtn.setAttribute("aria-label", nextLabel);
     themeToggleBtn.setAttribute("title", nextLabel);
+    themeToggleBtn.setAttribute("aria-pressed", theme === "light" ? "true" : "false");
+    const modeLabel = document.getElementById("theme-mode-label");
+    if (modeLabel) modeLabel.textContent = theme === "light" ? "Light mode" : "Dark mode";
   }
 
   function setTheme(theme, persist) {
@@ -2222,6 +3826,14 @@
   const savedClose = document.getElementById("saved-close");
   const savedListEl = document.getElementById("saved-list");
   const savedCountEl = document.getElementById("saved-count");
+  const searchPanel = document.getElementById("search-panel");
+  const searchInput = document.getElementById("movie-search-input");
+  const searchResults = document.getElementById("search-results");
+  function runMovieSearch() {
+    const q = searchInput.value.trim().toLocaleLowerCase();
+    const matches = q ? loadedMovies.filter(m => (m.title || "").toLocaleLowerCase().includes(q)).slice(0,30) : [];
+    searchResults.innerHTML = matches.length ? matches.map(m => `<div class="search-result" data-search-movie="${m.id}">${m.poster_path ? `<img src="https://image.tmdb.org/t/p/w92${m.poster_path}" alt="">` : '<div class="saved-thumb"></div>'}<div><strong>${escapeHtml(m.title)}</strong><small>${m.release_date ? escapeHtml(formatReleaseDate(m.release_date)) : "Movie"}</small></div></div>`).join("") : (q ? '<div class="comparison-summary">No matching movies in the loaded feed.</div>' : '<div class="comparison-summary">Type a title to search your movie feed.</div>');
+  }
   const adultSelect = document.getElementById("adult-select");
   const kidSelect = document.getElementById("kid-select");
   const comparisonSummary = document.getElementById("comparison-summary");
@@ -2237,7 +3849,9 @@
   const scrollHintEl = document.getElementById("scroll-hint");
   const ratingToggleEl = document.getElementById("rating-toggle");
   const quickRatingEl = document.getElementById("quick-rating-toggle");
-  const quickDensityEl = document.getElementById("quick-density-toggle");
+  const densityDropdown = document.getElementById("density-dropdown");
+  const densityDropdownOptions = document.getElementById("density-dropdown-options");
+  const densityMenuBtn = document.getElementById("density-menu-btn");
   const densityToggleEl = document.getElementById("density-toggle");
   const sizeTwoBtn = document.getElementById("size-two");
   const sizeOneBtn = document.getElementById("size-one");
@@ -2538,6 +4152,7 @@
 
   overlayHiders.menu = () => menuPanel.classList.add("hidden");
   overlayHiders.saved = () => savedPanel.classList.add("hidden");
+  overlayHiders.search = () => searchPanel.classList.add("hidden");
   overlayHiders.region = () => document.getElementById("region-panel").classList.add("hidden");
   overlayHiders.detail = () => hideDetailNow();
 
@@ -2603,12 +4218,24 @@
     });
   }
 
+
+  // ---- Inline SVG icons (shared by the detail view actions) ----
+  const ICONS = {
+    play: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg>',
+    heart: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.5 7.6 3.6 4.5 6.8 4.5c2 0 3.6 1.1 5.2 3 1.6-1.9 3.2-3 5.2-3 3.2 0 5.3 3.1 4.1 6.6-1.8 4.8-9.3 9.4-9.3 9.4z"/></svg>',
+    share: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.7"/><circle cx="6" cy="12" r="2.7"/><circle cx="18" cy="18.5" r="2.7"/><path d="M8.4 10.7l7.2-3.9M8.4 13.3l7.2 3.9"/></svg>',
+    bell: '<svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17V11a6 6 0 1 1 12 0v6l1.5 2h-15z"/><path d="M10 21.5h4"/></svg>',
+    star: '<svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6-4.5-4.2 6.1-.7z"/></svg>',
+    tv: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 3l4 4 4-4"/></svg>'
+  };
+
   function updateDetailSaveButton() {
     const btn = detailBody.querySelector(".detail-save-btn");
     if (!btn || !currentDetail) return;
     const saved = isSavedMovie(currentDetail.movie.id);
-    btn.textContent = saved ? "★ Saved" : "☆ Save";
     btn.classList.toggle("saved", saved);
+    btn.setAttribute("aria-pressed", saved ? "true" : "false");
+    btn.setAttribute("aria-label", saved ? "Remove from saved" : "Save movie");
   }
 
   // ---- Movies-to-show filter ----
@@ -2619,11 +4246,27 @@
   }
 
   function renderDensityToggle() {
-    const html = DENSITY_LEVELS.map(l =>
+    const currentDensityLabel = document.getElementById("density-current-label");
+    const selectedDensity = DENSITY_LEVELS.find(l => l.key === currentDensity);
+    if (currentDensityLabel && selectedDensity) {
+      currentDensityLabel.textContent = selectedDensity.label;
+      densityMenuBtn.setAttribute("aria-label", `Movie selection: ${selectedDensity.label}`);
+      densityMenuBtn.setAttribute("title", `Movie selection: ${selectedDensity.label}`);
+    }
+    const optionsHtml = DENSITY_LEVELS.map(l =>
+      `<button type="button" role="menuitemradio" aria-checked="${l.key === currentDensity}"
+        data-density="${l.key}" class="density-option${l.key === currentDensity ? " active" : ""}"
+        title="${escapeAttr(l.hint)}">
+        <span>${escapeHtml(l.label)}</span>
+        <span class="density-option-check" aria-hidden="true">${l.key === currentDensity ? "✓" : ""}</span>
+      </button>`
+    ).join("");
+    densityDropdownOptions.innerHTML = optionsHtml;
+
+    const settingsHtml = DENSITY_LEVELS.map(l =>
       `<button type="button" data-density="${l.key}"${l.key === currentDensity ? ' class="active"' : ""} title="${escapeAttr(l.hint)}">${escapeHtml(l.label)}</button>`
     ).join("");
-    quickDensityEl.innerHTML = html;
-    densityToggleEl.innerHTML = html;
+    densityToggleEl.innerHTML = settingsHtml;
   }
 
   function setDensity(key) {
@@ -2641,8 +4284,30 @@
     const btn = e.target.closest("button[data-density]");
     if (btn) setDensity(btn.dataset.density);
   }
-  quickDensityEl.addEventListener("click", onDensityClick);
   densityToggleEl.addEventListener("click", onDensityClick);
+
+  function closeDensityDropdown() {
+    densityDropdown.classList.add("hidden");
+    densityMenuBtn.setAttribute("aria-expanded", "false");
+  }
+  densityMenuBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    const opening = densityDropdown.classList.contains("hidden");
+    densityDropdown.classList.toggle("hidden", !opening);
+    densityMenuBtn.setAttribute("aria-expanded", String(opening));
+  });
+  densityDropdownOptions.addEventListener("click", e => {
+    const option = e.target.closest("button[data-density]");
+    if (!option) return;
+    setDensity(option.dataset.density);
+    closeDensityDropdown();
+  });
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".density-nav-wrap")) closeDensityDropdown();
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeDensityDropdown();
+  });
 
   // A strict filter can leave very few cards, which would leave nothing to
   // scroll and so never trigger loading more. Load outward until there is.
@@ -2952,6 +4617,19 @@
 
   // ---- Menu / Saved panel open-close ----
 
+  const navbarEl = document.querySelector(".navbar");
+  const comparisonDoneBtn = document.getElementById("comparison-done-btn");
+  function setComparisonEditorOpen(open) {
+    navbarEl.classList.toggle("comparison-edit-open", open);
+    const editButton = comparisonSummary.querySelector("[data-edit-comparison]");
+    if (editButton) editButton.setAttribute("aria-expanded", String(open));
+  }
+  comparisonSummary.addEventListener("click", (event) => {
+    if (!event.target.closest("[data-edit-comparison]")) return;
+    setComparisonEditorOpen(!navbarEl.classList.contains("comparison-edit-open"));
+  });
+  comparisonDoneBtn.addEventListener("click", () => setComparisonEditorOpen(false));
+
   menuBtn.addEventListener("click", () => {
     if (!menuPanel.classList.contains("hidden")) { overlayClose("menu"); return; }
     openPanel("menu");
@@ -2977,6 +4655,13 @@
   savedClose.addEventListener("click", () => {
     overlayClose("saved");
   });
+  document.getElementById("search-btn").addEventListener("click", () => {
+    searchPanel.classList.remove("hidden"); searchInput.value = ""; runMovieSearch(); overlayOpen("search"); setTimeout(() => searchInput.focus(), 80);
+  });
+  document.getElementById("search-close").addEventListener("click", () => overlayClose("search"));
+  searchInput.addEventListener("input", runMovieSearch);
+  searchResults.addEventListener("click", e => { const row=e.target.closest("[data-search-movie]"); if(row){ overlayClose("search"); openMovieDetail(row.dataset.searchMovie); } });
+  document.getElementById("favorites-btn").addEventListener("click", () => savedBtn.click());
 
   const regionRow = document.getElementById("region-row");
   const regionPanel = document.getElementById("region-panel");
@@ -3045,6 +4730,11 @@
 
   function updateSavedCount() {
     savedCountEl.textContent = savedMovies.length;
+    const favoritesCount = document.getElementById("favorites-count");
+    if (favoritesCount) {
+      favoritesCount.textContent = savedMovies.length ? String(savedMovies.length) : "";
+      favoritesCount.classList.toggle("is-empty", savedMovies.length === 0);
+    }
   }
 
   function isSavedMovie(tmdbId) {
@@ -3338,6 +5028,7 @@
     }
     menuError.classList.add("hidden");
     splashOverlay.classList.add("hidden");
+    if (navbarEl) navbarEl.classList.remove("hidden");
     startFresh(adult, kid);
   }
 
@@ -3488,8 +5179,23 @@
     windowEnd = new Date(ty, tm + 7, 0);
     loadedMovies = [];
 
-    comparisonSummary.innerHTML = `<strong>${escapeHtml(kid.name)}</strong> is about ${formatAge(kidAgeMonthsNow)} old. ` +
-      `<strong>${escapeHtml(adult.name)}</strong> was that age around <strong>${formatMonthYear(targetIdx)}</strong>.`;
+    comparisonSummary.innerHTML = `
+      <div class="comparison-bar-content">
+        <span class="comparison-family-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 36" fill="none">
+            <circle cx="15" cy="10" r="7" fill="currentColor"/>
+            <circle cx="33" cy="10" r="7" fill="currentColor"/>
+            <path d="M2 32c0-8 5-13 13-13s13 5 13 13v2H2v-2Z" fill="currentColor"/>
+            <path d="M20 34v-2c0-7 5-12 13-12s13 5 13 12v2H20Z" fill="currentColor" opacity=".82"/>
+          </svg>
+        </span>
+        <span class="comparison-family-meta">
+          <span class="comparison-family-names">${escapeHtml(adult.name)} <span aria-hidden="true">•</span> ${escapeHtml(kid.name)}</span>
+          <span class="comparison-when">${escapeHtml(wasWere(adult.name))} that age in <strong>${escapeHtml(formatMonthYear(targetIdx))}</strong></span>
+        </span>
+        <span class="comparison-age">${formatAge(kidAgeMonthsNow)}</span>
+        <button type="button" class="comparison-edit-btn" data-edit-comparison aria-expanded="false" aria-controls="comparison-selector-row">Edit</button>
+      </div>`;
 
     feedEl.innerHTML = `<div class="movie-card skeleton-card" aria-busy="true" aria-label="Loading movies">
       <div class="skel-poster"></div>
@@ -4051,6 +5757,16 @@
   detailClose.addEventListener("click", () => {
     overlayClose("detail");
   });
+  const detailHandle = document.querySelector("#detail-head .detail-handle");
+  if (detailHandle) {
+    detailHandle.addEventListener("click", () => overlayClose("detail"));
+    detailHandle.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        overlayClose("detail");
+      }
+    });
+  }
   detailBody.addEventListener("click", (e) => {
     const retryBtn = e.target.closest("button[data-retry-detail]");
     if (retryBtn) { openMovieDetail(retryBtn.dataset.retryDetail); return; }
@@ -4063,11 +5779,14 @@
       }
       return;
     }
-    const moreBtn = e.target.closest("button.read-more-btn");
+    const moreBtn = e.target.closest("button.overview-more");
     if (moreBtn) {
-      const el = document.getElementById("detail-overview");
-      const clamped = el.classList.toggle("clamped");
-      moreBtn.textContent = clamped ? "Read more" : "Show less";
+      const wrap = moreBtn.closest(".detail-overview-wrap");
+      const expanded = wrap.dataset.expanded !== "true";
+      wrap.dataset.expanded = expanded ? "true" : "false";
+      wrap.querySelector(".overview-text").textContent = expanded ? wrap.dataset.full : wrap.dataset.short;
+      moreBtn.textContent = expanded ? "Less" : "More";
+      moreBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
       return;
     }
     const movieFromRemindBtn = (b) => ({
@@ -4076,8 +5795,6 @@
       releaseDate: b.dataset.remindDate,
       ageMonths: parseInt(b.dataset.remindAge, 10)
     });
-    const fileLink = e.target.closest("button.remind-file-link");
-    if (fileLink) { addMovieReminder(movieFromRemindBtn(fileLink), fileLink, "ics"); return; }
     const remindBtn = e.target.closest("button.detail-remind-btn");
     if (remindBtn) { addMovieReminder(movieFromRemindBtn(remindBtn), remindBtn); return; }
     const cardBtn = e.target.closest("button.detail-card-btn");
@@ -4255,6 +5972,8 @@
     "amazon video": (q) => `https://www.amazon.com/s?k=${q}&i=instant-video`,
     "apple tv": (q) => `https://tv.apple.com/search?term=${q}`,
     "apple tv+": (q) => `https://tv.apple.com/search?term=${q}`,
+    "prime video": (q) => `https://www.amazon.com/s?k=${q}&i=instant-video`,
+    "google play": (q) => `https://play.google.com/store/search?q=${q}&c=movies`,
     "disney plus": (q) => `https://www.disneyplus.com/search?q=${q}`,
     "disney+": (q) => `https://www.disneyplus.com/search?q=${q}`,
     "hulu": (q) => `https://www.hulu.com/search?q=${q}`,
@@ -4271,32 +5990,104 @@
     "microsoft store": (q) => `https://www.microsoft.com/en-us/search?q=${q}`
   };
 
-  function getProviderSearchUrl(providerName, movieTitle) {
+  function getProviderSearchUrl(providerName, movieTitle, brandKey) {
     const q = encodeURIComponent(movieTitle);
-    const builder = PROVIDER_SEARCH_URLS[providerName.trim().toLowerCase()];
+    const builder = PROVIDER_SEARCH_URLS[providerName.trim().toLowerCase()]
+      || (brandKey && PROVIDER_SEARCH_URLS[brandKey]);
     if (builder) return builder(q);
     return `https://www.google.com/search?q=${encodeURIComponent(`watch ${movieTitle} on ${providerName}`)}`;
   }
 
+  // ---- Collapsing provider variants ----
+  // TMDB lists many tiers of the same service (Peacock / Peacock Premium /
+  // Peacock Premium Plus, Prime Video / "with Ads", ...). To the viewer
+  // those are one place to watch, so fold them into a single tile.
+  const PROVIDER_ALIASES = {
+    "amazon prime video": "prime video",
+    "amazon video": "prime video",
+    "apple tv plus": "apple tv",
+    "apple tv+": "apple tv",
+    "disney+": "disney plus",
+    "paramount+": "paramount plus",
+    "hbo max": "max",
+    "google play movies": "google play",
+    "google play": "google play",
+    "fandango at home": "fandango at home",
+    "vudu": "fandango at home"
+  };
+  const PROVIDER_LABELS = {
+    "prime video": "Prime Video",
+    "apple tv": "Apple TV",
+    "disney plus": "Disney+",
+    "paramount plus": "Paramount+",
+    "max": "Max",
+    "google play": "Google Play",
+    "fandango at home": "Fandango at Home",
+    "youtube": "YouTube",
+    "peacock": "Peacock",
+    "netflix": "Netflix",
+    "hulu": "Hulu"
+  };
+  const PROVIDER_CHANNEL_RE = /\s+(amazon|apple tv|roku premium|roku|youtube primetime)\s+channels?$/i;
+  const PROVIDER_TIER_RE = /\s+(premium plus|premium|basic with ads|standard with ads|with ads|essential|ad[- ]supported|ads)$/i;
+
+  function providerBrand(name) {
+    let n = String(name || "").trim().toLowerCase();
+    const isChannel = PROVIDER_CHANNEL_RE.test(n);
+    n = n.replace(PROVIDER_CHANNEL_RE, "");
+    let prev;
+    do { prev = n; n = n.replace(PROVIDER_TIER_RE, ""); } while (n !== prev);
+    n = n.trim();
+    const key = PROVIDER_ALIASES[n] || n;
+    return { key, isChannel, isVariant: key !== String(name || "").trim().toLowerCase() && !PROVIDER_ALIASES[String(name || "").trim().toLowerCase()] };
+  }
+
+  // Returns one entry per brand, in TMDB's original order.
+  function collapseProviders(list) {
+    const groups = new Map();
+    (list || []).forEach((p, i) => {
+      const b = providerBrand(p.provider_name);
+      if (!groups.has(b.key)) groups.set(b.key, { key: b.key, order: i, members: [] });
+      groups.get(b.key).members.push({ p, b, i });
+    });
+    const out = [];
+    groups.forEach(g => {
+      // "Paramount+ Amazon Channel" is folded away only when the service itself is listed.
+      const direct = g.members.filter(m => !m.b.isChannel);
+      const pool = direct.length ? direct : g.members;
+      // Prefer the plain service name (e.g. "Peacock") over a tier, then TMDB's own priority.
+      pool.sort((a, c) => (a.b.isVariant - c.b.isVariant) || (a.b.isChannel - c.b.isChannel) || (a.i - c.i));
+      const rep = pool[0];
+      const base = PROVIDER_LABELS[g.key] || rep.p.provider_name.replace(PROVIDER_CHANNEL_RE, "");
+      const via = (rep.p.provider_name.match(PROVIDER_CHANNEL_RE) || [])[1];
+      const label = direct.length || !via ? (PROVIDER_LABELS[g.key] || rep.p.provider_name) : `${base} via ${via.replace(/\b\w/g, c => c.toUpperCase())}`;
+      out.push({ provider: rep.p, key: g.key, label, order: g.order });
+    });
+    return out.sort((a, c) => a.order - c.order);
+  }
+
   function buildProviderGroup(label, list, movieTitle) {
-    if (!list || !list.length) return "";
-    const groupType = label === "Stream" ? "stream" : "rentbuy";
-    const logos = list.map(p => {
-      const url = getProviderSearchUrl(p.provider_name, movieTitle);
-      return `<a class="provider-logo-link" href="${url}" target="_blank" rel="noopener" title="Find ${escapeHtml(p.provider_name)}"><img class="provider-logo" src="https://image.tmdb.org/t/p/w92${p.logo_path}" alt="${escapeHtml(p.provider_name)}" loading="lazy"></a>`;
+    const items = collapseProviders(list);
+    if (!items.length) return "";
+    const tiles = items.map(it => {
+      const url = getProviderSearchUrl(it.provider.provider_name, movieTitle, it.key);
+      const logo = it.provider.logo_path
+        ? `<img class="provider-logo" src="https://image.tmdb.org/t/p/w92${it.provider.logo_path}" alt="" loading="lazy" onerror="this.outerHTML='<span class=&quot;watch-tile-fallback&quot;>'+this.dataset.fb+'</span>'" data-fb="${escapeAttr(ICONS.tv)}">`
+        : `<span class="watch-tile-fallback">${ICONS.tv}</span>`;
+      return `<a class="watch-tile" href="${url}" target="_blank" rel="noopener" title="Find ${escapeAttr(it.label)}">${logo}<span class="watch-tile-name">${escapeHtml(it.label)}</span></a>`;
     }).join("");
-    return `<div class="provider-group"><div class="provider-group-label">${label}</div><div class="detail-providers">${logos}</div></div>`;
+    return `<div class="watch-group"><div class="watch-group-label">${label}</div><div class="watch-tiles">${tiles}</div></div>`;
   }
 
   function buildWatchProvidersHtml(details) {
-    const heading = `<div class="detail-section-label">Where to watch</div>`;
+    const heading = `<h3 class="watch-heading">Where to watch</h3>`;
     const allRegions = details["watch/providers"] && details["watch/providers"].results;
     const wanted = selectedRegion || getUserRegion();
     const usedCode = allRegions ? (allRegions[wanted] ? wanted : (allRegions.US ? "US" : null)) : null;
     const data = usedCode ? allRegions[usedCode] : null;
     const wantedName = regionInfo(wanted).name;
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(`watch ${details.title} online`)}`;
-    const empty = `${heading}<div class="providers-empty">No streaming info for ${escapeHtml(wantedName)} yet. <a href="${searchUrl}" target="_blank" rel="noopener">Search the web</a></div>`;
+    const empty = `<div class="watch-section">${heading}<div class="providers-empty">No streaming info for ${escapeHtml(wantedName)} yet. <a href="${searchUrl}" target="_blank" rel="noopener">Search the web</a></div></div>`;
     if (!data) return empty;
 
     // Rent and buy overlap heavily (same provider offers both); merge into
@@ -4304,20 +6095,22 @@
     const rentBuyMap = new Map();
     (data.rent || []).forEach(p => rentBuyMap.set(p.provider_id, p));
     (data.buy || []).forEach(p => rentBuyMap.set(p.provider_id, p));
-    const rentBuy = Array.from(rentBuyMap.values());
+    const rentBuy = Array.from(rentBuyMap.values()).sort((a, b) => (a.display_priority || 0) - (b.display_priority || 0));
 
     const groups = buildProviderGroup("Stream", data.flatrate, details.title) +
-      buildProviderGroup("Rent / Buy", rentBuy, details.title);
+      buildProviderGroup("Rent or buy", rentBuy, details.title);
     if (!groups) return empty;
     const note = usedCode !== wanted
       ? `<div class="providers-note">Not listed for ${escapeHtml(wantedName)}. Showing ${escapeHtml(regionInfo(usedCode).name)} availability.</div>`
       : "";
     const attributionLink = data.link || "https://www.justwatch.com/";
     return `
-      ${heading}
-      ${note}
-      <div class="detail-providers-row">${groups}</div>
-      <div class="justwatch-attribution">Streaming data by <a href="${attributionLink}" target="_blank" rel="noopener">JustWatch</a></div>
+      <div class="watch-section">
+        ${heading}
+        ${note}
+        ${groups}
+        <div class="justwatch-attribution">Data by <a href="${attributionLink}" target="_blank" rel="noopener">JustWatch</a></div>
+      </div>
     `;
   }
 
@@ -4335,21 +6128,27 @@
     currentDetail = { movie: movieForSave };
 
     const shareAgeMonths = getAdultAgeMonthsAtRelease(releaseDate, adult);
-    const kidName = kid && kid.name !== "Kid" ? kid.name : "your kid";
 
     // The point of the app, stated plainly: how old were you, and when does your kid get there?
+    // The age itself sits big in the hero; this row carries the kid-timing line + reminder.
+    const remindDiff = reminderDiffMonths(shareAgeMonths);
+    const remindAttrs = `data-remind-id="${escapeAttr(details.id)}" data-remind-title="${escapeAttr(details.title)}" data-remind-date="${escapeAttr(details.release_date || "")}" data-remind-age="${shareAgeMonths}"`;
+    let ageHeroHtml = "";
     let calloutHtml = "";
     if (adult && releaseDate) {
       if (shareAgeMonths === null) {
         const who = adult.name === "You" ? "you were" : `${adult.name} was`;
-        calloutHtml = `<div class="age-callout"><div class="age-callout-main">This came out before ${escapeHtml(who)} born.</div></div>`;
+        calloutHtml = `<div class="age-callout"><div class="age-callout-text"><div class="age-callout-main">This came out before ${escapeHtml(who)} born.</div></div></div>`;
       } else {
         const timing = kidTimingInfo(kidAgeMonthsNow === null ? null : shareAgeMonths - kidAgeMonthsNow);
-        calloutHtml = `
-          <div class="age-callout ${timing ? timing.cls : ""}">
-            <div class="age-callout-main">${escapeHtml(wasWere(adult.name))} <strong>${escapeHtml(formatAge(shareAgeMonths))}</strong> when this came out</div>
-            ${timing ? `<div class="age-callout-sub"><span class="timing-dot"></span><span>${escapeHtml(timing.text)}</span></div>` : ""}
-          </div>`;
+        ageHeroHtml = `<div class="detail-age"><div class="detail-age-label">${escapeHtml(wasWere(adult.name))}</div><div class="detail-age-value">${escapeHtml(formatAge(shareAgeMonths))}</div></div>`;
+        if (timing) {
+          calloutHtml = `
+            <div class="age-callout ${timing.cls}">
+              <div class="age-callout-text"><div class="age-callout-sub"><span class="timing-dot"></span><span>${escapeHtml(timing.text)}</span></div></div>
+              ${remindDiff !== null ? `<button type="button" class="detail-remind-btn" ${remindAttrs}>${ICONS.bell}<span>Remind me</span></button>` : ""}
+            </div>`;
+        }
       }
     }
 
@@ -4365,13 +6164,12 @@
       || (details.videos && details.videos.results || []).find(v => v.site === "YouTube");
     const watchProvidersHtml = buildWatchProvidersHtml(details);
     const saved = isSavedMovie(movieForSave.id);
-    const remindDiff = reminderDiffMonths(shareAgeMonths);
-    const remindIdx = kid && shareAgeMonths !== null ? getReminderMonthIdx(kid, shareAgeMonths) : null;
-    const longOverview = !!details.overview && details.overview.length > 240;
+    const metaLine = [releaseDate ? releaseDate.slice(0, 4) : "", cert || "", runtime || ""].filter(Boolean).join(" \u00b7 ");
+    const fullOverview = details.overview || "";
+    const longOverview = fullOverview.length > 120;
+    const shortOverview = longOverview ? fullOverview.slice(0, 100).replace(/\s+\S*$/, "").replace(/[\s,.;:\u2013-]+$/, "") + "\u2026" : fullOverview;
     // Start fetching the poster for the share-as-image card now, so it's ready by the time they tap.
     if (details.poster_path) preloadCardPoster(details.poster_path);
-
-    const remindAttrs = `data-remind-id="${escapeAttr(details.id)}" data-remind-title="${escapeAttr(details.title)}" data-remind-date="${escapeAttr(details.release_date || "")}" data-remind-age="${shareAgeMonths}"`;
 
     detailBody.innerHTML = `
       <div class="detail-hero">
@@ -4380,28 +6178,21 @@
           : `<div class="detail-hero-poster no-poster-lg" aria-hidden="true">🎬</div>`}
         <div class="detail-hero-info">
           <div class="detail-title">${escapeHtml(details.title)}</div>
-          ${releaseDate ? `<div class="detail-subline" title="Original release date">${escapeHtml(formatReleaseDate(releaseDate))}</div>` : ""}
-          ${genres ? `<div class="detail-genres">${escapeHtml(genres)}</div>` : ""}
-          <div class="detail-meta-row">
-            ${rating ? `<span class="pill" title="${escapeAttr(votes)} votes">⭐ ${escapeHtml(rating)}</span>` : ""}
-            ${cert ? `<span class="pill">${escapeHtml(cert)}</span>` : ""}
-            ${runtime ? `<span class="pill">${escapeHtml(runtime)}</span>` : ""}
-          </div>
+          ${metaLine ? `<div class="detail-meta">${escapeHtml(metaLine)}</div>` : ""}
+          ${rating ? `<div class="detail-rating" title="${escapeAttr(votes)} votes">${ICONS.star}<span>${escapeHtml(rating)}</span></div>` : ""}
+          ${ageHeroHtml}
         </div>
       </div>
       ${calloutHtml}
-      <div class="detail-action-grid">
-        ${trailer ? `<a class="detail-action-btn detail-trailer-link" href="https://www.youtube.com/watch?v=${encodeURIComponent(trailer.key)}" target="_blank" rel="noopener">▶ Trailer</a>` : ""}
-        <button type="button" class="detail-action-btn detail-save-btn${saved ? " saved" : ""}">${saved ? "★ Saved" : "☆ Save"}</button>
-        <button type="button" class="detail-action-btn detail-card-btn" data-share-id="${escapeAttr(details.id)}" data-share-title="${escapeAttr(details.title)}" data-share-age="${shareAgeMonths === null ? "" : shareAgeMonths}" data-share-poster="${escapeAttr(details.poster_path || "")}" data-share-year="${escapeAttr((details.release_date || "").slice(0, 4))}">↗ Share</button>
-        ${remindDiff !== null ? `<button type="button" class="detail-action-btn detail-remind-btn" ${remindAttrs}>📅 Remind me</button>` : ""}
+      <div class="detail-action-row">
+        ${trailer ? `<a class="detail-trailer-link" href="https://www.youtube.com/watch?v=${encodeURIComponent(trailer.key)}" target="_blank" rel="noopener">${ICONS.play}<span>Trailer</span></a>` : ""}
+        <button type="button" class="icon-btn detail-save-btn${saved ? " saved" : ""}" aria-pressed="${saved ? "true" : "false"}" aria-label="${saved ? "Remove from saved" : "Save movie"}">${ICONS.heart}</button>
+        <button type="button" class="icon-btn detail-card-btn" aria-label="Share" data-share-id="${escapeAttr(details.id)}" data-share-title="${escapeAttr(details.title)}" data-share-age="${shareAgeMonths === null ? "" : shareAgeMonths}" data-share-poster="${escapeAttr(details.poster_path || "")}" data-share-year="${escapeAttr((details.release_date || "").slice(0, 4))}">${ICONS.share}</button>
       </div>
-      ${remindDiff !== null ? `<div class="detail-remind-note">Adds an all-day reminder for ${escapeHtml(remindIdx !== null ? formatMonthYear(remindIdx) : `${formatAgeLong(remindDiff)} from now`)}, when ${escapeHtml(kidName)} reaches this age. Using Outlook or Apple Calendar? <button type="button" class="remind-file-link" ${remindAttrs}>Download a file</button></div>` : ""}
       ${watchProvidersHtml}
-      ${details.overview ? `
-        <div class="detail-section-label">Overview</div>
-        <div class="detail-overview${longOverview ? " clamped" : ""}" id="detail-overview">${escapeHtml(details.overview)}</div>
-        ${longOverview ? `<button type="button" class="read-more-btn">Read more</button>` : ""}
+      ${genres ? `<div class="detail-genres-line">${escapeHtml(genres)}</div>` : ""}
+      ${fullOverview ? `
+        <div class="detail-overview-wrap" data-full="${escapeAttr(fullOverview)}" data-short="${escapeAttr(shortOverview)}" data-expanded="false"><span class="overview-text">${escapeHtml(shortOverview)}</span>${longOverview ? ` <button type="button" class="overview-more" aria-expanded="false">More</button>` : ""}</div>
       ` : ""}
       ${cast ? `
         <div class="detail-section-label">Cast</div>
@@ -4478,10 +6269,11 @@
   let shareFlashTimer = null;
   function flashButtonLabel(btn, label) {
     if (!btn) return;
-    if (btn.dataset.origLabel === undefined) btn.dataset.origLabel = btn.textContent;
+    if (btn.classList.contains("icon-btn")) { showToast(label); return; }
+    if (btn.dataset.origHtml === undefined) btn.dataset.origHtml = btn.innerHTML;
     btn.textContent = label;
     clearTimeout(shareFlashTimer);
-    shareFlashTimer = setTimeout(() => { btn.textContent = btn.dataset.origLabel; delete btn.dataset.origLabel; }, 1800);
+    shareFlashTimer = setTimeout(() => { btn.innerHTML = btn.dataset.origHtml; delete btn.dataset.origHtml; }, 1800);
   }
 
   async function copyText(text) {
@@ -4837,11 +6629,17 @@
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   }
 
-  // A web page can't launch a calendar app directly, so this uses the closest thing per device:
-  //  - iPhone/iPad: open the .ics in Safari, which shows its own "Add to Calendar" sheet right away.
-  //  - Everything else: open Google Calendar with the event pre-filled.
-  //  - mode "ics": always download the .ics file (for Outlook, Apple Calendar on a computer, etc.).
-  function addMovieReminder(movie, btn, mode) {
+  function isMacDevice() {
+    return !isIosDevice() && /Mac/.test(navigator.platform || navigator.userAgent);
+  }
+
+  // A web page can't launch a calendar app directly, so each platform gets the
+  // closest thing it supports:
+  //  - iPhone/iPad: open the .ics, which shows Safari's own "Add to Calendar" sheet.
+  //  - Mac: download the .ics; Safari hands it straight to Calendar, other browsers
+  //    save it for a double-click.
+  //  - Everything else (Android, Windows, ChromeOS): Google Calendar with the event pre-filled.
+  function addMovieReminder(movie, btn) {
     const adult = getSelectedAdult();
     const kid = getSelectedKid();
     if (!adult || !kid) return;
@@ -4849,11 +6647,6 @@
     if (!data) { flashButtonLabel(btn, "Already that age"); return; }
     const icsBlob = new Blob([buildMovieReminderIcs(data)], { type: "text/calendar;charset=utf-8" });
     const filename = `same-age-${slugify(movie.title, "movie")}-reminder.ics`;
-    if (mode === "ics") {
-      downloadBlob(icsBlob, filename);
-      flashButtonLabel(btn, "✓ File saved");
-      return;
-    }
     if (isIosDevice()) {
       const blobUrl = URL.createObjectURL(icsBlob);
       const a = document.createElement("a");
@@ -4867,8 +6660,13 @@
       flashButtonLabel(btn, "✓ Opening Calendar");
       return;
     }
+    if (isMacDevice()) {
+      downloadBlob(icsBlob, filename);
+      flashButtonLabel(btn, "✓ Opening Calendar");
+      return;
+    }
     const win = window.open(buildGoogleCalendarUrl(data), "_blank", "noopener");
-    if (win) flashButtonLabel(btn, "✓ Opening Google Calendar");
+    if (win) flashButtonLabel(btn, "✓ Opening Calendar");
     else { downloadBlob(icsBlob, filename); flashButtonLabel(btn, "✓ File saved"); } // popup blocked
   }
 
@@ -4990,8 +6788,11 @@
     if (storageBroken) {
       document.getElementById("storage-warning").classList.remove("hidden");
     }
-    if (adults.length === 0 && kids.length === 0) {
+    if (adults.length === 0 || kids.length === 0) {
+      if (navbarEl) navbarEl.classList.add("hidden");
       splashOverlay.classList.remove("hidden");
+    } else {
+      if (navbarEl) navbarEl.classList.remove("hidden");
     }
     tryStartFresh();
     // Opened from a shared link: show that movie on top of everything else.
