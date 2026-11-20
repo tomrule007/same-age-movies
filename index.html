@@ -3238,6 +3238,34 @@ summary:focus:not(:focus-visible),
    (colors all come from the existing theme tokens)
    ===================================================================== */
 .toast { z-index: 900; }
+/* Loading card: same shell as .movie-card (size comes from the shared card rules),
+   with placeholder shapes in the same positions as the real content. */
+.skeleton-card { pointer-events: none; }
+.skeleton-card .skel-bg {
+  position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(90deg, #15233b 25%, #20314f 37%, #15233b 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+.skeleton-card .skel-on {
+  position: relative; z-index: 1; display: block; align-self: flex-start;
+  background: linear-gradient(90deg, rgba(255,255,255,.10) 25%, rgba(255,255,255,.20) 37%, rgba(255,255,255,.10) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+.skeleton-card .skel-c-row { position: relative; z-index: 1; display: flex; gap: 9px; }
+.skeleton-card .skel-c-title  { width: 64%; height: 30px; }
+.skeleton-card .skel-c-date   { width: 38%; height: 16px; margin-top: 9px; }
+.skeleton-card .skel-c-chips  { margin-top: 10px; }
+.skeleton-card .skel-c-chips .skel-on { width: 52px; height: 24px; border-radius: 999px; }
+.skeleton-card .skel-c-age    { width: 150px; height: 36px; margin-top: 12px; border-radius: 999px; }
+.skeleton-card .skel-c-timing { width: 60%; height: 15px; margin-top: 10px; }
+.skeleton-card .skel-c-actions { margin-top: 15px; }
+.skeleton-card .skel-c-actions .skel-on { height: 42px; border-radius: 999px; }
+.skeleton-card .skel-c-actions .skel-on:first-child { width: 92px; }
+.skeleton-card .skel-c-actions .skel-on:last-child { width: 108px; }
+
 .ico {
   width: 22px; height: 22px; flex: none; display: block;
   fill: none; stroke: currentColor; stroke-width: 2;
@@ -5197,11 +5225,16 @@ summary:focus:not(:focus-visible),
         <button type="button" class="comparison-edit-btn" data-edit-comparison aria-expanded="false" aria-controls="comparison-selector-row">Edit</button>
       </div>`;
 
+    // Mirrors buildCardHtml(): full-bleed poster area, then title / date / chip /
+    // age pill / timing / action buttons stacked at the bottom of the card.
     feedEl.innerHTML = `<div class="movie-card skeleton-card" aria-busy="true" aria-label="Loading movies">
-      <div class="skel-poster"></div>
-      <div class="skel-line skel-title"></div>
-      <div class="skel-line skel-subline"></div>
-      <div class="skel-line" style="width:55%"></div>
+      <div class="skel-bg"></div>
+      <div class="skel-on skel-c-title"></div>
+      <div class="skel-on skel-c-date"></div>
+      <div class="skel-c-row skel-c-chips"><span class="skel-on"></span></div>
+      <div class="skel-on skel-c-age"></div>
+      <div class="skel-on skel-c-timing"></div>
+      <div class="skel-c-row skel-c-actions"><span class="skel-on"></span><span class="skel-on"></span></div>
     </div>`;
     scrollHintEl.style.display = "none";
 
@@ -6830,8 +6863,29 @@ summary:focus:not(:focus-visible),
         try {
           if (typeof window.Userback.showLauncher === "function") window.Userback.showLauncher();
         } catch (e) { /* ignore */ }
+        // The launcher paints a moment after showLauncher(); re-place it a few times.
+        [0, 150, 600, 1500].forEach(function (ms) { setTimeout(placeLauncher, ms); });
       }, LAUNCHER_DELAY_MS);
     }
+
+    // Userback docks its tab at the vertical middle of the right edge and has no
+    // offset setting, so shift it with the independent CSS `translate` property
+    // (leaves the widget's own transform/rotation alone) until its center sits
+    // 75% of the way down the screen, i.e. a quarter of the way up from the bottom.
+    var LAUNCHER_CENTER_Y = 0.75;
+    function placeLauncher() {
+      var btn = d.querySelector(".userback-button");
+      if (!btn) return;
+      var box = d.querySelector(".userback-button-container") || btn;
+      box.style.removeProperty("translate");
+      var r = btn.getBoundingClientRect();
+      if (!r.height) return; // still hidden
+      var vh = window.innerHeight || d.documentElement.clientHeight;
+      var delta = Math.round(vh * LAUNCHER_CENTER_Y - (r.top + r.height / 2));
+      if (delta) box.style.setProperty("translate", "0 " + delta + "px", "important");
+    }
+    window.addEventListener("resize", placeLauncher);
+    window.addEventListener("orientationchange", function () { setTimeout(placeLauncher, 300); });
 
     Userback.on_load = delayFloatingLauncher;
 
